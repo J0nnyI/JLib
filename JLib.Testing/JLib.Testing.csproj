@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="6.12.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.*" />
         <PackageReference Include="Snapshooter.Xunit" Version="0.*" />
     </ItemGroup>
