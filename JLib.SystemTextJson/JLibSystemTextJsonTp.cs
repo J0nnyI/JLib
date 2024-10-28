@@ -2,6 +2,7 @@
 using JLib.Reflection;
 
 namespace JLib.SystemTextJson;
+
 [TypePackageProvider]
 public static class JLibSystemTextJsonTp
 {
