@@ -25,6 +25,7 @@
             JLib.DataProvider.EfCore
             JLib.DataProvider.InMemory
             JLib.DependencyInjection
+            JLib.DependencyInjection.Mermaid
             JLib.Reflection
             JLib.Reflection.DependencyInjection
             JLib.Reflection.HotChocolate.Query

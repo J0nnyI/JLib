@@ -1,4 +1,5 @@
-﻿using JLib.Reflection;
+﻿using JLib.DependencyInjection;
+using JLib.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JLib.DataProvider.Authorization;
@@ -7,7 +8,6 @@ public static class AuthorizationExtensions
 {
     /// <summary>
     /// adds data authorization
-    /// <br/> requires <see cref="ServiceCollectionHelper.AddScopeProvider"/>
     /// <br/>services:
     /// <br/>+ singleton
     /// <br/>+-- <see cref="IAuthorizationManager"/>
@@ -16,6 +16,7 @@ public static class AuthorizationExtensions
     /// </summary>
     public static IServiceCollection AddDataAuthorization(this IServiceCollection services, ITypeCache typeCache)
     {
+        services.AddScopeProvider();
         services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
         foreach (var dataObjectType in typeCache.All<DataObjectType>())
         {

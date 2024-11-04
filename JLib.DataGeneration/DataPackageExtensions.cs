@@ -1,5 +1,7 @@
 ﻿using JLib.DataGeneration.Abstractions;
 using JLib.DependencyInjection;
+using JLib.Exceptions;
+using JLib.Helper;
 using JLib.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,8 +22,8 @@ public static class DataPackageExtensions
     {
         return services.AddSingleton<IIdRegistry, IdRegistry>(provider =>
         {
-            var replaceNamespace = defaultNamespace is null 
-                ? null 
+            var replaceNamespace = defaultNamespace is null
+                ? null
                 : defaultNamespace.EndsWith(".")
                     ? defaultNamespace
                     : defaultNamespace + ".";
@@ -45,7 +47,7 @@ public static class DataPackageExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The modified service collection.</returns>
-    public static IServiceCollection AddTestingIdGenerator(this IServiceCollection services) 
+    public static IServiceCollection AddTestingIdGenerator(this IServiceCollection services)
         => services.AddSingleton<TestingIdGenerator>()
             .AddSingletonAlias<IIdGenerator, TestingIdGenerator>();
 
@@ -58,6 +60,10 @@ public static class DataPackageExtensions
     /// <returns>The modified service collection.</returns>
     public static IServiceCollection AddDataPackages(this IServiceCollection services, ITypeCache typeCache, DataPackageConfiguration? configuration = null)
     {
+        if (typeCache.KnownTypeValueTypes.Contains(typeof(DataPackageType)))
+            throw new InvalidSetupException(
+                $"The TypeCache is not aware of the {typeof(DataPackageType).FullName(true)}. To solve this issue, include the {typeof(JLibDataGenerationTp)} Type package.");
+
         services.AddIdRegistry(configuration?.DefaultNamespace)
             .AddTestingIdGenerator();
 

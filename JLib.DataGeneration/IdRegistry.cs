@@ -42,6 +42,7 @@ public interface IIdRegistry
     /// </summary>
     public IdIdentifier GetIdentifierOfId(object? id);
     internal void SetIdPropertyValue(object packageInstance, PropertyInfo property);
+    public IdIdentifier ApplyIdentifierPostProcessor(IdIdentifier identifier);
 }
 
 internal class IdRegistry : IIdRegistry, IDisposable
@@ -129,7 +130,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
             return Interlocked.Increment(ref _idIncrement);
         }).CastTo<int>();
     }
-    
+
     /// <summary>
     /// returns the <see cref="IdIdentifier"/> for the given <paramref name="id"/><br/>
     /// consider using the <see cref="IdExtensions"/> to access the value.
@@ -162,6 +163,8 @@ internal class IdRegistry : IIdRegistry, IDisposable
         var id = GetId(new(property), property.PropertyType);
         property.SetValue(packageInstance, id);
     }
+
+    public IdIdentifier ApplyIdentifierPostProcessor(IdIdentifier identifier) => _idIdentifierPostProcessor(identifier);
 
     /// <summary>
     /// gets the id with the given <paramref name="identifier"/> of the given <paramref name="idType"/><br/>

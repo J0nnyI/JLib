@@ -2,6 +2,7 @@
 using JLib.Helper;
 using JLib.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using ITypeCache = JLib.Reflection.ITypeCache;
 using ITypeValueType = JLib.Reflection.ITypeValueType;
@@ -246,7 +247,10 @@ public static class ServiceCollectionHelper
     /// <br/>the injected scope can not be disposed of. doing so will result in nothing being done
     /// </summary>
     public static IServiceCollection AddScopeProvider(this IServiceCollection services)
-        => services.AddScoped<IServiceScope, ServiceScopeProxy>();
+    {
+        services.TryAddScoped<IServiceScope, ServiceScopeProxy>();
+        return services;
+    }
 
     private class ServiceScopeProxy : IServiceScope
     {

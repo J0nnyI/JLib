@@ -3,13 +3,20 @@ using AutoMapper.Internal;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using static JLib.Reflection.TvtFactoryAttribute;
 
 namespace JLib.DataGeneration;
 
+/// <summary>
+/// <see cref="DataPackage"/>
+/// </summary>
 [IsDerivedFrom(typeof(DataPackage)), NotAbstract]
 public record DataPackageType(Type Value) : TypeValueType(Value), IValidatedType
 {
+    /// <summary>
+    /// <inheritdoc cref="IValidatedType.Validate"/>
+    /// </summary>
     public void Validate(ITypeCache cache, TypeValidationContext value)
     {
         value.ShouldBeSealed("a DataPackage has to be either Sealed or Abstract.");
@@ -20,23 +27,58 @@ public record DataPackageType(Type Value) : TypeValueType(Value), IValidatedType
     }
 }
 
+/// <summary>
+/// represents a collection of <see cref="DataPackage"/>s
+/// </summary>
+public abstract class DataPackageCollection : DataPackage
+{
+    /// <summary>
+    /// <inheritdoc cref="DataPackageCollection"/>
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="dependencies"></param>
+    protected DataPackageCollection(IServiceProvider provider, IReadOnlyCollection<Type> dependencies) : base(provider)
+    {
+        foreach (var dependency in dependencies)
+        {
+            provider.GetRequiredService(dependency);
+        }
+    }
+}
+
+/// <summary>
+/// defines a behavior of how the data generation should create data.<br/>
+/// a data package should always generate or include all dependencies to be complete.
+/// </summary>
 public abstract class DataPackage
 {
+    private readonly IDataPackageManager _packageManager;
+
     /// <summary>
     /// contains the binding flags which will be used to discover id properties
     /// </summary>
     public const BindingFlags PropertyDiscoveryBindingFlags =
         BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidSetupException"></exception>
     public string GetInfoText(string propertyName)
     {
         var property = GetType().GetProperty(propertyName, PropertyDiscoveryBindingFlags) ??
                        throw new InvalidSetupException(
                            $"property {propertyName} not found on {GetType().FullName()}");
-        return new DataPackageValues.IdGroupName(property).Value + "." + property.Name;
+        var identifier = _packageManager.IdRegistry.ApplyIdentifierPostProcessor(new(property));
+        return identifier.ToString();
     }
 
+    protected DataPackage(IServiceProvider provider) : this(provider.GetRequiredService<IDataPackageManager>()) { }
     protected DataPackage(IDataPackageManager packageManager)
     {
+        _packageManager = packageManager;
         switch (packageManager.InitState)
         {
             case DataPackageInitState.Uninitialized:
