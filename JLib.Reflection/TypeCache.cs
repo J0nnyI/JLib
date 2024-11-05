@@ -50,6 +50,11 @@ public interface ITypeCache
     /// <exception cref="UnknownTypeException{TRequestedTypeValueType}"></exception>
     /// <exception cref="TypeNotFoundException{TRequestedTypeValueType}"></exception>
     public TTvt Get<TTvt>(Type weakType) where TTvt : class, ITypeValueType;
+    /// <returns>The <typeparamref name="TTvt"/> instances of the given <paramref name="weakTypes"/></returns>
+    /// <exception cref="TypeValueTypeMismatchException{TRequestedTypeValueType}"></exception>
+    /// <exception cref="UnknownTypeException{TRequestedTypeValueType}"></exception>
+    /// <exception cref="TypeNotFoundException{TRequestedTypeValueType}"></exception>
+    public IEnumerable<TTvt> Get<TTvt>(IEnumerable<Type> weakTypes) where TTvt : class, ITypeValueType;
 
     /// <returns>The <typeparamref name="TTvt"/> instance of the given <typeparamref name="TType"/></returns>
     /// <exception cref="TypeValueTypeMismatchException{TRequestedTypeValueType}"></exception>
@@ -285,7 +290,7 @@ public class TypeCache : ITypeCache
     #endregion
 
     /// <summary>
-    /// <inheritdoc cref="ITypeCache.Get{TTvt}(System.Type)"/>
+    /// <inheritdoc cref="ITypeCache.Get{TTvt}(Type)"/>
     /// </summary>
     public T Get<T>(Type weakType)
         where T : class, ITypeValueType
@@ -298,6 +303,20 @@ public class TypeCache : ITypeCache
             throw new UnknownTypeException<T>(weakType);
         }
         return strongType as T ?? throw new TypeValueTypeMismatchException<T>(strongType.GetType(), weakType);
+    }
+    /// <summary>
+    /// <inheritdoc cref="ITypeCache.Get{TTvt}(IEnumerable{Type})"/>
+    /// </summary>
+    public IEnumerable<TTvt> Get<TTvt>(IEnumerable<Type> weakTypes)
+        where TTvt : class, ITypeValueType
+    {
+        var values = weakTypes
+            .Select(weak => new { weak, strong = _typeMappings.GetValueOrDefault(weak) })
+            .ToArray();
+        values.Where(x => x.strong is null)
+            .Select(x => KnownTypes.Contains(x.weak) ? (Exception)new TypeNotFoundException<TTvt>() : new UnknownTypeException<TTvt>(x.weak))
+            .ThrowExceptionIfNotEmpty("some types could not be found");
+        return values.Select(x => x.strong).Cast<TTvt>();
     }
 
     /// <summary>
