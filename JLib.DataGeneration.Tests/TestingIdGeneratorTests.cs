@@ -13,6 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace JLib.DataGeneration.Tests;
+
 public class TestingIdGeneratorTests : IDisposable
 {
     class Nested<T>

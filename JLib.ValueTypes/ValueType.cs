@@ -180,6 +180,18 @@ public static partial class ValueType
             _ => FactoryExpressions.ForAnyType<TVt, T>(false).Compile()
         ).CastTo<Func<T?, TVt?>>().Invoke(value);
 
+    [return: NotNullIfNotNull("value")]
+    public static ValueType<T>? Create<T>(Type tValueType, T? value)
+        => typeof(T).IsValueType
+            ? CompiledExpressionCache.GetOrAdd(
+                GetExpressionCacheKey(typeof(T), false),
+                _ => FactoryExpressions.ForAnyType(tValueType, false).Compile()
+            ).DynamicInvoke(value) as ValueType<T> // let's hope this is not too slow
+            : CompiledExpressionCache.GetOrAdd(
+                GetExpressionCacheKey(typeof(T), false),
+                _ => FactoryExpressions.ForAnyType(tValueType, false).Compile()
+            ).CastTo<Func<T?, ValueType<T>?>>().Invoke(value);
+
     /// <summary>
     /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.<br/>
     /// values may be null. if they are, null will be returned.
@@ -191,15 +203,15 @@ public static partial class ValueType
     /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     [return: NotNullIfNotNull("value")]
     public static TVt? CreateNullable<TVt, T>(T? value)
-        where TVt : ValueType<T>
-        where T : struct
-        // todo: use compiled expression to improve runtime performance
-        => value is null
-            ? null
-            : CompiledExpressionCache.GetOrAdd(
-                GetExpressionCacheKey<TVt>(true),
-                _ => FactoryExpressions.ForNullableStruct<TVt, T>().Compile()
-            ).CastTo<Func<T?, TVt?>>().Invoke(value);
+           where TVt : ValueType<T>
+           where T : struct
+           // todo: use compiled expression to improve runtime performance
+           => value is null
+               ? null
+               : CompiledExpressionCache.GetOrAdd(
+                   GetExpressionCacheKey<TVt>(true),
+                   _ => FactoryExpressions.ForNullableStruct<TVt, T>().Compile()
+               ).CastTo<Func<T?, TVt?>>().Invoke(value);
     #endregion
 
     private static string GetExpressionCacheKey<TVt>(bool nullable)

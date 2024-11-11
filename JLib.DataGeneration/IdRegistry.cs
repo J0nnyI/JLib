@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AutoMapper;
 using JLib.Exceptions;
 using JLib.Helper;
@@ -53,7 +55,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
     private readonly string _fileLocation;
     private readonly ConcurrentDictionary<IdIdentifier, object> _dictionary;
     private bool _isDirty;
-    private int _idIncrement;
+    private ValueGenerator idGenerator;
     private readonly Func<IdIdentifier, IdIdentifier> _idIdentifierPostProcessor;
 
     private static IdIdentifier NullValueErrorIdentifier { get; } = new(new("invalid"), new("value is null"));
@@ -65,7 +67,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
         _idIdentifierPostProcessor = idIdentifierPostProcessor ?? (x => x);
         _fileLocation = GetFileName();
         _dictionary = LoadFromFile().ToConcurrentDictionary();
-        _idIncrement = _dictionary.GetValueOrDefault(IncrementIdentifier) as int? ?? 0;
+        idGenerator = ValueGenerator.FromJsonObject(_dictionary.GetValueOrDefault(IncrementIdentifier) as JsonObject);
         _dictionary.Remove(IncrementIdentifier, out _);
         _mapper = new(serviceProvider.GetRequiredService<IMapper>);
         IdExtensions.Register(this);

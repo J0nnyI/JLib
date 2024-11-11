@@ -30,6 +30,7 @@ public record DataPackageType(Type Value) : TypeValueType(Value), IValidatedType
 /// <summary>
 /// represents a collection of <see cref="DataPackage"/>s
 /// </summary>
+/// <seealso cref="DataPackageType"/>
 public abstract class DataPackageCollection : DataPackage
 {
     /// <summary>
@@ -57,7 +58,7 @@ public abstract class DataPackage
     /// <summary>
     /// contains the binding flags which will be used to discover id properties
     /// </summary>
-    public const BindingFlags PropertyDiscoveryBindingFlags =
+    private const BindingFlags PropertyDiscoveryBindingFlags =
         BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public;
 
     /// <summary>
@@ -75,7 +76,20 @@ public abstract class DataPackage
         return identifier.ToString();
     }
 
+    /// <summary>
+    /// <inheritdoc cref="DataPackage"/>
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="IndexOutOfRangeException"></exception>
     protected DataPackage(IServiceProvider provider) : this(provider.GetRequiredService<IDataPackageManager>()) { }
+
+    /// <summary>
+    /// <inheritdoc cref="DataPackage"/>
+    /// </summary>
+    /// <param name="packageManager"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="IndexOutOfRangeException"></exception>
     protected DataPackage(IDataPackageManager packageManager)
     {
         _packageManager = packageManager;
