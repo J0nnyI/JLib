@@ -76,8 +76,7 @@ public static class ReflectionHelper
             return AccessModifier.Public;
         throw new ArgumentException("Did not find access modifier", nameof(fieldInfo));
     }
-
-
+    
     // https://alistairevans.co.uk/2020/11/01/detecting-init-only-properties-with-reflection-in-c-9/
     /// <summary>
     /// checks whether the property is init<br/>

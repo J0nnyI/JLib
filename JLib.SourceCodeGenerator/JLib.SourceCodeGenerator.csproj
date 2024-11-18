@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\JLib.TypeSystem.Abstractions\JLib.TypeSystem.Abstractions.csproj" />
+    <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
+  </ItemGroup>
+
+</Project>

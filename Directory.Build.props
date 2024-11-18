@@ -42,6 +42,8 @@
             JLib.Testing
             JLib.SystemTextJson
             JLib.AspNetCore
+            JLib.SourceCodeGenerator
+            JLib.TypeSystem.Abstractions
         </PackageAssemblies>
 
     </PropertyGroup>
