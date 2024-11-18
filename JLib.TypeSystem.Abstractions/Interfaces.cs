@@ -37,7 +37,7 @@ public interface IMember : INode
     /// </summary>
     public IEnumerable<Assembly> GetRequiredAssemblies();
     public MemberName Name { get; }
-    public AccessModifier AccessModifier { get; }
+    public FieldOrPropertyAccessModifier FieldOrPropertyAccessModifier { get; }
     public bool IsStatic { get; }
 }
 

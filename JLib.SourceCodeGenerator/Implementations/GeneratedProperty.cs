@@ -13,7 +13,7 @@ public sealed class GeneratedProperty : IProperty
         Name = name;
         Type = type;
     }
-    public AccessModifier AccessModifier { get; set; }
+    public FieldOrPropertyAccessModifier FieldOrPropertyAccessModifier { get; set; }
     public IType Type { get; }
     public bool IsRequired { get; set; }
     public bool IsVirtual { get; set; }

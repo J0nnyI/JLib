@@ -24,11 +24,14 @@ public class ExistingClass : IClass
 
     }
 
-    public IEnumerable<Assembly> GetRequiredAssemblies() => throw new NotImplementedException();
+    public IEnumerable<Assembly> GetRequiredAssemblies()
+    {
 
-    public MemberName Name => throw new NotImplementedException();
+    }
 
-    public AccessModifier AccessModifier => throw new NotImplementedException();
+    public MemberName Name => _type.Name;
+
+    public AccessModifier AccessModifier => _type.getac
 
     public bool IsStatic
     {

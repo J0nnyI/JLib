@@ -11,4 +11,3 @@ public interface ISourceCodeWriter : IDisposable
     ISourceCodeWriter EndStatement();
     ISourceCodeWriter WriteBlock(Action<ISourceCodeWriter> block);
 }
-[Input] -> [Transformer] -> [TypeSystem]-> [SourceCodeGenerator] -> [Output]
