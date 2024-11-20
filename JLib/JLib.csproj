@@ -5,6 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
+      <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\JLib.AutoMapper\JLib.AutoMapper.csproj" />
         <ProjectReference Include="..\JLib.Configuration\JLib.Configuration.csproj" />
         <ProjectReference Include="..\JLib.Cqrs\JLib.Cqrs.csproj" />
