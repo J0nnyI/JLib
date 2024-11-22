@@ -40,6 +40,28 @@ public enum AccessModifier
 /// </summary>
 public static class ReflectionHelper
 {
+    /// <returns>the <see cref="AccessModifier"/> of the given <paramref name="type"/></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static AccessModifier GetAccessModifier(this Type type)
+    {
+        if (type.IsNotPublic)
+            return AccessModifier.Internal;
+        if (type.IsPublic)
+            return AccessModifier.Public;
+        if (type.IsNestedPrivate)
+            return AccessModifier.Private;
+        if (type.IsNestedFamily)
+            return AccessModifier.Protected;
+        if (type.IsNestedFamORAssem)
+            return AccessModifier.ProtectedInternal;
+        if (type.IsNestedFamANDAssem)
+            return AccessModifier.PrivateProtected;
+        if (type.IsNestedAssembly)
+            return AccessModifier.Internal;
+        if (type.IsNestedPublic)
+            return AccessModifier.Public;
+        throw new ArgumentException("Did not find access modifier", type.FullName());
+    }
     /// <returns>the <see cref="AccessModifier"/> of the given <paramref name="methodInfo"/></returns>
     /// <exception cref="ArgumentException"></exception>
     public static AccessModifier GetAccessModifier(this MethodInfo methodInfo)
@@ -76,7 +98,7 @@ public static class ReflectionHelper
             return AccessModifier.Public;
         throw new ArgumentException("Did not find access modifier", nameof(fieldInfo));
     }
-    
+
     // https://alistairevans.co.uk/2020/11/01/detecting-init-only-properties-with-reflection-in-c-9/
     /// <summary>
     /// checks whether the property is init<br/>
