@@ -49,27 +49,26 @@ public interface IIdRegistry
 
 internal class IdRegistry : IIdRegistry, IDisposable
 {
-    private static readonly IdIdentifier IncrementIdentifier = new(new("__registry__"), new("IdIncrement"));
+    private static readonly IdIdentifier IncrementIdentifier = new("__registry__", "IdIncrement");
 
     private readonly Lazy<IMapper> _mapper;
     private readonly string _fileLocation;
     private readonly ConcurrentDictionary<IdIdentifier, object> _dictionary;
     private bool _isDirty;
     private ValueGenerator idGenerator;
-    private readonly Func<IdIdentifier, IdIdentifier> _idIdentifierPostProcessor;
+    private readonly IdRegistryConfiguration _config;
 
-    private static IdIdentifier NullValueErrorIdentifier { get; } = new(new("invalid"), new("value is null"));
-    private static IdIdentifier NotFoundErrorIdentifier { get; } = new(new("invalid"), new("value not found"));
+    private static IdIdentifier NullValueErrorIdentifier { get; } = new("invalid", "value is null");
+    private static IdIdentifier NotFoundErrorIdentifier { get; } = new("invalid", "value not found");
 
-    public IdRegistry(IServiceProvider serviceProvider,
-        Func<IdIdentifier, IdIdentifier>? idIdentifierPostProcessor)
+    public IdRegistry(Lazy<IMapper> mapper, IdRegistryConfiguration configuration)
     {
-        _idIdentifierPostProcessor = idIdentifierPostProcessor ?? (x => x);
         _fileLocation = GetFileName();
         _dictionary = LoadFromFile().ToConcurrentDictionary();
         idGenerator = ValueGenerator.FromJsonObject(_dictionary.GetValueOrDefault(IncrementIdentifier) as JsonObject);
         _dictionary.Remove(IncrementIdentifier, out _);
-        _mapper = new(serviceProvider.GetRequiredService<IMapper>);
+        _config = configuration;
+        _mapper = mapper;
         IdExtensions.Register(this);
     }
 
@@ -98,7 +97,6 @@ internal class IdRegistry : IIdRegistry, IDisposable
     /// </summary>
     public string GetStringId(IdIdentifier identifier)
     {
-        identifier = _idIdentifierPostProcessor(identifier);
         return _dictionary.GetValueOrAdd(identifier, () =>
         {
             _isDirty = true;
@@ -112,7 +110,6 @@ internal class IdRegistry : IIdRegistry, IDisposable
     /// </summary>
     public Guid GetGuidId(IdIdentifier identifier)
     {
-        identifier = _idIdentifierPostProcessor(identifier);
         return _dictionary.GetValueOrAdd(identifier, () =>
         {
             _isDirty = true;
@@ -125,7 +122,6 @@ internal class IdRegistry : IIdRegistry, IDisposable
     /// </summary>
     public int GetIntId(IdIdentifier identifier)
     {
-        identifier = _idIdentifierPostProcessor(identifier);
         return _dictionary.GetValueOrAdd(identifier, () =>
         {
             _isDirty = true;
@@ -162,7 +158,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     void IIdRegistry.SetIdPropertyValue(object packageInstance, PropertyInfo property)
     {
-        var id = GetId(new(property), property.PropertyType);
+        var id = GetId(new(property, _config), property.PropertyType);
         property.SetValue(packageInstance, id);
     }
 
@@ -199,7 +195,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
             return _mapper.Value.Map(nativeId, nativeId.GetType(), idType);
         }
 
-        throw new ArgumentOutOfRangeException(nameof(idType), "unknown type");
+        throw new ArgumentOutOfRangeException(nameof(idType), "unknown type: " + idType.FullName());
     }
 
     public void SaveToFile()
@@ -249,7 +245,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
         var raw2 = raw1
             .SelectMany(groupName => groupName.Value
                 .ToDictionary(
-                    name => new IdIdentifier(new(groupName.Key), new(name.Key)),
+                    name => new IdIdentifier(groupName.Key, name.Key),
                     x => DeserializeId(x.Value)
                 ))
             .ToDictionary(x => x.Key, x => x.Value);

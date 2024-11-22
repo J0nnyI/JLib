@@ -1,11 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -244,6 +238,9 @@ public abstract record ValueType<T>
         value = Value;
     }
 
+    /// <summary>
+    /// The value of the ValueType
+    /// </summary>
     public T Value { get; init; }
 
 }

@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using FluentAssertions;
-using JLib.DataGeneration.Abstractions;
+﻿using FluentAssertions;
 using JLib.Helper;
 using Microsoft.Extensions.DependencyInjection;
 using Snapshooter.Xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace JLib.DataGeneration.Tests;
 
@@ -43,7 +35,7 @@ public class TestingIdGeneratorTests : IDisposable
         var provider = new ServiceCollection()
             .AddAutoMapper(cfg => { })
             .AddTestingIdGenerator()
-            .AddIdRegistry("JLib.DataGeneration.Tests")
+            .AddIdRegistry(new() { DefaultNamespace = "JLib.DataGeneration.Tests" })
             .AddSingleton(typeof(Nested<>))
             .BuildServiceProvider();
         _disposables.Add(provider);

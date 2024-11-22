@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace JLib.Helper;
 
-namespace JLib.Helper;
-
+/// <summary>
+/// contains <see cref="char"/> extension methods.
+/// </summary>
 public static class CharHelper
 {
     /// <summary>

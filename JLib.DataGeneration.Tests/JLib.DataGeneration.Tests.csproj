@@ -12,7 +12,6 @@
       <ProjectReference Include="..\JLib.AutoMapper\JLib.AutoMapper.csproj" />
       <ProjectReference Include="..\JLib.DataGeneration\JLib.DataGeneration.csproj" />
       <ProjectReference Include="..\JLib.Reflection.DependencyInjection\JLib.Reflection.DependencyInjection.csproj" />
-      <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
     </ItemGroup>
 
 </Project>

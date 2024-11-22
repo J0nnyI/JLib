@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿namespace JLib.Helper;
 
-namespace JLib.Helper;
-
+/// <summary>
+/// contains extension methods for <see cref="Exception"/>s
+/// </summary>
 public static class ExceptionHelper
 {
     /// <summary>

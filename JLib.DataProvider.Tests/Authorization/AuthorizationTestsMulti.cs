@@ -167,64 +167,64 @@ public class AuthorizationTestsMulti
         public TestDataObjectId FirstUnauthorizedId { get; init; } = null!;
         public TestDataObjectId SecondUnAuthorizedId { get; init; } = null!;
         public TestDataObjectId ThirdUnAuthorizedId { get; init; } = null!;
-        protected TestObjectDpb(IDataPackageManager packageManager) : base(packageManager) { }
+        protected TestObjectDpb(IServiceProvider serviceProvider) : base(serviceProvider) { }
     }
     public abstract class TestObjectDpb<TDo> : TestObjectDpb
     where TDo : TestDataObjectBase, new()
     {
-        protected TestObjectDpb(IDataPackageManager packageManager, IDataProviderRw<TDo> dataProvider) : base(packageManager)
+        protected TestObjectDpb(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-
+            serviceProvider.GetRequiredServices(out IDataProviderRw<TDo> dataProvider);
             dataProvider.Add(new TDo[]
             {
                 new()
                 {
                     Id= FirstAuthorizedId,
                     IsAuthorized = true,
-                    Name = GetInfoText(nameof(FirstAuthorizedId))
+                    Name = this.GetInfoText(x => x.FirstAuthorizedId)
                 },
                 new()
                 {
                     Id= SecondAuthorizedId,
                     IsAuthorized = true,
-                    Name = GetInfoText(nameof(SecondAuthorizedId))
+                    Name = this.GetInfoText(x => x.SecondAuthorizedId)
                 },
                 new()
                 {
                     Id= ThirdAuthorizedId,
                     IsAuthorized = true,
-                    Name = GetInfoText(nameof(ThirdAuthorizedId))
+                    Name = this.GetInfoText(x => x.ThirdAuthorizedId)
                 },
                 new()
                 {
                     Id= FirstUnauthorizedId,
                     IsAuthorized = false,
-                    Name = GetInfoText(nameof(FirstUnauthorizedId))
+                    Name = this.GetInfoText(x => x.FirstUnauthorizedId)
                 },
                 new()
                 {
                     Id= SecondUnAuthorizedId,
                     IsAuthorized = false,
-                    Name = GetInfoText(nameof(SecondUnAuthorizedId))
+                    Name = this.GetInfoText(x => x.SecondUnAuthorizedId)
                 },
                 new()
                 {
                     Id= ThirdUnAuthorizedId,
                     IsAuthorized = false,
-                    Name = GetInfoText(nameof(ThirdUnAuthorizedId))
+                    Name = this.GetInfoText(x => x.ThirdUnAuthorizedId)
                 },
             });
         }
     }
     public sealed class TestDataObjectDp : TestObjectDpb<TestDataObject>
     {
-        public TestDataObjectDp(IDataPackageManager packageManager, IDataProviderRw<TestDataObject> dataProvider) : base(packageManager, dataProvider)
+        public TestDataObjectDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
     }
     public sealed class OtherTestDataObjectDp : TestObjectDpb<OtherTestDataObject>
     {
-        public OtherTestDataObjectDp(IDataPackageManager packageManager, IDataProviderRw<OtherTestDataObject> dataProvider) : base(packageManager, dataProvider)
+        public OtherTestDataObjectDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
     }
