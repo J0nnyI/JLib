@@ -341,10 +341,9 @@ public static class TypeHelper
             return cachedName;
         }
         var genericArgs = type.GenericTypeArguments
-                .Select(t => t.FullName(includeNamespace))
-                .Reverse()
-                .GetEnumerator();
-        var name = BuildFullTypeName(type, includeNamespace, genericArgs).ToString();
+                .Select(t => t.FullName(includeNamespace));
+        //var name = BuildFullTypeName(type, includeNamespace, genericArgs.Reverse().GetEnumerator()).ToString();
+        var name = BuildFullTypeNameIterative(type, includeNamespace, genericArgs.GetEnumerator()).ToString();
 
         // Store in cache
         _fullNameCache[key] = name;
@@ -388,6 +387,55 @@ public static class TypeHelper
         else if (includeNamespace)
         {
             sb.Insert(0, $"{type.Namespace}.");
+        }
+
+        return sb;
+    }
+    private static StringBuilder BuildFullTypeNameIterative(Type type, bool includeNamespace, IEnumerator<string> genericArgs)
+    {
+        var typeStack = new Stack<Type>();
+        var currentType = type;
+
+        // Push all declaring types onto the stack
+        while (currentType != null)
+        {
+            typeStack.Push(currentType);
+            currentType = currentType.DeclaringType;
+        }
+
+        var sb = new StringBuilder();
+
+        // Process types in reverse order (from outermost to innermost)
+        while (typeStack.Count > 0)
+        {
+            Type t = typeStack.Pop();
+
+            // Build the base name
+            int backtickIndex = t.Name.IndexOf('`');
+            if (backtickIndex != -1)
+            {
+                sb.Append(t.Name.Substring(0, backtickIndex));
+                if (t.IsGenericType && genericArgs.MoveNext())
+                {
+                    sb.Append('<');
+                    sb.Append(genericArgs.Current);
+                    sb.Append('>');
+                }
+            }
+            else
+            {
+                sb.Append(t.Name);
+            }
+
+            // Handle nested types and namespaces
+            if (typeStack.Count > 0)
+            {
+                sb.Append(".");
+            }
+            else if (includeNamespace)
+            {
+                sb.Insert(0, t.Namespace + ".");
+            }
         }
 
         return sb;
