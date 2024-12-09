@@ -34,6 +34,12 @@
     "[Default]CreateId<>(System.Int32)-2": "d0aeebf2-c993-4a1b-86b0-a132e56f9477",
     "[otherScope]CreateId<>(System.Int32)-1": "09835d40-a7f1-4413-8269-e2199b9a193d"
   },
+  "JLib.DataGeneration.Tests.TestingIdGeneratorTests.Nested<T>": {
+    "[Default]CreateId<,>()-1": "1e674735-5f03-4c71-af8f-72562332968f",
+    "[Default]CreateId<>(System.Int32)-1": "66cc9ee9-b740-4b57-8796-d5b5d5585b73",
+    "[Default]CreateId<>(System.Int32)-2": "d2eedde1-3d31-46a8-bf54-397eae740886",
+    "[otherScope]CreateId<>(System.Int32)-1": "848f2bdf-f9a9-4d39-be41-f5e00e0171e7"
+  },
   "TestingIdGeneratorTests": {
     "[Default]CreateGuid_ShouldReturnNewGuid()-1": "ec59f5b1-e545-45e7-97a6-a496bb4e5ff8"
   },

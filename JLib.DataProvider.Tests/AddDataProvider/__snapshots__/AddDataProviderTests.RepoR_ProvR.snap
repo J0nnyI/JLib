@@ -13,16 +13,32 @@
     ],
     "includedTypes": [
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity",
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>",
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>",
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryR"
     ]
   },
   "exception": null,
   "cache": {
+    "JLib.Cqrs": {
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.Cqrs.JLibCqrsTp"
+      ]
+    },
     "JLib.DataProvider": {
+      "JLib.DataProvider.EntityType": [
+        "JLib.DataProvider.IgnoredEntity"
+      ],
       "JLib.DataProvider.SourceDataProviderType": [
-        "JLib.DataProvider.CastDataProviderR<>",
-        "JLib.DataProvider.InMemoryDataProvider<>"
+        "JLib.DataProvider.CastDataProviderR<TFrom, TTo>",
+        "JLib.DataProvider.InMemoryDataProvider<TEntity>"
+      ],
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.DataProvider.JLibDataProviderTp"
+      ]
+    },
+    "JLib.DataProvider.Testing": {
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.DataProvider.Testing.JLibDataProviderTestingTp"
       ]
     },
     "JLib.DataProvider.Tests.AddDataProvider": {
@@ -33,17 +49,32 @@
         "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryR"
       ],
       "JLib.DataProvider.SourceDataProviderType": [
-        "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>"
+        "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>"
+      ]
+    },
+    "JLib.DependencyInjection": {
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.DependencyInjection.JLibDependencyInjectionTp"
+      ]
+    },
+    "JLib.Reflection.DependencyInjection": {
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.Reflection.DependencyInjection.JLibReflectionDependencyInjectionTp"
+      ]
+    },
+    "JLib.Testing": {
+      "JLib.Reflection.TypePackageProviderType": [
+        "JLib.Testing.JLibTestingTp"
       ]
     }
   },
   "services": {
     "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity": {
-      "JLib.DataProvider.IDataProviderR<>": [
+      "JLib.DataProvider.IDataProviderR<TDataObject>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Factory",
-          "ServiceType": "JLib.DataProvider.IDataProviderR<>",
+          "ServiceType": "JLib.DataProvider.IDataProviderR<TDataObject>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],
@@ -51,29 +82,29 @@
           "ImplementationTypeArguments": []
         }
       ],
-      "JLib.DataProvider.ISourceDataProviderR<>": [
+      "JLib.DataProvider.ISourceDataProviderR<TData>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Factory",
-          "ServiceType": "JLib.DataProvider.ISourceDataProviderR<>",
+          "ServiceType": "JLib.DataProvider.ISourceDataProviderR<TData>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],
-          "ImplementationType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>",
+          "ImplementationType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>",
           "ImplementationTypeArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ]
         }
       ],
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>": [
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Type",
-          "ServiceType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>",
+          "ServiceType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],
-          "ImplementationType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>",
+          "ImplementationType": "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>",
           "ImplementationTypeArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ]

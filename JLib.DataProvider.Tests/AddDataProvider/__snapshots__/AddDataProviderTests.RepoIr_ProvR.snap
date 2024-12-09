@@ -10,7 +10,7 @@
     ],
     "includedTypes": [
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity",
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<>",
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderR<T>",
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestInvalidRepositoryR"
     ]
   },
@@ -35,7 +35,7 @@
               {
                 "Type": "JLib.Reflection.InvalidTypeException",
                 "MessageLines": [
-                  "Should not implement JLib.DataProvider.ISourceDataProviderR<>"
+                  "Should not implement JLib.DataProvider.ISourceDataProviderR<TData>"
                 ],
                 "InnerExceptions": []
               }
