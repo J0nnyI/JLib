@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Transactions;
 
 namespace JLib.Helper;
 
@@ -314,40 +316,80 @@ public static class TypeHelper
     }
 
     /// <summary>
-    /// if the given <paramref name="type"/> is nested in another <see cref="Type"/>, all nesting parents including <paramref name="type"/> are rturned. otherwise an empty array is returned.
+    /// if the given <paramref name="type"/> is nested in another <see cref="Type"/>, all nesting parents including <paramref name="type"/> are returned. otherwise an empty array is returned.
     /// </summary>
     public static IReadOnlyCollection<Type> GetNestingParents(this Type type)
     {
-        var result = new List<Type>();
-        var current = type;
-        while (current.DeclaringType is not null)
-        {
-            result.Add(current.DeclaringType);
-            current = current.DeclaringType;
-        }
-        return result;
+        var items = new List<Type>();
+        for (Type? current = type; current != null; current = current.DeclaringType)
+            items.Add(current);
+        items.Reverse();
+        return items;
     }
 
-    private static readonly ConcurrentDictionary<(Type type, bool includeNamespace), string> _fullNameCache = new();
+    private static readonly ConcurrentDictionary<(Type type, bool includeNamespace), string> FullNameCache = new();
 
-    /// <summary>
-    /// the name of the class and its declaring type, excluding the namespace
-    /// </summary>
     public static string FullName(this Type type, bool includeNamespace = false)
     {
+        return FullNameBuilder(type).ToString();
+
+        StringBuilder FullNameBuilder(Type type)
+        {
+            if (type.IsGenericParameter)
+                return new(type.Name);
+
+            var result = new StringBuilder();
+
+            var argOffset = 0;
+
+            var typeParams = type.GetGenericArguments();
+
+            foreach (var currentNestedType in type.GetNestingParents())
+            {
+
+                if (includeNamespace && currentNestedType.DeclaringType is null)
+                    result.Append(currentNestedType.Namespace).Append('.');
+                result.Append(currentNestedType.Name.SubStringUntil('`'));
+
+                if (currentNestedType.IsGenericType)
+                {
+                    var args = currentNestedType.GetGenericArguments();
+
+                    var genericParams = typeParams[argOffset..args.Length];
+
+                    result.Append('<')
+                        .AppendJoin(", ",
+                            genericParams
+                                .Select(FullNameBuilder))
+                        .Append('>');
+
+                    argOffset = args.Length;
+                }
+                if (currentNestedType != type)
+                    result.Append('.');
+
+
+            }
+            return result;
+        }
+    }
+
+
+    public static string FullName2(this Type type, bool includeNamespace = false)
+    {
         var key = (type, includeNamespace);
-        if (_fullNameCache.TryGetValue(key, out var cachedName))
+        if (FullNameCache.TryGetValue(key, out var cachedName))
         {
             return cachedName;
         }
         var genericArgs = type.GenericTypeArguments
-                .Select(t => t.FullName(includeNamespace))
-                .Reverse()
-                .GetEnumerator();
+            .Select(t => t.FullName(includeNamespace))
+            .Reverse()
+            .GetEnumerator();
         var name = BuildFullTypeName(type, includeNamespace, genericArgs).ToString();
 
         // Store in cache
-        _fullNameCache[key] = name;
+        FullNameCache[key] = name;
         return name;
     }
 
@@ -357,12 +399,12 @@ public static class TypeHelper
 
         // Build the base name
         // Remove backticks
-        int backtickIndex = type.Name.IndexOf('`');
+        var backtickIndex = type.Name.IndexOf('`');
         if (backtickIndex != -1)
         {
-            sb.Append(type.Name.Substring(0, backtickIndex));
+            sb.Append(type.Name[..backtickIndex]);
             // Handle generic types
-            var containsGenericArguments = genericArgs.MoveNext(); 
+            var containsGenericArguments = genericArgs.MoveNext();
             if (type.IsGenericType)// && containsGenericArguments)// Match empty generic arguments snapshots
             {
                 sb.Append('<');
@@ -377,7 +419,7 @@ public static class TypeHelper
         }
 
         // Handle nested types
-        Type? declaringType = type.DeclaringType;
+        var declaringType = type.DeclaringType;
         if (declaringType != null)
         {
             var chunks = sb.GetChunks();
