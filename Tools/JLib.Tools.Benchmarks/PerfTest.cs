@@ -9,6 +9,7 @@ using JLib.ValueTypes;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
+using JLib.Helper;
 
 namespace JLib.Tools.Benchmarks;
 
@@ -81,6 +82,30 @@ public partial class PerfTest
         public Config()
         {
             WithOptions(ConfigOptions.DisableOptimizationsValidator);
+        }
+    }
+
+    [Config(typeof(Config))]
+    [InProcess]
+    public class TypeFullNameBenchmark
+    {
+        public class GenericA<TA>
+        {
+            public class GenericAA<TAa1, TAa2>
+            {
+
+            }
+        }
+        public class GenericB<TA>
+        {
+        }
+        public class A{}
+        public class B{ }
+        public class C { }
+        [Benchmark]
+        public string TypeFullName()
+        {
+            return typeof(GenericA<GenericB<A>>.GenericAA<B, C>).FullName(true);
         }
     }
     [Config(typeof(Config))]

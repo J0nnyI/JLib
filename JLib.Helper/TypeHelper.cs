@@ -327,11 +327,14 @@ public static class TypeHelper
         return items;
     }
 
-    private static readonly ConcurrentDictionary<(Type type, bool includeNamespace), string> FullNameCache = new();
+    private static readonly Dictionary<(Type type, bool includeNamespace), string> FullNameCache = new();
 
+    /// <returns> a human-readable name for the given <paramref name="type"/> including all generic parameters and the namespace if <paramref name="includeNamespace"/> is <see langword="null"/></returns>
     public static string FullName(this Type type, bool includeNamespace = false)
     {
-        return FullNameBuilder(type).ToString();
+        // full name is frequently called and compute intensive.
+        // this justifies the use of a cache
+        return FullNameCache.GetValueOrAdd((type, includeNamespace), () => FullNameBuilder(type).ToString());
 
         StringBuilder FullNameBuilder(Type type)
         {
@@ -365,73 +368,14 @@ public static class TypeHelper
 
                     argOffset = args.Length;
                 }
+
                 if (currentNestedType != type)
                     result.Append('.');
 
 
             }
+
             return result;
         }
-    }
-
-
-    public static string FullName2(this Type type, bool includeNamespace = false)
-    {
-        var key = (type, includeNamespace);
-        if (FullNameCache.TryGetValue(key, out var cachedName))
-        {
-            return cachedName;
-        }
-        var genericArgs = type.GenericTypeArguments
-            .Select(t => t.FullName(includeNamespace))
-            .Reverse()
-            .GetEnumerator();
-        var name = BuildFullTypeName(type, includeNamespace, genericArgs).ToString();
-
-        // Store in cache
-        FullNameCache[key] = name;
-        return name;
-    }
-
-    private static StringBuilder BuildFullTypeName(Type type, bool includeNamespace, IEnumerator<string> genericArgs)
-    {
-        var sb = new StringBuilder();
-
-        // Build the base name
-        // Remove backticks
-        var backtickIndex = type.Name.IndexOf('`');
-        if (backtickIndex != -1)
-        {
-            sb.Append(type.Name[..backtickIndex]);
-            // Handle generic types
-            var containsGenericArguments = genericArgs.MoveNext();
-            if (type.IsGenericType)// && containsGenericArguments)// Match empty generic arguments snapshots
-            {
-                sb.Append('<');
-                sb.Append(genericArgs.Current);
-                sb.Append('>');
-
-            }
-        }
-        else
-        {
-            sb.Append(type.Name);
-        }
-
-        // Handle nested types
-        var declaringType = type.DeclaringType;
-        if (declaringType != null)
-        {
-            var chunks = sb.GetChunks();
-            sb = BuildFullTypeName(declaringType, includeNamespace, genericArgs).Append('.');
-            foreach (var chunk in chunks)
-                sb.Append(chunk);
-        }
-        else if (includeNamespace)
-        {
-            sb.Insert(0, $"{type.Namespace}.");
-        }
-
-        return sb;
     }
 }
