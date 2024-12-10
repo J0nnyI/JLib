@@ -1,0 +1,57 @@
+﻿{
+  "TestName": "GenericType",
+  "Environment": {
+    "Types": {
+      "GenericTypeValueType`1": {
+        "Kind": "Class",
+        "Attributes": [
+          "NullableAttribute",
+          "NullableContextAttribute",
+          "UnmappedAttribute"
+        ],
+        "ImplementedInterfaces": [
+          "IEquatable<TypeCacheTests.GenericType.GenericTypeValueType<>>",
+          "IEquatable<TypeValueType>",
+          "IEquatable<ValueType<Type>>",
+          "ITypeValueType",
+          "IValueType"
+        ]
+      }
+    }
+  },
+  "Exceptions": {
+    "Type": "JLib.Exceptions.JLibAggregateException",
+    "MessageLines": [
+      "GenericType"
+    ],
+    "InnerExceptions": [
+      {
+        "Type": "JLib.Exceptions.JLibAggregateException",
+        "MessageLines": [
+          "Cache setup failed"
+        ],
+        "InnerExceptions": [
+          {
+            "Type": "JLib.Exceptions.JLibAggregateException",
+            "MessageLines": [
+              "some Types have no filter attributes"
+            ],
+            "InnerExceptions": [
+              {
+                "Type": "JLib.Reflection.InvalidTypeException",
+                "MessageLines": [
+                  "JLib.Reflection.Tests.TypeCacheTests.GenericType.GenericTypeValueType<>"
+                ],
+                "InnerExceptions": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "CachedTypes": {},
+  "KnownTypeValueTypes": [
+    "GenericTypeValueType`1"
+  ]
+}
