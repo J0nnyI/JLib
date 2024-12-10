@@ -53,6 +53,10 @@ public class TypeCacheTests : IDisposable
         }
         public class DemoType { }
     }
+    public static class GenericType
+    {
+        public record GenericTypeValueType<T>(Type Value) : TypeValueType(Value);
+    }
 
     public TypeCacheTests(ITestOutputHelper testOutputHelper)
     {
