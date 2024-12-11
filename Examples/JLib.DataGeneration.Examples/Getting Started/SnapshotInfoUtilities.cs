@@ -6,9 +6,12 @@ using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
 using JLib.Reflection.DependencyInjection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Snapshooter.Xunit;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +27,7 @@ public sealed class SnapshotInfoUtilities : IDisposable
     \*************************************************************/
     public sealed class CustomerDp : DataPackage
     {
-        public CustomerId CustomerId { get; set; } = null!;
+        public CustomerId CustomerId { get; init; } = null!;
         public CustomerDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             serviceProvider.GetRequiredServices(out ShoppingServiceMock shoppingService);
@@ -69,7 +72,7 @@ public sealed class SnapshotInfoUtilities : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache);
+            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Getting_Started" });
 
         exceptions.ThrowIfNotEmpty();
 

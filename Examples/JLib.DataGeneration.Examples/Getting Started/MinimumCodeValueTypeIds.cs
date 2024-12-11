@@ -20,7 +20,7 @@ public sealed class MinimumCodeValueTypeIds : IDisposable
     \*************************************************************/
     public sealed class CustomerDp : DataPackage
     {
-        public CustomerId CustomerId { get; set; } = null!;
+        public CustomerId CustomerId { get; init; } = null!;
         public CustomerDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             serviceProvider.GetRequiredServices(out ShoppingServiceMock shoppingService);

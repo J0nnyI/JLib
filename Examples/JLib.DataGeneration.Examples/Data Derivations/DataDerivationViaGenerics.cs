@@ -119,7 +119,7 @@ public sealed class DataDerivationViaGenerics : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache);
+            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Data_Derivations" });
 
         exceptions.ThrowIfNotEmpty();
 
