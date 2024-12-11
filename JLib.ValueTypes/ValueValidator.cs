@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -92,21 +93,25 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
     /// <inheritdoc cref="IExceptionProvider.HasErrors"/>
     /// </summary>
     // adding "_messages.Count !=0 &&" cuts the execution time in half
-    public bool HasErrors() => _messages.Count !=0 && _messages.Any() || _subValidators.Count != 0 && _subValidators.Any(v => v.HasErrors());
+    public bool HasErrors()
+        => _messages.Count != 0
+                && _messages.Any()
+           || _subValidators.Count != 0
+                && _subValidators.Any(v => v.HasErrors());
 
     /// <summary>
     /// <inheritdoc cref="IExceptionProvider.GetException"/>
     /// </summary>
-     protected virtual Exception? BuildException(IReadOnlyCollection<string> messages, IReadOnlyCollection<IExceptionProvider> provider)
-        => JLibAggregateException.ReturnIfNotEmpty(
-            $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.",
-            provider
-                .Select(p => p.GetException())
-                .Prepend(
-                    JLibAggregateException.ReturnIfNotEmpty(
-                        "Value Validation Failed",
-                        _messages.Distinct().Select(msg => new ValidationException(msg))
-                    )
-                )
-        );
+    protected virtual Exception? BuildException(IReadOnlyCollection<string> messages, IReadOnlyCollection<IExceptionProvider> provider)
+       => JLibAggregateException.ReturnIfNotEmpty(
+           $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.",
+           provider
+               .Select(p => p.GetException())
+               .Prepend(
+                   JLibAggregateException.ReturnIfNotEmpty(
+                       "Value Validation Failed",
+                       _messages.Distinct().Select(msg => new ValidationException(msg))
+                   )
+               )
+       );
 }
