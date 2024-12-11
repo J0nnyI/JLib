@@ -25,7 +25,7 @@ public sealed class MinimumCodeNativeIds : IDisposable
     \*************************************************************/
     public sealed class CustomerDp : DataPackage
     {
-        public Guid CustomerId { get; set; } = default!;
+        public Guid CustomerId { get; init; } = default!;
         public CustomerDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             serviceProvider.GetRequiredServices(out ShoppingServiceMock shoppingService);

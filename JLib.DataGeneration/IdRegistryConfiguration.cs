@@ -1,5 +1,8 @@
 ﻿namespace JLib.DataGeneration;
 
+/// <summary>
+/// Defines the behavior of the <see cref="IIdRegistry"/>
+/// </summary>
 public class IdRegistryConfiguration
 {
     /// <summary>
@@ -7,7 +10,7 @@ public class IdRegistryConfiguration
     /// </summary>
     public string? DefaultNamespace { get; init; }
 
-    internal const string DefaultNamespaceReplacement = "~.";
+    internal const string DefaultNamespaceReplacement = "~";
     internal string ApplyDefaultNamespace(string inputName)
         => DefaultNamespace is null ? inputName : inputName.Replace(DefaultNamespace, DefaultNamespaceReplacement);
 }

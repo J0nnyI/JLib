@@ -1,7 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Data;
+using System.Diagnostics.SymbolStore;
+using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
+
 using Microsoft.Extensions.Logging;
 
 namespace JLib.Reflection;
@@ -49,12 +54,14 @@ public interface ITypeCache
     /// <exception cref="TypeValueTypeMismatchException{TRequestedTypeValueType}"></exception>
     /// <exception cref="UnknownTypeException{TRequestedTypeValueType}"></exception>
     /// <exception cref="TypeNotFoundException{TRequestedTypeValueType}"></exception>
+    /// <exception cref="UnknownTypeValueTypeException{TRequestedTypeValueType}"></exception>
     public TTvt Get<TTvt>(Type weakType) where TTvt : class, ITypeValueType;
 
     /// <returns>The <typeparamref name="TTvt"/> instance of the given <typeparamref name="TType"/></returns>
     /// <exception cref="TypeValueTypeMismatchException{TRequestedTypeValueType}"></exception>
     /// <exception cref="UnknownTypeException{TRequestedTypeValueType}"></exception>
     /// <exception cref="TypeNotFoundException{TRequestedTypeValueType}"></exception>
+    /// <exception cref="UnknownTypeValueTypeException{TRequestedTypeValueType}"></exception>
     public TTvt Get<TTvt, TType>() where TTvt : class, ITypeValueType
         => Get<TTvt>(typeof(TType));
 
@@ -122,8 +129,9 @@ public class TypeCache : ITypeCache
         }
     }
 
-    private readonly TypeValueType[] _typeValueTypes;
-    private readonly IReadOnlyDictionary<Type, TypeValueType> _typeMappings;
+    private readonly object _cacheAddLock = new();
+    private readonly List<TypeValueType> _typeValueTypes;
+    private readonly Dictionary<Type, TypeValueType> _typeMappings;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -212,7 +220,7 @@ public class TypeCache : ITypeCache
                         return null;
                     }
                 }).WhereNotNull()
-                .ToArray();
+                .ToList();
 
             _typeMappings = _typeValueTypes.ToDictionary(tvt => tvt.Value);
         }
@@ -223,7 +231,7 @@ public class TypeCache : ITypeCache
                 throw exceptions.GetException()!;
         }
 
-
+        // all the following steps have to be done in Get<>() to in case a generic type is requested
         foreach (var typeValueType in _typeValueTypes.OfType<NavigatingTypeValueType>())
         {
             try
@@ -284,20 +292,81 @@ public class TypeCache : ITypeCache
 
     #endregion
 
+    private TypeValueType CreateAndGetGenericType<T>(Type weakType)
+        where T : class, ITypeValueType
+    {
+        lock (_cacheAddLock)
+        {
+            // check if another thread has already added the type
+            var strongType = _typeMappings.GetValueOrDefault(weakType);
+
+            if (strongType is not null)
+                return strongType;
+            var typeDef = weakType.GetGenericTypeDefinition();
+            var genericTypeValueType = Get<T>(typeDef);
+            var tvtt = new ValueTypeForTypeValueTypes(genericTypeValueType.GetType());
+            strongType = tvtt.Create(weakType);
+            var exceptions = new ExceptionBuilder(
+                $"Deriving {weakType.FullName()} as {genericTypeValueType.Value.FullName()} while {typeof(T).FullName()} is being requested");
+            if (strongType is NavigatingTypeValueType navType)
+            {
+                try
+                {
+                    navType.SetCache(this);
+                    navType.MaterializeNavigation();
+                }
+                catch (TargetInvocationException e) when (e.InnerException is not null)
+                {
+                    exceptions.Add(e.InnerException);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+            if (strongType is IPostNavigationInitializedType postInit)
+                postInit.Initialize(this, exceptions);
+            if (strongType is IValidatedType validatedType)
+            {
+                var validationContext = new TypeValidationContext(strongType, weakType);
+                exceptions.AddChild(validationContext);
+                validatedType.Validate(this, validationContext);
+            }
+            exceptions.ThrowIfNotEmpty();
+            if (strongType is null)
+                throw new();
+            _typeValueTypes.Add(strongType);
+            _typeMappings.Add(weakType, strongType);
+
+            return strongType;
+        }
+    }
+
     /// <summary>
     /// <inheritdoc cref="ITypeCache.Get{TTvt}(System.Type)"/>
     /// </summary>
     public T Get<T>(Type weakType)
         where T : class, ITypeValueType
     {
+
         var strongType = _typeMappings.GetValueOrDefault(weakType);
-        if (strongType is null)
+
+        // generic types can only be resolved at runtime and therefore must be created when they are requested but not cached yet
+        if (strongType is null && weakType is { IsGenericType: true, IsGenericTypeDefinition: false })
         {
-            if (KnownTypes.Contains(weakType))
-                throw new TypeNotFoundException<T>(weakType);
-            throw new UnknownTypeException<T>(weakType);
+            strongType = CreateAndGetGenericType<T>(weakType);
+            return strongType as T ?? throw new TypeValueTypeMismatchException<T>(strongType.GetType(), weakType);
         }
-        return strongType as T ?? throw new TypeValueTypeMismatchException<T>(strongType.GetType(), weakType);
+
+        if (strongType is not null)
+            return strongType as T ?? throw new TypeValueTypeMismatchException<T>(strongType.GetType(), weakType);
+
+        if (KnownTypes.Contains(weakType) is false)
+            throw new TypeNotFoundException<T>(weakType);
+        if (KnownTypeValueTypes.Contains(typeof(T)) is false)
+            throw new UnknownTypeValueTypeException<T>(weakType);
+        throw new UnknownTypeException<T>(weakType);
+
     }
 
     /// <summary>
@@ -324,7 +393,7 @@ public class TypeCache : ITypeCache
     public void WriteLog()
     {
         using var _ = _logger.BeginScope(this);
-        _logger.LogInformation("Initialized TypeCache with a total of {typeCount} types", _typeValueTypes.Length);
+        _logger.LogInformation("Initialized TypeCache with a total of {typeCount} types", _typeValueTypes.Count);
         WriteDebug();
 
         var missing = KnownTypeValueTypes.Except(_typeValueTypes.Select(x => x.GetType()).Distinct()).ToArray();
@@ -368,134 +437,5 @@ public class TypeCache : ITypeCache
                     _logger.LogTrace("      DiscoveredType    - {TypeName}", tvt.Name);
             }
         }
-    }
-}
-
-
-/// <summary>
-/// indicates, that the <see cref="TypeCache"/> threw an exception
-/// </summary>
-public abstract class TypeCacheException : JLibException
-{
-    internal TypeCacheException(string message) : base(message)
-    {
-    }
-
-    internal TypeCacheException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
-}
-
-/// <summary>
-/// Indicates, that the <see cref="GivenType"/> could not be resolved as <see cref="RequestedTypeValueType"/>
-/// </summary>
-public abstract class TypeResolverException : TypeCacheException
-{
-    public Type RequestedTypeValueType { get; }
-    public Type? GivenType { get; }
-
-    internal TypeResolverException(Type requestedTypeValueType, Type? givenType, string message) : base(message)
-    {
-        RequestedTypeValueType = requestedTypeValueType;
-        Data[nameof(RequestedTypeValueType)] = requestedTypeValueType;
-        GivenType = givenType;
-        Data[nameof(GivenType)] = givenType;
-    }
-}
-
-/// <summary>
-/// Indicates, that the <see cref="TypeNotFoundException.GivenType"/> is not registered in the <see cref="ITypeCache"/> under any <see cref="TypeValueType"/>
-/// </summary>
-public abstract class TypeNotFoundException : TypeResolverException
-{
-    internal TypeNotFoundException(Type requestedTypeValueType, Type? givenType) : base(requestedTypeValueType, givenType, $"The TypeCache does not contain an instance of  {givenType?.FullName(true)}")
-    {
-    }
-}
-
-/// <summary>
-/// Indicates, that the <see cref="ITypeCache"/> does not contain any return any <see cref="TypeValueType"/>s which are assignable to <typeparamref name="TRequestedTypeValueType"/> and are either the <see cref="TypeResolverException.GivenType"/> or satisfy a given filter.
-/// </summary>
-public sealed class TypeNotFoundException<TRequestedTypeValueType> : TypeNotFoundException
-    where TRequestedTypeValueType : ITypeValueType
-{
-    /// <summary>
-    /// Indicates, that the filter did not return any <see cref="TypeValueType"/>s in the <see cref="ITypeCache"/> under any <typeparamref name="TRequestedTypeValueType"/>
-    /// </summary>
-    internal TypeNotFoundException() : base(typeof(TRequestedTypeValueType), null)
-    {
-    }
-    /// <summary>
-    /// Indicates, that the filter did not return any <see cref="TypeValueType"/>s in the <see cref="ITypeCache"/> under any <typeparamref name="TRequestedTypeValueType"/>
-    /// </summary>
-    internal TypeNotFoundException(Type givenType) : base(typeof(TRequestedTypeValueType), givenType)
-    {
-    }
-}
-
-/// <summary>
-/// Indicates, that the filter expression used to retrieve a single <see cref="TypeResolverException.RequestedTypeValueType"/> from the <see cref="ITypeCache"/> is true for more than one <see cref="TypeValueType"/>
-/// </summary>
-public abstract class NotUniqueTypeFilterException : TypeResolverException
-{
-    internal NotUniqueTypeFilterException(Type requestedTypeValueType) : base(requestedTypeValueType, null, $"The TypeCache does contain multiple valueTypes assignable to {requestedTypeValueType.FullName()} which satisfy the given condition")
-    {
-    }
-}
-/// <summary>
-/// Indicates, that the filter expression used to retrieve a single <see cref="TypeResolverException.RequestedTypeValueType"/> from the <see cref="ITypeCache"/> is true for more than one <see cref="TypeValueType"/>
-/// </summary>
-public sealed class NotUniqueTypeFilterException<TRequestedTypeValueType> : NotUniqueTypeFilterException
-    where TRequestedTypeValueType : ITypeValueType
-{
-    internal NotUniqueTypeFilterException() : base(typeof(TRequestedTypeValueType))
-    {
-    }
-}
-
-/// <summary>
-/// Indicates, that the <see cref="TypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
-/// </summary>
-public abstract class UnknownTypeException : TypeResolverException
-{
-    internal UnknownTypeException(Type requestedTypeValueType, Type givenType) : base(requestedTypeValueType, givenType, $"The TypePackage passed to the TypeCache did not contain {givenType.FullName(true)}")
-    {
-    }
-}
-/// <summary>
-/// Indicates, that the <see cref="TypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
-/// </summary>
-public sealed class UnknownTypeException<TRequestedTypeValueType> : UnknownTypeException
-    where TRequestedTypeValueType : ITypeValueType
-{
-    internal UnknownTypeException(Type givenType) : base(typeof(TRequestedTypeValueType), givenType)
-    {
-    }
-}
-
-/// <summary>
-/// Indicates, that the <see cref="TypeResolverException.GivenType"/> was found in the <see cref="ITypeCache"/> but it was not associated with the expected <see cref="TypeResolverException.RequestedTypeValueType"/> but instead with <see cref="ActualTypeValueType"/>, which are not assignable
-/// </summary>
-public abstract class TypeValueTypeMismatchException : TypeResolverException
-{
-    /// <summary>
-    /// The Actual <see cref="TypeValueType"/> under which the <see cref="TypeResolverException.GivenType"/> is registered in the <see cref="ITypeCache"/>
-    /// </summary>
-    public Type ActualTypeValueType { get; }
-
-    internal TypeValueTypeMismatchException(Type requestedTypeValueType, Type actualTypeValueType, Type givenType) : base(requestedTypeValueType, givenType, $"{givenType.FullName(true)} was requested as {requestedTypeValueType.FullName(true)} which is not assignable to its actual {nameof(TypeValueType)} of {actualTypeValueType.FullName(true)}")
-    {
-        ActualTypeValueType = actualTypeValueType;
-        Data[nameof(ActualTypeValueType)] = actualTypeValueType;
-    }
-}
-/// <summary>
-/// Indicates, that the <see cref="TypeResolverException.GivenType"/> was found in the <see cref="ITypeCache"/> but it was not associated with the expected <typeparamref cref="TRequestedTypeValueType"/> but instead with <see cref="TypeValueTypeMismatchException.ActualTypeValueType"/>, which are not assignable
-/// </summary>
-public sealed class TypeValueTypeMismatchException<TRequestedTypeValueType> : TypeValueTypeMismatchException
-    where TRequestedTypeValueType : ITypeValueType
-{
-    internal TypeValueTypeMismatchException(Type actualTypeValueType, Type givenType) : base(typeof(TRequestedTypeValueType), actualTypeValueType, givenType)
-    {
     }
 }
