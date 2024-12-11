@@ -1,10 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+
 using FluentAssertions;
+
 using JLib.Helper;
 using JLib.Reflection.Tests.DemoAssembly1;
 using JLib.Reflection.Tests.DemoAssembly2;
+
 using Snapshooter.Xunit;
+
 using Xunit;
 
 namespace JLib.Reflection.Tests;
@@ -183,23 +188,31 @@ public class TypePackageTests
             .GetContent()
             .Should().OnlyContain(t => expectedTypes.Contains(t)
 #if NET7_0
-                || new[] { "EmbeddedAttribute","RefSafetyRulesAttribute","RefSafetyRulesAttribute" }.Contains(t.Name)
+                || new[] { "EmbeddedAttribute", "RefSafetyRulesAttribute" }.Contains(t.Name)
 #endif
             );
         expectedTypes.Should().OnlyContain(t => package.GetContent().Contains(t));
         package.ToJson()
 #if NET7_0
-            .Replace("├ Types:5", "├ Types:3")
-            .Replace(@"
-  │   EmbeddedAttribute", "")
-            .Replace(@"
-  │   RefSafetyRulesAttribute", "")
-            .Replace(@"
-│   EmbeddedAttribute", "")
-            .Replace(@"
-│   RefSafetyRulesAttribute", "")
+            .RemoveSubstringsWhere((prev, cur, next)
+                    =>
+                    cur.Contains("Microsoft.CodeAnalysis")
+                    || cur.Contains("EmbeddedAttribute")
+                    || (
+                        cur.Contains("],")
+                        && prev?.Contains("EmbeddedAttribute") is true
+                    )
+                    || cur.Contains("System.Runtime.CompilerServices")
+                    || cur.Contains("RefSafetyRulesAttribute")
+                    || (
+                        cur.Contains("],")
+                        && prev?.Contains("RefSafetyRulesAttribute") is true
+                    ),
+                    Environment.NewLine
+                )
 #endif
-            .MatchSnapshot($"{nameof(TypePackageTests)}.{name}"
+            .MatchSnapshot(
+                $"{nameof(TypePackageTests)}.{name}"
 
             );
     }

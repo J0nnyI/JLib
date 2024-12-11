@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+
 using JLib.AutoMapper;
 using JLib.DataGeneration.Examples.Setup.Models;
 using JLib.DataGeneration.Examples.Setup.SystemUnderTest;
@@ -7,9 +8,12 @@ using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
 using JLib.Reflection.DependencyInjection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Snapshooter.Xunit;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +25,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
     \*************************************************************/
     public sealed class CustomerDp : DataPackage
     {
-        public CustomerId CustomerId { get; set; } = null!;
+        public CustomerId CustomerId { get; init; } = null!;
         public CustomerDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             serviceProvider.GetRequiredServices(out ShoppingServiceMock shoppingService);
@@ -51,10 +55,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache, new()
-            {
-                DefaultNamespace = $"{typeof(UsingTheDefaultNamespace).Namespace}.{nameof(UsingTheDefaultNamespace)}"
-            });
+            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Getting_Started" });
 
         var serviceProvider = serviceCollection
             .BuildServiceProvider()
@@ -73,7 +74,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
     public void Test()
     {
         var id = _shoppingService.Customers.Single().Key;
-        id.IdInfo().Should().Be($"CustomerId [CustomerDp].[CustomerId] = {id.Value}");
+        id.IdInfo().Should().Be($"CustomerId [~.UsingTheDefaultNamespace.CustomerDp].[CustomerId] = {id.Value}");
         _shoppingService.Customers.MatchSnapshot();
     }
 

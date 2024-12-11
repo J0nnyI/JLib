@@ -1,8 +1,8 @@
 ﻿{
-  "CustomerId { Value = 5e384704-f4df-42a3-a062-9c17edca1952 }": {
+  "CustomerId { Value = d569a81a-27e8-4a21-b0ac-ca165deac3fe }": {
     "Id": {
-      "Value": "5e384704-f4df-42a3-a062-9c17edca1952"
+      "Value": "d569a81a-27e8-4a21-b0ac-ca165deac3fe"
     },
-    "UserName": "JLib.DataGeneration.Examples.Getting_Started.UsingTheDefaultNamespace.CustomerDp.CustomerId"
+    "UserName": "[~.UsingTheDefaultNamespace.CustomerDp].[CustomerId]"
   }
 }

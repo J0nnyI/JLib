@@ -2,50 +2,50 @@
   "Customers": [
     {
       "Id": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb",
+        "IdGroupName": "~.DataDerivationViaGenerics.CustomerDp:~.DataDerivationViaGenerics.CustomerDpb",
         "IdName": "Id",
-        "Value": "875e3b39-fa6d-41c5-9c37-3028ed486e86",
+        "Value": "d10e96ba-fbc6-4549-b3a2-138f9e3b356f",
         "IdType": "CustomerId"
       },
-      "UserName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb.Id"
+      "UserName": "[~.DataDerivationViaGenerics.CustomerDpb].[Id]"
     },
     {
       "Id": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OtherCustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb",
+        "IdGroupName": "~.DataDerivationViaGenerics.OtherCustomerDp:~.DataDerivationViaGenerics.CustomerDpb",
         "IdName": "Id",
-        "Value": "5f7ee886-25d3-42fb-bc12-e9e137f363bb",
+        "Value": "f2623b9d-1962-44b3-8fc5-ca22efc1066e",
         "IdType": "CustomerId"
       },
-      "UserName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OtherCustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb.Id"
+      "UserName": "[~.DataDerivationViaGenerics.CustomerDpb].[Id]"
     }
   ],
   "Orders": [
     {
       "Id": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OrderDp<JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDp>",
+        "IdGroupName": "~.DataDerivationViaGenerics.OrderDp<~.DataDerivationViaGenerics.CustomerDp>",
         "IdName": "Id",
-        "Value": "ea4c86cb-2f9d-4210-ad50-d71b20d03417",
+        "Value": "b6cc5bfa-f44f-4e35-8723-50f3efe2ecac",
         "IdType": "OrderId"
       },
       "CustomerId": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb",
+        "IdGroupName": "~.DataDerivationViaGenerics.CustomerDp:~.DataDerivationViaGenerics.CustomerDpb",
         "IdName": "Id",
-        "Value": "875e3b39-fa6d-41c5-9c37-3028ed486e86",
+        "Value": "d10e96ba-fbc6-4549-b3a2-138f9e3b356f",
         "IdType": "CustomerId"
       },
       "Status": "Fulfilled"
     },
     {
       "Id": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OrderDp<JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OtherCustomerDp>",
+        "IdGroupName": "~.DataDerivationViaGenerics.OrderDp<~.DataDerivationViaGenerics.OtherCustomerDp>",
         "IdName": "Id",
-        "Value": "650311c7-47fa-4827-89ea-861dc7166ffd",
+        "Value": "da18c207-4c98-46f7-a47d-37fccadfbe18",
         "IdType": "OrderId"
       },
       "CustomerId": {
-        "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.OtherCustomerDp:JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaGenerics.CustomerDpb",
+        "IdGroupName": "~.DataDerivationViaGenerics.OtherCustomerDp:~.DataDerivationViaGenerics.CustomerDpb",
         "IdName": "Id",
-        "Value": "5f7ee886-25d3-42fb-bc12-e9e137f363bb",
+        "Value": "f2623b9d-1962-44b3-8fc5-ca22efc1066e",
         "IdType": "CustomerId"
       },
       "Status": "Fulfilled"

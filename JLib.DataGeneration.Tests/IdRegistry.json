@@ -1,6 +1,6 @@
 {
   "__registry__": {
-    "IdIncrement": 5
+    "IdIncrement": 7
   },
   "~..DataPackageGuardrailTests.DuplicatePropertyDp": {
     "Id": "ac0f6ffa-c0c0-48a2-a676-ef2821f79b2d"
@@ -12,6 +12,17 @@
   "~..ValidDataPackages.Test3Dp:~..ValidDataPackages.Base2Dp<System.Object>:~..ValidDataPackages.Base1Dp<~..DataPackageTestBase.TestTypeId>": {
     "Id": "74b6aa0d-6237-497f-a992-b1e2cf0f11da",
     "Id2": 4
+  },
+  "~.DataPackageGuardrailTests.DuplicatePropertyDp": {
+    "Id": "a11dd7af-2bd4-41bc-ad58-d6a914ad8dc6"
+  },
+  "~.DataPackageGuardrailTests.DuplicatePropertyDp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
+    "Id": "feec4120-a1a0-48c8-8fe5-d22924a9a169",
+    "Id2": 7
+  },
+  "~.ValidDataPackages.Test3Dp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
+    "Id": "eb63fd8a-101b-4d66-b45a-5a73f00f0749",
+    "Id2": 6
   },
   "GenericDataPackageTests.Base3Dp:GenericDataPackageTests.Base2Dp<System.Object>:GenericDataPackageTests.Base1Dp<DataPackageTestBase.TestTypeId>": {
     "Id": "f3301c07-70f1-464a-a301-44c577d64406",
