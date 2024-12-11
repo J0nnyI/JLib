@@ -62,18 +62,18 @@ public partial class PerfTest
     public class CheckPerf
     {
         [Params(5, 0)]
-        public int val { get; set; } = 5;
+        public int Value { get; set; } = 5;
 
         [Benchmark]
         public bool[] EqualityCheck()
         {
-            return Enumerable.Range(0, 1000).Select((x) => val == x).ToArray();
+            return Enumerable.Range(0, 1000).Select((x) => Value == x).ToArray();
         }
 
         [Benchmark]
         public bool[] InEqualityCheck()
         {
-            return Enumerable.Range(0, 1000).Select(x => val > x).ToArray();
+            return Enumerable.Range(0, 1000).Select(x => Value > x).ToArray();
         }
     }
 

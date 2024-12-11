@@ -1,10 +1,11 @@
 using FluentAssertions;
 
 using Xunit;
+// ReSharper disable InconsistentNaming
 
 namespace JLib.Helper.Tests;
 
-public class TypeFullnameTests
+public class TypeFullNameTests
 {
     public class SubClassA<T>
     {
@@ -25,7 +26,7 @@ public class TypeFullnameTests
         public class SubClassBA<TBA1, TBA2>
         {
 
-            public class SubClassBAA<TBA1, TBA2>
+            public class SubClassBAA<TBAA1, TBAA2>
             {
 
             }
@@ -61,24 +62,24 @@ public class TypeFullnameTests
 
         //SubClassB needs to be present in the full name, otherwise the full name would be the same for both types
         typeAB.FullName().Should().Be(
-            "TypeFullnameTests.SubClassA<TypeFullnameTests.OtherGenericClass<TypeFullnameTests.OtherClass>>"
-            + ".SubClassAA<TypeFullnameTests.OtherGenericClass<TypeFullnameTests.OtherClass.OtherSubClass>>");
+            "TypeFullNameTests.SubClassA<TypeFullNameTests.OtherGenericClass<TypeFullNameTests.OtherClass>>"
+            + ".SubClassAA<TypeFullNameTests.OtherGenericClass<TypeFullNameTests.OtherClass.OtherSubClass>>");
 
         typeAC.FullName().Should().Be(
-            "TypeFullnameTests.SubClassA<TypeFullnameTests.OtherGenericClass<TypeFullnameTests.OtherClass>>"
-            + ".SubClassAB<TypeFullnameTests.OtherGenericClass<TypeFullnameTests.OtherClass.OtherSubClass>>");
+            "TypeFullNameTests.SubClassA<TypeFullNameTests.OtherGenericClass<TypeFullNameTests.OtherClass>>"
+            + ".SubClassAB<TypeFullNameTests.OtherGenericClass<TypeFullNameTests.OtherClass.OtherSubClass>>");
     }
     [Fact]
     public void NestedGeneric()
     {
         typeof(SubClassA<int>)
-            .FullName().Should().Be("TypeFullnameTests.SubClassA<Int32>");
+            .FullName().Should().Be("TypeFullNameTests.SubClassA<Int32>");
     }
     [Fact]
     public void Nested()
     {
         typeof(OtherClass.OtherSubClass)
-            .FullName().Should().Be("TypeFullnameTests.OtherClass.OtherSubClass");
+            .FullName().Should().Be("TypeFullNameTests.OtherClass.OtherSubClass");
     }
     [Fact]
     public void TripleNestedGeneric()
@@ -100,10 +101,10 @@ SubClassA<OtherGenericClass<OtherClass>>
             .SubClassAB<OtherGenericClass<OtherSubClass>>
         >
     >")
-                .Replace("SubClassA<", "JLib.Helper.Tests.TypeFullnameTests.SubClassA<")
-                .Replace("OtherGenericClass", "JLib.Helper.Tests.TypeFullnameTests.OtherGenericClass")
-                .Replace("OtherClass", "JLib.Helper.Tests.TypeFullnameTests.OtherClass")
-                .Replace("OtherSubClass", "JLib.Helper.Tests.TypeFullnameTests.OtherClass.OtherSubClass")
+                .Replace("SubClassA<", "JLib.Helper.Tests.TypeFullNameTests.SubClassA<")
+                .Replace("OtherGenericClass", "JLib.Helper.Tests.TypeFullNameTests.OtherGenericClass")
+                .Replace("OtherClass", "JLib.Helper.Tests.TypeFullNameTests.OtherClass")
+                .Replace("OtherSubClass", "JLib.Helper.Tests.TypeFullNameTests.OtherClass.OtherSubClass")
                 .Replace(@"
 ", "")
                 .Replace(" ", "")
@@ -184,14 +185,14 @@ SubClassA<OtherGenericClass<OtherClass>>
     private static bool _includeNamespace = true;
     static string GetName(string className, string ns = "JLib.Helper.Tests")
         => (_includeNamespace ? (ns + '.') : "") + className;
-    static string AName => GetName("TypeFullnameTests.A");
-    static string BName => GetName("TypeFullnameTests.B");
-    static string CName => GetName("TypeFullnameTests.C");
-    static string DName => GetName("TypeFullnameTests.D");
-    static string EName => GetName("TypeFullnameTests.E");
-    static string FName => GetName("TypeFullnameTests.F");
+    static string AName => GetName("TypeFullNameTests.A");
+    static string BName => GetName("TypeFullNameTests.B");
+    static string CName => GetName("TypeFullNameTests.C");
+    static string DName => GetName("TypeFullNameTests.D");
+    static string EName => GetName("TypeFullNameTests.E");
+    static string FName => GetName("TypeFullNameTests.F");
     static string SubClassBName(string t1, string t2)
-        => GetName($"TypeFullnameTests.SubClassB<{t1}, {t2}>");
+        => GetName($"TypeFullNameTests.SubClassB<{t1}, {t2}>");
 
     static string SubClassBaName(string tB1, string tB2, string tBa1, string tBa2)
         => $"{SubClassBName(tB1, tB2)}.SubClassBA<{tBa1}, {tBa2}>";
@@ -210,7 +211,7 @@ SubClassA<OtherGenericClass<OtherClass>>
     public void GenericsAreAssociatedCorrectly()
     {
         typeof(SubClassA<OtherRootClass.OtherClass>.SubClassAA<OtherClass>)
-            .FullName().Should().Be("TypeFullnameTests.SubClassA<OtherRootClass.OtherClass>.SubClassAA<TypeFullnameTests.OtherClass>");
+            .FullName().Should().Be("TypeFullNameTests.SubClassA<OtherRootClass.OtherClass>.SubClassAA<TypeFullNameTests.OtherClass>");
     }
 }
 

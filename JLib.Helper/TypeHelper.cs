@@ -334,15 +334,15 @@ public static class TypeHelper
     {
         // full name is frequently called and compute intensive.
         // this justifies the use of a cache
+        // the lock is only required for write operations
+        // ReSharper disable once InconsistentlySynchronizedField
         if (FullNameCache.TryGetValue((type, includeNamespace), out var typeFullName))
             return typeFullName;
-        else
-        {
-            typeFullName = FullNameBuilder(type).ToString();
-            lock (FullNameCache)
-                FullNameCache[(type, includeNamespace)] = typeFullName;
-            return typeFullName;
-        }
+        
+        typeFullName = FullNameBuilder(type).ToString();
+        lock (FullNameCache)
+            FullNameCache[(type, includeNamespace)] = typeFullName;
+        return typeFullName;
 
 
         StringBuilder FullNameBuilder(Type type)

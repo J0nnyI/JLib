@@ -65,7 +65,7 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
     }
 
     private bool UnlockedHasErrors()
-        // we only need to ask the _children.Any-extension if we have children
+        // improves performance by checking the count before executing any to improve performance
         => _exceptions.Count != 0 || (_children.Count != 0 && _children.Any(c => c.HasErrors()));
     /// <summary>
     /// builds the exception based on the current builder state.
