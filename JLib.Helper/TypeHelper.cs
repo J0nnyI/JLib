@@ -358,7 +358,6 @@ public static class TypeHelper
 
             foreach (var currentNestedType in type.GetNestingParents())
             {
-
                 if (includeNamespace && currentNestedType.DeclaringType is null)
                     result.Append(currentNestedType.Namespace).Append('.');
                 result.Append(currentNestedType.Name.SubStringUntil('`'));
@@ -380,8 +379,6 @@ public static class TypeHelper
 
                 if (currentNestedType != type)
                     result.Append('.');
-
-
             }
 
             return result;
