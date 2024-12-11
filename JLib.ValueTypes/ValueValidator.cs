@@ -94,7 +94,6 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
     // adding "_messages.Count !=0 &&" cuts the execution time in half
     public bool HasErrors()
         => _messages.Count != 0
-                && _messages.Any()
            || _subValidators.Count != 0
                 && _subValidators.Any(v => v.HasErrors());
 
