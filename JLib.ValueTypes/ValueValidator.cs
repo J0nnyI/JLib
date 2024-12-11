@@ -88,7 +88,6 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
     Exception? IExceptionProvider.GetException()
         => BuildException(_messages, _subValidators);
 
-    // todo: lazy validation (do not run the entire validation if we just need to check if anything failed, instead abort validation once one validator failed)
     /// <summary>
     /// <inheritdoc cref="IExceptionProvider.HasErrors"/>
     /// </summary>
