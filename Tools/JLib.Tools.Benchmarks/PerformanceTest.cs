@@ -2,6 +2,7 @@
 using BenchmarkDotNet.Configs;
 using JLib.ValueTypes;
 using JLib.Helper;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.Tools.Benchmarks;
 
@@ -17,7 +18,8 @@ public partial class PerformanceTest
             => must.BeOfLength(5);
     }
 
-    public static FiveCharacterStringVt FiveCharacterStringCreate(Func<string> rand) => ValueTypes.ValueType.Create<FiveCharacterStringVt, string>(rand());
+    public static FiveCharacterStringVt FiveCharacterStringCreate(Func<string> rand)
+        => ValueType.Create<FiveCharacterStringVt, string>(rand());
 
     public static string GetRandom5LetterString()
         => Random.Next(10000, 99999).ToString();
@@ -63,9 +65,7 @@ public partial class PerformanceTest
         public class C { }
         [Benchmark]
         public string TypeFullName()
-        {
-            return typeof(GenericA<GenericB<A>>.GenericAa<B, C>).FullName(true);
-        }
+            => typeof(GenericA<GenericB<A>>.GenericAa<B, C>).FullName(true);
     }
     [Config(typeof(Config))]
     [InProcess]
@@ -73,12 +73,12 @@ public partial class PerformanceTest
     {
 
         [Benchmark]
-        public string FiveCharacterString() 
+        public string FiveCharacterString()
             => FiveCharacterStringCreate(GetRandom5LetterString).Value;
 
         [Benchmark]
-        public string ConcatenationOperator() 
-            => GetRandom5LetterString() + GetRandom5LetterString() + GetRandom5LetterString() 
+        public string ConcatenationOperator()
+            => GetRandom5LetterString() + GetRandom5LetterString() + GetRandom5LetterString()
                + GetRandom5LetterString() + GetRandom5LetterString();
 
         [GlobalSetup]
@@ -88,7 +88,7 @@ public partial class PerformanceTest
         }
 
         [Benchmark]
-        public string StringInterpolation() 
+        public string StringInterpolation()
             => $"{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}";
     }
 }
