@@ -1,14 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
-
-using HarmonyLib;
-
-using JLib.Exceptions;
 using JLib.ValueTypes;
-
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Reflection;
 using JLib.Helper;
 
 namespace JLib.Tools.Benchmarks;
@@ -16,48 +8,19 @@ namespace JLib.Tools.Benchmarks;
 [InProcess]
 public partial class PerfTest
 {
-    private static readonly Random __random = new Random();
-    private static readonly Func<string> _getRandom5LetterString = GetNextString;
+    private static readonly Random Random = new Random();
 
-    //[Config(typeof(Config))]
-    private static readonly List<string> _strings = Enumerable.Range(0, 5000).Select(_ => GetRandom5LetterString()).ToList();
-
-    private static IEnumerator<string> _stringEnumerator = _strings.GetEnumerator();
-    public record FiveCharacterString(string Value) : StringValueType(Value)
+    public record FiveCharacterStringVt(string Value) : StringValueType(Value)
     {
         [Validation]
         private static void Validate(ValidationContext<string?> must)
             => must.BeOfLength(5);
     }
 
-    public record PositiveInt(int Value) : IntValueType(Value)
-    {
-        [Validation]
-        private static void Validate(ValidationContext<int> must)
-            => must.BePositive();
-    }
-
-    public static FiveCharacterString FiveCharacterStringCreate(Func<string> rand) => ValueTypes.ValueType.Create<FiveCharacterString, string>(rand());
+    public static FiveCharacterStringVt FiveCharacterStringCreate(Func<string> rand) => ValueTypes.ValueType.Create<FiveCharacterStringVt, string>(rand());
 
     public static string GetRandom5LetterString()
-    {
-        var str = __random.Next(10000, 99999).ToString();
-        return $"{str}";
-    }
-
-    public static Func<int> GetRandomPositiveInt(Random random) => () => random.Next(1, short.MaxValue);
-
-    private static string GetNextString()
-    {
-        if (!_stringEnumerator.MoveNext())
-        {
-            _stringEnumerator = _strings.GetEnumerator();
-            _stringEnumerator.MoveNext();
-        }
-        return _stringEnumerator.Current;
-    }
-
-
+        => Random.Next(10000, 99999).ToString();
 
     public class CheckPerf
     {
@@ -66,15 +29,11 @@ public partial class PerfTest
 
         [Benchmark]
         public bool[] EqualityCheck()
-        {
-            return Enumerable.Range(0, 1000).Select((x) => Value == x).ToArray();
-        }
+            => Enumerable.Range(0, 1000).Select(x => Value == x).ToArray();
 
         [Benchmark]
         public bool[] InEqualityCheck()
-        {
-            return Enumerable.Range(0, 1000).Select(x => Value > x).ToArray();
-        }
+            => Enumerable.Range(0, 1000).Select(x => Value > x).ToArray();
     }
 
     public class Config : ManualConfig
@@ -91,7 +50,7 @@ public partial class PerfTest
     {
         public class GenericA<TA>
         {
-            public class GenericAA<TAa1, TAa2>
+            public class GenericAa<TAa1, TAa2>
             {
 
             }
@@ -99,13 +58,13 @@ public partial class PerfTest
         public class GenericB<TA>
         {
         }
-        public class A{}
-        public class B{ }
+        public class A { }
+        public class B { }
         public class C { }
         [Benchmark]
         public string TypeFullName()
         {
-            return typeof(GenericA<GenericB<A>>.GenericAA<B, C>).FullName(true);
+            return typeof(GenericA<GenericB<A>>.GenericAa<B, C>).FullName(true);
         }
     }
     [Config(typeof(Config))]
@@ -114,15 +73,13 @@ public partial class PerfTest
     {
 
         [Benchmark]
-        public string FiveCharacterString()
-        {
-            return FiveCharacterStringCreate(_getRandom5LetterString).Value;
-        }
+        public string FiveCharacterString() 
+            => FiveCharacterStringCreate(GetRandom5LetterString).Value;
+
         [Benchmark]
-        public string ConcatenationOperator()
-        {
-            return _getRandom5LetterString() + _getRandom5LetterString() + _getRandom5LetterString() + _getRandom5LetterString() + _getRandom5LetterString();
-        }
+        public string ConcatenationOperator() 
+            => GetRandom5LetterString() + GetRandom5LetterString() + GetRandom5LetterString() 
+               + GetRandom5LetterString() + GetRandom5LetterString();
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -131,9 +88,7 @@ public partial class PerfTest
         }
 
         [Benchmark]
-        public string StringInterpolation()
-        {
-            return $"{_getRandom5LetterString()}{_getRandom5LetterString()}{_getRandom5LetterString()}{_getRandom5LetterString()}{_getRandom5LetterString()}";
-        }
+        public string StringInterpolation() 
+            => $"{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}{GetRandom5LetterString()}";
     }
 }

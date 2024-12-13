@@ -10,55 +10,62 @@ namespace JLib.Tools.Benchmarks;
 
 public partial class PerfTest
 {
+    public enum PatchStateEnum
+    {
+        Patch,
+        LockedPatch,
+        Unpatched
+    }
+
     public class Swapper
     {
         // Create a Harmony instance
-        private static Harmony harmony = new Harmony("com.example.patch");
+        private static readonly Harmony Harmony = new Harmony("com.example.patch");
 
         // Get the method to patch
-        private static MethodInfo originalMethod = typeof(ExceptionBuilder)!.GetMethod("GetException")!;
+        private static readonly MethodInfo OriginalMethod = typeof(ExceptionBuilder)!.GetMethod("GetException")!;
 
-        [Params("patch", "lockedpatch", "unpatched")]
-        public string? PatchState { get; set; }
+        [Params(PatchStateEnum.Patch, PatchStateEnum.LockedPatch, PatchStateEnum.Unpatched)]
+        public PatchStateEnum PatchState { get; init; }
 
         [Benchmark]
         public string FiveCharacterString()
-        {
-            return FiveCharacterStringCreate(_getRandom5LetterString).Value;
-        }
+            => FiveCharacterStringCreate(GetRandom5LetterString).Value;
 
         [GlobalSetup(Target = nameof(FiveCharacterString))]
         public void GlobalSetup2()
         {
-            harmony.Unpatch(originalMethod, HarmonyPatchType.All, "com.example.patch");
-            if (PatchState == "patch")
+            Harmony.Unpatch(OriginalMethod, HarmonyPatchType.All, "com.example.patch");
+            switch (PatchState)
             {
-                harmony.Patch(originalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.Prefix))!));
-            }
-            if (PatchState == "lockedpatch")
-            {
-                harmony.Patch(originalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.LockedPrefix))!));
+                case PerfTest.PatchStateEnum.Patch:
+                    Harmony.Patch(OriginalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.Prefix))!));
+                    break;
+                case PerfTest.PatchStateEnum.LockedPatch:
+                    Harmony.Patch(OriginalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.LockedPrefix))!));
+                    break;
+                case PatchStateEnum.Unpatched:
+                default:
+                    break;
             }
         }
 
         // #region Experimental Patching
         public class PatchClass
         {
-            public static bool LockedPrefix(List<Exception> ____exceptions, List<IExceptionProvider> ____children, object ____exceptionLock, object ____childrenLock)
+            public static bool LockedPrefix(List<Exception> exceptions, List<IExceptionProvider> children, object exceptionLock, object childrenLock)
             {
-                lock (____exceptionLock)
-                    lock (____childrenLock)
-                        return Prefix(____exceptions, ____children);
+                lock (exceptionLock)
+                    lock (childrenLock)
+                        return Prefix(exceptions, children);
             }
 
-            public static bool Prefix(List<Exception> ____exceptions, List<IExceptionProvider> ____children)
+            public static bool Prefix(List<Exception> exceptions, List<IExceptionProvider> children)
             {
-                bool condition = ____exceptions.Count == 0 && ____children.Count == 0;
-                if (condition)
-                {
-                    return false; // Returning false skips the original method
-                }
-                return true; // Returning true allows the original method to execute
+                bool condition = exceptions.Count == 0 && children.Count == 0;
+                return condition is false;
+                // Returning false skips the original method
+                // Returning true allows the original method to execute
             }
         }
     }
