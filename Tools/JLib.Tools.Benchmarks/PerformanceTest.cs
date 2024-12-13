@@ -6,7 +6,7 @@ using JLib.Helper;
 namespace JLib.Tools.Benchmarks;
 
 [InProcess]
-public partial class PerfTest
+public partial class PerformanceTest
 {
     private static readonly Random Random = new Random();
 

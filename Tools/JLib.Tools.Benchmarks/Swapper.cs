@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace JLib.Tools.Benchmarks;
 
-public partial class PerfTest
+public partial class PerformanceTest
 {
     public enum PatchStateEnum
     {
@@ -38,10 +38,10 @@ public partial class PerfTest
             Harmony.Unpatch(OriginalMethod, HarmonyPatchType.All, "com.example.patch");
             switch (PatchState)
             {
-                case PerfTest.PatchStateEnum.Patch:
+                case PerformanceTest.PatchStateEnum.Patch:
                     Harmony.Patch(OriginalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.Prefix))!));
                     break;
-                case PerfTest.PatchStateEnum.LockedPatch:
+                case PerformanceTest.PatchStateEnum.LockedPatch:
                     Harmony.Patch(OriginalMethod, new HarmonyMethod(typeof(PatchClass).GetMethod(nameof(PatchClass.LockedPrefix))!));
                     break;
                 case PatchStateEnum.Unpatched:
