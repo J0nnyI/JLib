@@ -9,6 +9,12 @@ namespace JLib.Helper;
 public static class EnumerableExtensions
 {
     /// <summary>
+    /// like <see cref="Enumerable.ToArray{TSource}"/> but it will not create a new array if <see cref="source"/>
+    /// is already an array
+    /// </summary>
+    public static T[] GetArray<T>(this IEnumerable<T> source)
+        => source is T[] array ? array : source.ToArray();
+    /// <summary>
     /// returns true if <paramref name="src"/> contains at least 2 elements without enumerating the entire list
     /// </summary>
     public static bool Multiple<T>(this IEnumerable<T> src)
