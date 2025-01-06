@@ -70,8 +70,10 @@
         </When>
 
         <!--Test Projects-->
-        <When  Condition="$(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('Testing'))">
-            <PropertyGroup>
+        <When  Condition="$(MSBuildProjectName.EndsWith('Tests')) 
+               or ($(MSBuildProjectName.EndsWith('Testing')) and !$(PackageAssemblies.Contains($(MSBuildProjectName))) ) 
+               or $(MSBuildProjectName.EndsWith('.Benchmarks'))">
+            <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Testing'))">
                 <IsPackable>false</IsPackable>
                 <IsTestProject>true</IsTestProject>
             </PropertyGroup>
@@ -103,8 +105,26 @@
         </When>
     </Choose>
 
+    <Choose>
+        <When Condition="$(AssemblyName.EndsWith('.Benchmarks'))">
+            <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <DebugType>pdbonly</DebugType>
+                <DebugSymbols>true</DebugSymbols>
+                <Optimize>true</Optimize>
+                <GenerateProgramFile>false</GenerateProgramFile>
+            </PropertyGroup>
+            <ItemGroup >
+                <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+                <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.14.0" />
+                <PackageReference Include="BenchmarkDotNet.TestAdapter" Version="0.14.0" />
+                <PackageReference Include="Lib.Harmony" Version="2.3.3" />
+            </ItemGroup>
+        </When>
+    </Choose>
+
     <!--makes the internals of a project visible to its tests-->
-    <ItemGroup Condition="!$(AssemblyName.EndsWith('.Tests'))">
+    <ItemGroup Condition="!$(AssemblyName.EndsWith('.Tests')) and !$(AssemblyName.EndsWith('.Benchmarks'))">
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
             <_Parameter1>$(AssemblyName).Tests</_Parameter1>
         </AssemblyAttribute>
