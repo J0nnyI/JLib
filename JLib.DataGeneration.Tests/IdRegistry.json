@@ -1,6 +1,6 @@
 {
   "__registry__": {
-    "IdIncrement": 2
+    "IdIncrement": 3
   },
   "~.DataPackageGuardrailTests.DuplicatePropertyDp": {
     "Id": "5986ba8d-9b94-4d95-944f-0dd459d7c5e9"
@@ -12,6 +12,10 @@
   "~.ValidDataPackages.Test3Dp": {
     "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id": "8ca6e4e4-8e69-4e80-b906-8609475aba84",
     "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id2": 2
+  },
+  "~.ValidDataPackages.Test3Dp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
+    "Id": "37f5fc36-0b21-4ccf-9a92-d15f0882de09",
+    "Id2": 3
   },
   "JLib.DataGeneration.Tests.TestingIdGeneratorTests": {
     "[Default]CreateGuid_ShouldReturnNewGuid()-1": "44bece3b-3bf2-4487-8a12-e93a2fc23305"
