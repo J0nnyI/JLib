@@ -1,13 +1,12 @@
-﻿using BenchmarkDotNet.Attributes;
-
+﻿using System.Reflection;
+using BenchmarkDotNet.Attributes;
 using HarmonyLib;
-
 using JLib.Exceptions;
+using Xunit;
 
-using System.Reflection;
+namespace JLib.ValueTypes.Benchmarks;
 
-namespace JLib.Tools.Benchmarks;
-
+[Trait("TestType", "Benchmark")]
 public partial class PerformanceTest
 {
     public enum PatchStateEnum
@@ -17,7 +16,7 @@ public partial class PerformanceTest
         Unpatched
     }
 
-    public class Swapper
+    public class Swappers
     {
         // Create a Harmony instance
         private static readonly Harmony Harmony = new Harmony("com.example.patch");
@@ -26,7 +25,8 @@ public partial class PerformanceTest
         private static readonly MethodInfo OriginalMethod = typeof(ExceptionBuilder)!.GetMethod("GetException")!;
 
         [Params(PatchStateEnum.Patch, PatchStateEnum.LockedPatch, PatchStateEnum.Unpatched)]
-        public PatchStateEnum PatchState { get; init; }
+        // setter required by benchmark.net
+        public PatchStateEnum PatchState { get; set; }
 
         [Benchmark]
         public string FiveCharacterString()

@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
+    </ItemGroup>
+</Project>

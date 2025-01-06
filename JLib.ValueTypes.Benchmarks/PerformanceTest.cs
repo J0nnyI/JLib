@@ -1,10 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
-using JLib.ValueTypes;
 using JLib.Helper;
-using ValueType = JLib.ValueTypes.ValueType;
 
-namespace JLib.Tools.Benchmarks;
+namespace JLib.ValueTypes.Benchmarks;
 
 [InProcess]
 public partial class PerformanceTest
