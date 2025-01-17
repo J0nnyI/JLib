@@ -89,7 +89,9 @@ public class ValueTypeProfile : Profile
         }
     }
 
-
+    /// <summary>
+    /// <inheritdoc cref="ValueTypeProfile"/>
+    /// </summary>
     public ValueTypeProfile(ITypeCache cache, ILogger<ValueTypeProfile> logger)
     {
         foreach (var valueType in cache.All<ValueTypeType>().Where(vt => vt is { Mapped: true }))
