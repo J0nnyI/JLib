@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
+
 namespace JLib.Reflection.Tests;
 
 public class TypeCacheGenericsTest : IDisposable
@@ -59,8 +60,32 @@ public class TypeCacheGenericsTest : IDisposable
                     value.AddError("error");
             }
         }
+
+        public class Generic1<T>
+        {
+            private Generic1()
+            {
+
+            }
+
+            public class Generic2<T2> : IDemoSelectorInterface
+            {
+            }
+        }
+
+        public class Nested1
+        {
+            public class Nested2 : IDemoSelectorInterface { }
+        }
     }
 
+
+    [Fact]
+    public void DoubleNested()
+    {
+        _cache.Get<Common.DemoTypeValueType>(typeof(Common.Nested1.Nested2))
+            .Value.Should().Be(typeof(Common.Nested1.Nested2));
+    }
 
     [Fact]
     public void GetGenericTypeDefinition()
@@ -73,6 +98,12 @@ public class TypeCacheGenericsTest : IDisposable
     {
         _cache.Get<Common.DemoTypeValueType>(typeof(Common.GenericType<int>))
             .Value.Should().Be(typeof(Common.GenericType<int>));
+    }
+    [Fact]
+    public void GetNestedGenericType()
+    {
+        _cache.Get<Common.DemoTypeValueType>(typeof(Common.Generic1<int>.Generic2<string>))
+            .Value.Should().Be(typeof(Common.Generic1<int>.Generic2<string>));
     }
     [Fact]
     public void Navigation()
