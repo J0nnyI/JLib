@@ -86,7 +86,17 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
         => _subValidators.Add(subProvider);
 
     Exception? IExceptionProvider.GetException()
-        => BuildException(_messages, _subValidators);
+        => JLibAggregateException.ReturnIfNotEmpty(
+            GetExceptionMessage(),
+            _subValidators
+                .Select(p => p.GetException())
+                .Prepend(
+                    JLibAggregateException.ReturnIfNotEmpty(
+                        "Value Validation Failed",
+                        _messages.Distinct().Select(msg => new ValidationException(msg))
+                    )
+                )
+        );
 
     /// <summary>
     /// <inheritdoc cref="IExceptionProvider.HasErrors"/>
@@ -95,21 +105,9 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
     public bool HasErrors()
         => _messages.Count != 0
            || _subValidators.Count != 0
-                && _subValidators.Any(v => v.HasErrors());
+           && _subValidators.Any(v => v.HasErrors());
 
-    /// <summary>
-    /// <inheritdoc cref="IExceptionProvider.GetException"/>
-    /// </summary>
-    protected virtual Exception? BuildException(IReadOnlyCollection<string> messages, IReadOnlyCollection<IExceptionProvider> provider)
-       => JLibAggregateException.ReturnIfNotEmpty(
-           $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.",
-           provider
-               .Select(p => p.GetException())
-               .Prepend(
-                   JLibAggregateException.ReturnIfNotEmpty(
-                       "Value Validation Failed",
-                       _messages.Distinct().Select(msg => new ValidationException(msg))
-                   )
-               )
-       );
+
+    protected virtual string GetExceptionMessage()
+        => $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.";
 }

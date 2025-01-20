@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
 
-using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
 
 namespace JLib.Reflection;
 
-public sealed class TypeValidationContext : ValidationContext<Type>
+internal sealed class TypeValidationContext : ValidationContext<Type>
 {
     private readonly TypeValueType _valueType;
 
@@ -15,147 +14,163 @@ public sealed class TypeValidationContext : ValidationContext<Type>
         _valueType = valueType;
     }
 
-    /// <summary>
-    /// <inheritdoc cref="ValidationContext{TValue}.BuildException"/>
-    /// </summary>
-    protected override Exception? BuildException(IReadOnlyCollection<string> messages, IReadOnlyCollection<IExceptionProvider> provider)
-        => JLibAggregateException.ReturnIfNotEmpty(
-            $"{_valueType.Value.FullName(true)} is not a valid {_valueType.GetType().FullName(true)}",
-            messages.Select(msg => new InvalidTypeException(_valueType.GetType(), _valueType.Value, msg))
-                .Concat(provider.Select(p => p.GetException()).WhereNotNull())
-            );
+    protected override string GetExceptionMessage()
+        => $"{_valueType.Value.FullName(true)} is not a valid {_valueType.GetType().FullName(true)}";
+}
 
+public static class TypeValidationContextExtensions
+{
     /// <summary>
     /// Validates all properties of the <see cref="Type"/> which match the given <paramref name="filter"/>
     /// </summary>
-    public TypeValidationContext ValidateProperties(Func<PropertyInfo, bool> filter, Action<ValidationContext<PropertyInfo>> validator)
+    public static IValidationContext<Type> ValidateProperties(this IValidationContext<Type> context, Func<PropertyInfo, bool> filter, Action<ValidationContext<PropertyInfo>> validator)
     {
-        foreach (var property in Value.GetProperties().Where(filter))
+        foreach (var property in context.Value.GetProperties().Where(filter))
         {
-            var val = new ValidationContext<PropertyInfo>(property, TargetType);
+            var val = new ValidationContext<PropertyInfo>(property, context.TargetType);
             validator(val);
-            AddSubValidators(val);
+            context.AddSubValidators(val);
         }
-        return this;
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be generic
     /// </summary>
-    public TypeValidationContext ShouldBeGeneric(string? hint = null)
+    public static IValidationContext<Type> ShouldBeGeneric(this IValidationContext<Type> context, string? hint = null)
     {
-        if (!Value.IsGenericType)
-            AddError(string.Join(Environment.NewLine, "Must be Generic", hint));
-        return this;
+        if (!context.Value.IsGenericType)
+            context.AddError(string.Join(Environment.NewLine, "Must be Generic", hint));
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be static
     /// </summary>
-    public TypeValidationContext ShouldBeStatic(string? hint = null)
+    public static IValidationContext<Type> ShouldBeStatic(this IValidationContext<Type> context, string? hint = null)
     {
-        if (!Value.IsStatic())
-            AddError(string.Join(Environment.NewLine, "Must be Static", hint));
-        return this;
+        if (!context.Value.IsStatic())
+            context.AddError(string.Join(Environment.NewLine, "Must be Static", hint));
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be sealed
     /// </summary>
-    public TypeValidationContext ShouldBeSealed(string? hint = null)
+    public static IValidationContext<Type> ShouldBeSealed(this IValidationContext<Type> context, string? hint = null)
     {
-        if (!Value.IsSealed)
-            AddError(string.Join(Environment.NewLine, "Must be Sealed", hint));
-        return this;
+        if (!context.Value.IsSealed)
+            context.AddError(string.Join(Environment.NewLine, "Must be Sealed", hint));
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be a generic type
     /// </summary>
-    /// <param name="hint"></param>
-    /// <returns></returns>
-    public TypeValidationContext ShouldNotBeGeneric(string? hint = null)
+    public static IValidationContext<Type> ShouldNotBeGeneric(this IValidationContext<Type> context, string? hint = null)
     {
-        if (Value.IsGenericType)
-            AddError(string.Join(Environment.NewLine, "Must not be Generic", hint));
-        return this;
+        if (context.Value.IsGenericType)
+            context.AddError(string.Join(Environment.NewLine, "Must not be Generic", hint));
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be a generic type and have exactly <paramref name="argumentCount"/> type arguments
     /// </summary>
-    public TypeValidationContext ShouldHaveNTypeArguments(int argumentCount)
+    public static IValidationContext<Type> ShouldHaveNTypeArguments(this IValidationContext<Type> context, int argumentCount)
     {
-        ShouldBeGeneric();
+        context.ShouldBeGeneric();
 
-        if (!Value.IsGenericType)
-            AddError("Must be Generic");
-        if (Value.GenericTypeArguments.Length != argumentCount)
-            AddError(
-                $"It must have exactly {argumentCount} type arguments but got {Value.GenericTypeArguments.Length}");
-        return this;
+        if (context.Value.GenericTypeArguments.Length != argumentCount)
+            context.AddError(
+                $"It must have exactly {argumentCount} type arguments but got {context.Value.GenericTypeArguments.Length}");
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to implement <typeparamref name="TInterface"/> ignoring all of its type arguments
     /// </summary>
-    public TypeValidationContext ShouldImplementAny<TInterface>(string? hint = null)
+    public static IValidationContext<Type> ShouldImplementAny<TInterface>(this IValidationContext<Type> context, string? hint = null)
+        => context.ShouldImplementAny(typeof(TInterface), hint);
+
+    /// <summary>
+    /// Expects the <see cref="Type"/> to implement <paramref name="tInterface"/> ignoring all of its type arguments
+    /// </summary>
+    public static IValidationContext<Type> ShouldImplementAny(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
-        if (!Value.ImplementsAny<TInterface>())
-            AddError($"Should implement any {typeof(TInterface).TryGetGenericTypeDefinition().FullName(true)}",
+        if (!context.Value.ImplementsAny(tInterface))
+            context.AddError($"Should implement any {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
                 hint);
-        return this;
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to implement <typeparamref name="TInterface"/> with the given type arguments
     /// </summary>
-    public TypeValidationContext ShouldImplement<TInterface>(string? hint = null)
+    public static IValidationContext<Type> ShouldImplement<TInterface>(this IValidationContext<Type> context, string? hint = null)
+        => context.ShouldImplement(typeof(TInterface), hint);
+
+    /// <summary>
+    /// Expects the <see cref="Type"/> to implement <paramref name="tInterface"/> with the given type arguments
+    /// </summary>
+    public static IValidationContext<Type> ShouldImplement(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
-        if (!Value.ImplementsAny<TInterface>())
-            AddError($"Should implement {typeof(TInterface).FullName(true)}", hint);
-        return this;
+        if (!context.Value.ImplementsAny(tInterface))
+            context.AddError($"Should implement {tInterface.FullName(true)}", hint);
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> not to implement <typeparamref name="TInterface"/> ignoring all of its type arguments
     /// </summary>
-    public TypeValidationContext ShouldNotImplementAny<TInterface>(string? hint = null)
+    public static IValidationContext<Type> ShouldNotImplementAny<TInterface>(this IValidationContext<Type> context, string? hint = null)
+        => context.ShouldNotImplementAny(typeof(TInterface), hint);
+
+    /// <summary>
+    /// Expects the <see cref="Type"/> not to implement <paramref name="tInterface"/> ignoring all of its type arguments
+    /// </summary>
+    public static IValidationContext<Type> ShouldNotImplementAny(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
-        if (Value.ImplementsAny<TInterface>())
-            AddError($"Should not implement {typeof(TInterface).TryGetGenericTypeDefinition().FullName(true)}",
+        if (context.Value.ImplementsAny(tInterface))
+            context.AddError($"Should not implement {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
                 hint);
-        return this;
+        return context;
     }
 
     /// <summary>
     /// Expects the <see cref="Type"/> to be decorated with <typeparamref name="TAttribute"/>
     /// </summary>
-    public TypeValidationContext ShouldHaveAttribute<TAttribute>(string? hint = null)
+    public static IValidationContext<Type> ShouldHaveAttribute<TAttribute>(this IValidationContext<Type> context, string? hint = null)
         where TAttribute : Attribute
+        => context.ShouldHaveAttribute(typeof(TAttribute), hint);
+
+    /// <summary>
+    /// Expects the <see cref="Type"/> to be decorated with <paramref name="tAttribute"/>
+    /// </summary>
+    public static IValidationContext<Type> ShouldHaveAttribute(this IValidationContext<Type> context, Type tAttribute, string? hint = null)
     {
-        if (!Value.HasCustomAttribute<TAttribute>())
-            AddError($"Should have {typeof(TAttribute).FullName(true)}", hint);
-        return this;
+        if (!context.Value.HasCustomAttribute(tAttribute))
+            context.AddError($"Should have {tAttribute.FullName(true)}", hint);
+        return context;
     }
 
     /// <summary>
     /// expects the <see cref="MemberInfo.Name"/> to <see cref="string.Equals(string?,StringComparison)"/> <paramref name="name"/> with the <paramref name="comparisonType"/>
     /// </summary>
-    public TypeValidationContext ShouldHaveName(string name, StringComparison comparisonType = StringComparison.Ordinal)
+    public static IValidationContext<Type> ShouldHaveName(this IValidationContext<Type> context, string name, StringComparison comparisonType = StringComparison.Ordinal)
     {
-        if (Value.Name.Equals(name, comparisonType))
-            AddError($"must have the name '{name}'");
-        return this;
+        if (context.Value.Name.Equals(name, comparisonType))
+            context.AddError($"must have the name '{name}'");
+        return context;
     }
 
     /// <summary>
     /// expects the <see cref="MemberInfo.Name"/> to end with the given <paramref name="nameSuffix"/>
     /// </summary>
-    public TypeValidationContext ShouldHaveNameSuffix(string nameSuffix)
+    public static IValidationContext<Type> ShouldHaveNameSuffix(this IValidationContext<Type> context, string nameSuffix)
     {
-        if (!Value.Name.EndsWith(nameSuffix))
-            AddError($"must have the nameSuffix '{nameSuffix}'");
-        return this;
+        if (!context.Value.Name.EndsWith(nameSuffix))
+            context.AddError($"must have the nameSuffix '{nameSuffix}'");
+        return context;
     }
 }

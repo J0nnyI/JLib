@@ -33,11 +33,19 @@
             ],
             "InnerExceptions": [
               {
-                "Type": "JLib.Reflection.InvalidTypeException",
+                "Type": "JLib.Exceptions.JLibAggregateException",
                 "MessageLines": [
-                  "Should not implement JLib.DataProvider.ISourceDataProviderR<TData>"
+                  "Value Validation Failed"
                 ],
-                "InnerExceptions": []
+                "InnerExceptions": [
+                  {
+                    "Type": "System.ComponentModel.DataAnnotations.ValidationException",
+                    "MessageLines": [
+                      "Should not implement JLib.DataProvider.ISourceDataProviderR<TData>"
+                    ],
+                    "InnerExceptions": []
+                  }
+                ]
               }
             ]
           }
