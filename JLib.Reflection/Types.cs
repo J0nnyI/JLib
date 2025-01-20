@@ -30,7 +30,7 @@ public record ValueTypeType(Type Value) : TypeValueType(Value), IValidatedType
 
     public bool Mapped => !Value.HasCustomAttribute<UnmappedAttribute>() && !Value.IsAbstract;
 
-    void IValidatedType.Validate(ITypeCache cache, TypeValidationContext value)
+    void IValidatedType.Validate(ITypeCache cache, IValidationContext<Type> value)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (NativeType is null)

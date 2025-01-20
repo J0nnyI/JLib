@@ -10,7 +10,7 @@
     ],
     "includedTypes": [
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity",
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<>",
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<T>",
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryR"
     ]
   },

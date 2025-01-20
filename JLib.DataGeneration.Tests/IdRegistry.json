@@ -1,57 +1,29 @@
 {
   "__registry__": {
-    "IdIncrement": 7
-  },
-  "~..DataPackageGuardrailTests.DuplicatePropertyDp": {
-    "Id": "ac0f6ffa-c0c0-48a2-a676-ef2821f79b2d"
-  },
-  "~..DataPackageGuardrailTests.DuplicatePropertyDp:~..ValidDataPackages.Base2Dp<System.Object>:~..ValidDataPackages.Base1Dp<~..DataPackageTestBase.TestTypeId>": {
-    "Id": "dc250b4d-5819-49c9-9e76-e5680f952280",
-    "Id2": 5
-  },
-  "~..ValidDataPackages.Test3Dp:~..ValidDataPackages.Base2Dp<System.Object>:~..ValidDataPackages.Base1Dp<~..DataPackageTestBase.TestTypeId>": {
-    "Id": "74b6aa0d-6237-497f-a992-b1e2cf0f11da",
-    "Id2": 4
+    "IdIncrement": 3
   },
   "~.DataPackageGuardrailTests.DuplicatePropertyDp": {
-    "Id": "a11dd7af-2bd4-41bc-ad58-d6a914ad8dc6"
+    "Id": "5986ba8d-9b94-4d95-944f-0dd459d7c5e9"
   },
   "~.DataPackageGuardrailTests.DuplicatePropertyDp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
-    "Id": "feec4120-a1a0-48c8-8fe5-d22924a9a169",
-    "Id2": 7
-  },
-  "~.ValidDataPackages.Test3Dp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
-    "Id": "eb63fd8a-101b-4d66-b45a-5a73f00f0749",
-    "Id2": 6
-  },
-  "GenericDataPackageTests.Base3Dp:GenericDataPackageTests.Base2Dp<System.Object>:GenericDataPackageTests.Base1Dp<DataPackageTestBase.TestTypeId>": {
-    "Id": "f3301c07-70f1-464a-a301-44c577d64406",
-    "Id2": 2
-  },
-  "GenericDataPackageTests.Test3Dp:GenericDataPackageTests.Base2Dp<System.Object>:GenericDataPackageTests.Base1Dp<DataPackageTestBase.TestTypeId>": {
-    "Id": "69127dc0-fa17-45f1-8f4f-bc587ac809bf",
-    "Id2": 3
-  },
-  "GenericDataPackageTests.TestPackageInstance:GenericDataPackageTests.TestPackageBase<DataPackageTestBase.TestTypeId>": {
-    "Id": "e0b5a385-ac0f-4c72-9ce0-f0906bf69c71",
+    "Id": "7a866bfa-8b56-4d64-99e4-7e7608b340f1",
     "Id2": 1
   },
+  "~.ValidDataPackages.Test3Dp": {
+    "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id": "8ca6e4e4-8e69-4e80-b906-8609475aba84",
+    "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id2": 2
+  },
+  "~.ValidDataPackages.Test3Dp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
+    "Id": "37f5fc36-0b21-4ccf-9a92-d15f0882de09",
+    "Id2": 3
+  },
   "JLib.DataGeneration.Tests.TestingIdGeneratorTests": {
-    "[Default]CreateGuid_ShouldReturnNewGuid()-1": "b0c74dcd-143a-4417-85bd-8f503c648257"
+    "[Default]CreateGuid_ShouldReturnNewGuid()-1": "44bece3b-3bf2-4487-8a12-e93a2fc23305"
   },
-  "JLib.DataGeneration.Tests.TestingIdGeneratorTests.Nested<>": {
-    "[Default]CreateId<,>()-1": "82a15361-b69d-43b2-b887-01b2556cd6d5",
-    "[Default]CreateId<>(System.Int32)-1": "74519d31-bb45-48c3-a7fa-f2e55a2c365f",
-    "[Default]CreateId<>(System.Int32)-2": "d0aeebf2-c993-4a1b-86b0-a132e56f9477",
-    "[otherScope]CreateId<>(System.Int32)-1": "09835d40-a7f1-4413-8269-e2199b9a193d"
-  },
-  "TestingIdGeneratorTests": {
-    "[Default]CreateGuid_ShouldReturnNewGuid()-1": "ec59f5b1-e545-45e7-97a6-a496bb4e5ff8"
-  },
-  "TestingIdGeneratorTests.Nested<>": {
-    "[Default]CreateId<,>()-1": "9987f44e-4a70-4b21-aa9e-22a0a1c9e36e",
-    "[Default]CreateId<>(System.Int32)-1": "ee1c14a4-c1eb-4410-be4d-59e246a89ebe",
-    "[Default]CreateId<>(System.Int32)-2": "7fa85fea-f2a3-4e34-8962-c63e7937d61f",
-    "[otherScope]CreateId<>(System.Int32)-1": "4475e35f-a7c9-4e5e-b68e-d309800a476c"
+  "JLib.DataGeneration.Tests.TestingIdGeneratorTests.Nested<T>": {
+    "[Default]CreateId<,>()-1": "c0614c1f-41c8-4188-bda7-04b2d348a24d",
+    "[Default]CreateId<>(System.Int32)-1": "75e01bcf-31cf-4601-80b3-bf7935278d54",
+    "[Default]CreateId<>(System.Int32)-2": "bb4eed1d-fa1b-47be-9726-cef1aea7c2b9",
+    "[otherScope]CreateId<>(System.Int32)-1": "e375ff91-129e-4cf1-8360-3306b9228c0a"
   }
 }

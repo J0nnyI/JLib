@@ -5,7 +5,7 @@ using FluentAssertions;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Testing;
-
+using JLib.ValueTypes;
 using Microsoft.Extensions.Logging;
 
 using Snapshooter;
@@ -46,7 +46,7 @@ public class TypeCacheTests : IDisposable
         [TvtFactoryAttribute.DerivedFromAny(typeof(DemoType))]
         public record DemoTypeValueType(Type Value) : TypeValueType(Value), IValidatedType
         {
-            public void Validate(ITypeCache cache, TypeValidationContext value)
+            public void Validate(ITypeCache cache, IValidationContext<Type> value)
             {
                 value.AddSubValidators(new Exception("this should fail").ToProvider());
             }

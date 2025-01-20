@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -85,21 +86,9 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
         => _subValidators.Add(subProvider);
 
     Exception? IExceptionProvider.GetException()
-        => BuildException(_messages, _subValidators);
-
-    // todo: lazy validation (do not run the entire validation if we just need to check if anything failed, instead abort validation once one validator failed)
-    /// <summary>
-    /// <inheritdoc cref="IExceptionProvider.HasErrors"/>
-    /// </summary>
-    public bool HasErrors() => _messages.Any() || _subValidators.Any(v => v.HasErrors());
-
-    /// <summary>
-    /// <inheritdoc cref="IExceptionProvider.GetException"/>
-    /// </summary>
-     protected virtual Exception? BuildException(IReadOnlyCollection<string> messages, IReadOnlyCollection<IExceptionProvider> provider)
         => JLibAggregateException.ReturnIfNotEmpty(
-            $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.",
-            provider
+            GetExceptionMessage(),
+            _subValidators
                 .Select(p => p.GetException())
                 .Prepend(
                     JLibAggregateException.ReturnIfNotEmpty(
@@ -108,4 +97,17 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
                     )
                 )
         );
+
+    /// <summary>
+    /// <inheritdoc cref="IExceptionProvider.HasErrors"/>
+    /// </summary>
+    // adding "_messages.Count !=0 &&" cuts the execution time in half
+    public bool HasErrors()
+        => _messages.Count != 0
+           || _subValidators.Count != 0
+           && _subValidators.Any(v => v.HasErrors());
+
+
+    protected virtual string GetExceptionMessage()
+        => $"{TargetType.FullName()} validation failed: '{Value}' is set up incorrectly.";
 }

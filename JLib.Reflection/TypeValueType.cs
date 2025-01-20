@@ -26,7 +26,7 @@ public interface IValidatedType : ITypeValueType
     /// </summary>
     /// <param name="cache"></param>
     /// <param name="value"></param>
-    void Validate(ITypeCache cache, TypeValidationContext value);
+    void Validate(ITypeCache cache, IValidationContext<Type> value);
 }
 /// <summary>
 /// Interface for <see cref="TypeValueType"/>s which expands the possibilities when designing type argument constraints.
