@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using JLib.Exceptions;
 using JLib.Helper;
+using JLib.ValueTypes;
 
 namespace JLib.Reflection;
 
@@ -38,7 +39,7 @@ public record TypePackageProviderType(Type Value) : TypeValueType(Value), IValid
             .Select(GetInstance)
             .WhereNotNull();
 
-    public void Validate(ITypeCache cache, TypeValidationContext value)
+    public void Validate(ITypeCache cache, IValidationContext<Type> value)
     {
         value.ShouldBeStatic()
             .ShouldHaveNameSuffix("Tp")

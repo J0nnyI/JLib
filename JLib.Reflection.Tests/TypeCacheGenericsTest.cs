@@ -2,7 +2,7 @@
 
 using JLib.Exceptions;
 using JLib.Helper;
-
+using JLib.ValueTypes;
 using Microsoft.Extensions.Logging;
 
 using Xunit;
@@ -54,7 +54,7 @@ public class TypeCacheGenericsTest : IDisposable
         [TvtFactoryAttribute.ImplementsAny(typeof(IInvalidMatch<>))]
         public record InvalidTvt(Type Value) : TypeValueType(Value), IValidatedType
         {
-            public void Validate(ITypeCache cache, TypeValidationContext value)
+            public void Validate(ITypeCache cache, IValidationContext<Type> value)
             {
                 if (value.Value is { IsGenericTypeDefinition: false, IsGenericType: true })
                     value.AddError("error");

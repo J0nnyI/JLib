@@ -1,9 +1,8 @@
 ﻿using System.Text.Json;
-using JLib.Exceptions;
 using Snapshooter.Xunit;
 using Xunit;
 
-namespace JLib.ExceptionsTests;
+namespace JLib.Exceptions.Tests;
 
 public class ExceptionToJsonTests
 {

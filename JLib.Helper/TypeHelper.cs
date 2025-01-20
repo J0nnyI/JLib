@@ -1,5 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Transactions;
 
 namespace JLib.Helper;
 
@@ -312,40 +316,72 @@ public static class TypeHelper
     }
 
     /// <summary>
-    /// if the given <paramref name="type"/> is nested in another <see cref="Type"/>, all nesting parents including <paramref name="type"/> are rturned. otherwise an empty array is returned.
+    /// if the given <paramref name="type"/> is nested in another <see cref="Type"/>, all nesting parents including <paramref name="type"/> are returned. otherwise an empty array is returned.
     /// </summary>
     public static IReadOnlyCollection<Type> GetNestingParents(this Type type)
     {
-        var result = new List<Type>();
-        var current = type;
-        while (current.DeclaringType is not null)
-        {
-            result.Add(current.DeclaringType);
-            current = current.DeclaringType;
-        }
-        return result;
+        var items = new List<Type>();
+        for (Type? current = type; current != null; current = current.DeclaringType)
+            items.Add(current);
+        items.Reverse();
+        return items;
     }
 
-    /// <summary>
-    /// the name of the class and its declaring type, excluding the namespace
-    /// </summary>
+    private static readonly Dictionary<(Type type, bool includeNamespace), string> FullNameCache = new();
+
+    /// <returns> a human-readable name for the given <paramref name="type"/> including all generic parameters and the namespace if <paramref name="includeNamespace"/> is <see langword="null"/></returns>
     public static string FullName(this Type type, bool includeNamespace = false)
     {
-        var name = (type.FullName ?? type.Name);
-        string res = name
-            .Split("[")
-            .First();
-        ;
-        if (!includeNamespace)
-            res = res.Split(".").Last();
-        res = res
-            .Replace("+", ".")
-            .Split("`").First();
+        // full name is frequently called and compute intensive.
+        // this justifies the use of a cache
+        // the lock is only required for write operations
+        // ReSharper disable once InconsistentlySynchronizedField
+        if (FullNameCache.TryGetValue((type, includeNamespace), out var typeFullName))
+            return typeFullName;
+        
+        typeFullName = FullNameBuilder(type).ToString();
+        lock (FullNameCache)
+            FullNameCache[(type, includeNamespace)] = typeFullName;
+        return typeFullName;
 
-        if (type.IsGenericType)
-            res += $"<{string.Join(", ", type.GenericTypeArguments.Select(a => a.FullName(includeNamespace)))}>";
 
-        return res;
+        StringBuilder FullNameBuilder(Type type)
+        {
+            if (type.IsGenericParameter)
+                return new(type.Name);
+
+            var result = new StringBuilder();
+
+            var argOffset = 0;
+
+            var typeParams = type.GetGenericArguments();
+
+            foreach (var currentNestedType in type.GetNestingParents())
+            {
+                if (includeNamespace && currentNestedType.DeclaringType is null)
+                    result.Append(currentNestedType.Namespace).Append('.');
+                result.Append(currentNestedType.Name.SubStringUntil('`'));
+
+                if (currentNestedType.IsGenericType)
+                {
+                    var args = currentNestedType.GetGenericArguments();
+
+                    var genericParams = typeParams[argOffset..args.Length];
+
+                    result.Append('<')
+                        .AppendJoin(", ",
+                            genericParams
+                                .Select(FullNameBuilder))
+                        .Append('>');
+
+                    argOffset = args.Length;
+                }
+
+                if (currentNestedType != type)
+                    result.Append('.');
+            }
+
+            return result;
+        }
     }
-
 }

@@ -76,6 +76,18 @@ public static class StringHelper
     }
 
     /// <summary>
+    /// returns the content of <paramref name="str"/> until the first occurance of <paramref name="character"/>
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="character"></param>
+    /// <returns></returns>
+    public static string SubStringUntil(this string str, char character)
+    {
+        var index = str.IndexOf(character);
+        return index == -1 ? str : str[..index];
+    }
+
+    /// <summary>
     /// Appends the specified string to the <see cref="StringBuilder"/> the specified number of times.
     /// </summary>
     /// <param name="sb">The <see cref="StringBuilder"/> to append to.</param>
@@ -84,6 +96,24 @@ public static class StringHelper
     /// <returns>The <see cref="StringBuilder"/> after the strings have been appended.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the count is less than zero.</exception>
     public static StringBuilder AppendMultiple(this StringBuilder sb, string value, int count)
+    {
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count));
+
+        for (var i = 0; i < count; i++)
+            sb.Append(value);
+
+        return sb;
+    }
+    /// <summary>
+    /// Appends the specified string to the <see cref="StringBuilder"/> the specified number of times.
+    /// </summary>
+    /// <param name="sb">The <see cref="StringBuilder"/> to append to.</param>
+    /// <param name="value">The string to append.</param>
+    /// <param name="count">The number of times to append the string.</param>
+    /// <returns>The <see cref="StringBuilder"/> after the strings have been appended.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the count is less than zero.</exception>
+    public static StringBuilder AppendMultiple(this StringBuilder sb, char value, int count)
     {
         if (count < 0)
             throw new ArgumentOutOfRangeException(nameof(count));

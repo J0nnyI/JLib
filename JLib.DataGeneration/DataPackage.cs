@@ -2,6 +2,7 @@
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using JLib.ValueTypes;
 using Microsoft.Extensions.DependencyInjection;
 using static JLib.DataGeneration.DataPackageException.InitializationException.InvalidAccessException;
 using static JLib.Reflection.TvtFactoryAttribute;
@@ -27,7 +28,7 @@ public record DataPackageType : TypeValueType, IValidatedType
                 x.HasCustomAttribute<SkipIdAssignmentAttribute>() is false
             ).ToReadOnlyCollection();
     }
-    void IValidatedType.Validate(ITypeCache cache, TypeValidationContext value)
+    void IValidatedType.Validate(ITypeCache cache, IValidationContext<Type> value)
     {
         value.ShouldBeSealed("a DataPackage has to be either Sealed or Abstract.");
 
