@@ -1,9 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using AutoMapper;
+
 using JLib.DataGeneration.Abstractions;
 using JLib.Helper;
 using JLib.ValueTypes;
+
 using static JLib.DataGeneration.DataPackageValues;
 
 namespace JLib.DataGeneration;
@@ -30,25 +32,27 @@ internal sealed class TestingIdGenerator : IIdGenerator
 
     private readonly IIdRegistry _idRegistry;
     private readonly IMapper _mapper;
+    private readonly IdRegistryConfiguration _idRegistryConfiguration;
 
     private ConcurrentDictionary<string, Counter> _callCounter = new();
     private readonly Dictionary<IdScopeName, ConcurrentDictionary<string, Counter>> _scopeCounterStorage = new();
     /// <summary>
     /// The Name of the current id Scope.
     /// </summary>
-    public IdScopeName CurrentIdScopeName { get; private set; }=new("Default");
+    public IdScopeName CurrentIdScopeName { get; private set; } = new("Default");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestingIdGenerator"/> class.
     /// </summary>
     /// <param name="idRegistry">The ID registry.</param>
     /// <param name="mapper">The mapper.</param>
-    public TestingIdGenerator(IIdRegistry idRegistry, IMapper mapper)
+    public TestingIdGenerator(IIdRegistry idRegistry, IMapper mapper, IdRegistryConfiguration idRegistryConfiguration)
     {
         _idRegistry = idRegistry;
         _mapper = mapper;
+        _idRegistryConfiguration = idRegistryConfiguration;
     }
-    
+
     /// <summary>
     /// opens a new id scope. Ids are counted per scope and are used to reduce test vulnerability.
     /// </summary>
@@ -59,30 +63,56 @@ internal sealed class TestingIdGenerator : IIdGenerator
         _callCounter = _scopeCounterStorage.GetValueOrAdd(name, () => new());
         CurrentIdScopeName = name;
     }
+    /// <summary>
+    /// Creates a new GUID.
+    /// </summary>
+    /// <returns>The generated GUID.</returns>
+    public Guid CreateGuid()
+        => _idRegistry.GetGuidId(GetIdentifier(0));
+
+    /// <summary>
+    /// Creates a new GUID of the specified value type.
+    /// </summary>
+    /// <typeparam name="TId">The value type of the GUID.</typeparam>
+    /// <returns>The generated GUID of the specified value type.</returns>
+    public TId CreateGuid<TId>() where TId : GuidValueType
+        => _mapper.Map<TId>(_idRegistry.GetGuidId(GetIdentifier(0)));
+
+
+
+
+
 
     /// <summary>
     /// Gets the identifier for the specified stack trace frame index.
     /// </summary>
-    /// <param name="stackTraceFrameIndex">The index of the stack trace frame.</param>
+    /// <param name="stackTraceFrameIndex">The index of the stack trace frame to be used relative to this method call</param>
     /// <returns>The identifier for the stack trace frame.</returns>
     private IdIdentifier GetIdentifier(int stackTraceFrameIndex)
     {
         var stackTrace = new StackTrace();
         // index one is CreateGuid, therefor is index 2 it's caller
-        var front = stackTrace.GetFrame(stackTraceFrameIndex + 2);
-        var method = front?.GetMethod();
+        var frame = stackTrace.GetFrame(stackTraceFrameIndex + 2);
+        var method = frame?.GetMethod();
+
+        var x = method?.MethodImplementationFlags;
+
 
         var callCount = _callCounter.GetValueOrAdd(
             method?.FullName(true, true, false, true)
             ?? "", _ => new())
             .Increment();
+
+
+
         IdName idName = method is not null
-            ? new(CurrentIdScopeName, method, callCount)
-            : new($"non Method Access {callCount}");
+            ? new(CurrentIdScopeName, method, callCount, _idRegistryConfiguration)
+            : new($"non Method Access {callCount}", _idRegistryConfiguration);
+
         var idGroupName = new IdGroupName(
             method?.ReflectedType?.FullName(true)
-            ?? front?.GetFileName()
-            ?? "unknown source");
+            ?? frame?.GetFileName()
+            ?? "unknown source", _idRegistryConfiguration);
 
         return new(idGroupName, idName);
     }
@@ -105,6 +135,7 @@ internal sealed class TestingIdGenerator : IIdGenerator
         where TId : StringValueType
         => _mapper.Map<TId>(_idRegistry.GetStringId(GetIdentifier(stackTraceFrameIndex)));
 
+
     /// <summary>
     /// Creates a new integer ID.
     /// </summary>
@@ -123,20 +154,6 @@ internal sealed class TestingIdGenerator : IIdGenerator
         where TId : IntValueType
         => _mapper.Map<TId>(_idRegistry.GetIntId(GetIdentifier(stackTraceFrameIndex)));
 
-    /// <summary>
-    /// Creates a new GUID.
-    /// </summary>
-    /// <returns>The generated GUID.</returns>
-    public Guid CreateGuid()
-        => _idRegistry.GetGuidId(GetIdentifier(0));
-
-    /// <summary>
-    /// Creates a new GUID of the specified value type.
-    /// </summary>
-    /// <typeparam name="TId">The value type of the GUID.</typeparam>
-    /// <returns>The generated GUID of the specified value type.</returns>
-    public TId CreateGuid<TId>() where TId : GuidValueType
-        => _mapper.Map<TId>(_idRegistry.GetGuidId(GetIdentifier(0)));
 
     /// <summary>
     /// Creates a new GUID of the specified value type.
@@ -149,6 +166,8 @@ internal sealed class TestingIdGenerator : IIdGenerator
 
     /// <summary>
     /// Creates a new GUID.
+    /// Should be used for testing purposes only.
+    /// Use <see cref="CreateGuid(int)"/> instead.
     /// </summary>
     /// <param name="stackTraceFrameIndex">The index of the stack trace frame where index 0 is the caller of this method.</param>
     /// <returns>The generated GUID.</returns>

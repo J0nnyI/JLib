@@ -9,6 +9,18 @@
     "Id": "7a866bfa-8b56-4d64-99e4-7e7608b340f1",
     "Id2": 1
   },
+  "~.TestingIdGeneratorTests.CreateGuidTests": {
+    "[Default]CreateGuid_ShouldReturnNewGuid()-1": "44bece3b-3bf2-4487-8a12-e93a2fc23305"
+  },
+  "~.TestingIdGeneratorTests.Nested<T>": {
+    "[Default]CreateId<,>()-1": "c0614c1f-41c8-4188-bda7-04b2d348a24d",
+    "[Default]CreateId<>(System.Int32)-1": "75e01bcf-31cf-4601-80b3-bf7935278d54",
+    "[Default]CreateId<>(System.Int32)-2": "bb4eed1d-fa1b-47be-9726-cef1aea7c2b9",
+    "[otherScope]CreateId<>(System.Int32)-1": "e375ff91-129e-4cf1-8360-3306b9228c0a"
+  },
+  "~.TestingIdGeneratorTests.Nested<T>.<>c__DisplayClass4_0<T2>": {
+    "[Default]<CreateIdViaAnonymous>b__0()-1": "a249b3a5-c3ed-4562-9e6a-23c8e2f27617"
+  },
   "~.ValidDataPackages.Test3Dp": {
     "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id": "8ca6e4e4-8e69-4e80-b906-8609475aba84",
     "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id2": 2
@@ -16,14 +28,5 @@
   "~.ValidDataPackages.Test3Dp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
     "Id": "37f5fc36-0b21-4ccf-9a92-d15f0882de09",
     "Id2": 3
-  },
-  "JLib.DataGeneration.Tests.TestingIdGeneratorTests": {
-    "[Default]CreateGuid_ShouldReturnNewGuid()-1": "44bece3b-3bf2-4487-8a12-e93a2fc23305"
-  },
-  "JLib.DataGeneration.Tests.TestingIdGeneratorTests.Nested<T>": {
-    "[Default]CreateId<,>()-1": "c0614c1f-41c8-4188-bda7-04b2d348a24d",
-    "[Default]CreateId<>(System.Int32)-1": "75e01bcf-31cf-4601-80b3-bf7935278d54",
-    "[Default]CreateId<>(System.Int32)-2": "bb4eed1d-fa1b-47be-9726-cef1aea7c2b9",
-    "[otherScope]CreateId<>(System.Int32)-1": "e375ff91-129e-4cf1-8360-3306b9228c0a"
   }
 }

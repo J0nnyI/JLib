@@ -37,12 +37,12 @@ public static class DataPackageValues
         /// <param name="scopeName"><inheritdoc cref="IdScopeName"/></param>
         /// <param name="method">The method to get the full name from.</param>
         /// <param name="callNumber">The call number.</param>
-        public IdName(IdScopeName? scopeName, MethodBase method, int callNumber)
+        public IdName(IdScopeName? scopeName, MethodBase method, int callNumber, IdRegistryConfiguration packageConfig)
             : this((scopeName is null
                        ? ""
                        : $"[{scopeName.Value}]"
                 )
-                   + $"{method.FullName(false, false, false, true)}-{callNumber}")
+                   + $"{packageConfig.ApplyDefaultNamespace(method.FullName(false, false, false, true))}-{callNumber}")
         { }
     }
 
