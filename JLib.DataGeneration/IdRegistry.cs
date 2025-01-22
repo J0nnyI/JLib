@@ -23,6 +23,13 @@ internal enum DataPackageInitState
     Initialized
 }
 
+/// <summary>
+/// Contains methods which will always return the same ID for the same <see cref="IdIdentifier"/> but different id's for different <see cref="IdIdentifier"/>s.
+/// If you need a swappable <see cref="Guid"/> generator, use the <see cref="Abstractions.IIdGenerator"/> Interface instead.
+/// <remarks>
+/// the current (internal) implementation, <see cref="IdRegistry"/>, does this by creating a IdRegistry json file at Project level which should be checked into the git repository
+/// </remarks>
+/// </summary>
 public interface IIdRegistry
 {
     /// <summary>

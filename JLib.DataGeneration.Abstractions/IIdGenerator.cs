@@ -4,7 +4,11 @@ using JLib.ValueTypes;
 namespace JLib.DataGeneration.Abstractions;
 
 /// <summary>
-/// Represents an interface for generating unique identifiers.
+/// Represents an interface for generating <see cref="Guid"/>s.
+/// <remarks><br/>
+/// Use <see cref="IdGeneratorServiceCollectionExtensions.AddIdGenerator"/> to provide ID's in a testing environment<br/>
+/// Use `DataPackageExtensions.AddTestingIdGenerator` of the `JLib.DataGeneration` package instead while testing.<br/>
+/// </remarks>
 /// </summary>
 public interface IIdGenerator
 {
@@ -24,9 +28,10 @@ public interface IIdGenerator
 }
 
 /// <summary>
-/// Represents an implementation of the <see cref="IIdGenerator"/> interface.
+/// Runtime implementation of the <see cref="IIdGenerator"/> interface.<br/>
+/// Requires <see cref="IMapper"/>
 /// </summary>
-public sealed class IdGenerator : IIdGenerator
+internal sealed class IdGenerator : IIdGenerator
 {
     private readonly IMapper _mapper;
 
