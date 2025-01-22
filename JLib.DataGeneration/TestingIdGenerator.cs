@@ -10,7 +10,7 @@ namespace JLib.DataGeneration;
 /// <summary>
 /// Represents a testing ID generator.
 /// </summary>
-public sealed class TestingIdGenerator : IIdGenerator
+internal sealed class TestingIdGenerator : IIdGenerator
 {
     private class Counter
     {
