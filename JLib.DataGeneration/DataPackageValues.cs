@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+
 using JLib.Helper;
 using JLib.ValueTypes;
 
@@ -99,11 +100,13 @@ public static class DataPackageValues
         /// Initializes a new instance of the <see cref="IdIdentifier"/> class with the specified property.
         /// </summary>
         /// <param name="property">The property to create the identifier from.</param>
-        public IdIdentifier(PropertyInfo property, IdRegistryConfiguration packageConfig) : this(new IdGroupName(property, packageConfig), new(property, packageConfig))
+        public IdIdentifier(PropertyInfo property, IdRegistryConfiguration packageConfig)
+            : this(new IdGroupName(property, packageConfig), new(property, packageConfig))
         {
         }
 
-        public IdIdentifier(string idGroup, string idName, IdRegistryConfiguration packageConfig) : this(new IdGroupName(idGroup, packageConfig), new(idName, packageConfig))
+        public IdIdentifier(string idGroup, string idName, IdRegistryConfiguration packageConfig)
+            : this(new IdGroupName(idGroup, packageConfig), new(idName, packageConfig))
         { }
         public IdIdentifier(string idGroup, string idName) : this(new IdGroupName(idGroup), new(idName))
         {

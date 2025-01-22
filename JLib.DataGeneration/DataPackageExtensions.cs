@@ -68,7 +68,7 @@ public static class DataPackageExtensions
 
         services.TryAddSingleton(configuration ?? new IdRegistryConfiguration());
 
-        services.AddSingleton<DataPackageManager, DataPackageManager>();
+        services.AddSingleton<DataPackageManager>();
 
         foreach (var package in typeCache.All<DataPackageType>())
             services.AddSingleton(package.Value);

@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
 using JLib.Helper;
+
 using Microsoft.Extensions.DependencyInjection;
-using Snapshooter.Xunit;
+
 using Xunit;
 
 namespace JLib.DataGeneration.Tests;
