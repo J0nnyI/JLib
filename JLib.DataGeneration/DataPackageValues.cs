@@ -25,10 +25,16 @@ public static class DataPackageValues
         /// Initializes a new instance of the <see cref="IdName"/> class with the specified property.
         /// </summary>
         /// <param name="property">The property to get the name from.</param>
-        public IdName(PropertyInfo property, IdRegistryConfiguration packageConfig) : this(property.Name, packageConfig)
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdName(PropertyInfo property, IdRegistryConfiguration idRegConfig) : this(property.Name, idRegConfig)
         { }
 
-        public IdName(string value, IdRegistryConfiguration packageConfig) : this(packageConfig.ApplyDefaultNamespace(value))
+        /// <summary>
+        /// Converts the given <see cref="value"/> into a <see cref="IdName"/> while applying the provided <paramref name="idRegConfig"/>
+        /// </summary>
+        /// <param name="value">the Value of this <see cref="IdName"/></param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdName(string value, IdRegistryConfiguration idRegConfig) : this(idRegConfig.ApplyDefaultNamespace(value))
         { }
 
         /// <summary>
@@ -37,31 +43,38 @@ public static class DataPackageValues
         /// <param name="scopeName"><inheritdoc cref="IdScopeName"/></param>
         /// <param name="method">The method to get the full name from.</param>
         /// <param name="callNumber">The call number.</param>
-        public IdName(IdScopeName? scopeName, MethodBase method, int callNumber, IdRegistryConfiguration packageConfig)
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> which should be applied to this <see cref="IdName"/></param>
+        public IdName(IdScopeName? scopeName, MethodBase method, int callNumber, IdRegistryConfiguration idRegConfig)
             : this((scopeName is null
                        ? ""
                        : $"[{scopeName.Value}]"
                 )
-                   + $"{packageConfig.ApplyDefaultNamespace(method.FullName(false, false, false, true))}-{callNumber}")
+                   + $"{idRegConfig.ApplyDefaultNamespace(method.FullName(false, false, false, true))}-{callNumber}")
         { }
     }
 
     /// <summary>
     /// Represents the name of a data package.
     /// </summary>
-    public record IdGroupName(string Value) : StringValueType(Value)
+    public record IdGroupName : StringValueType
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="IdGroupName"/> class with the specified type.
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="type"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
         /// </summary>
-        /// <param name="type">The type to get the full name from.</param>
-        public IdGroupName(Type type)
-            : this(type.FullName(true))
+        /// <param name="type">The <see cref="Type"/> to be the base of this <see cref="IdGroupName"/>.</param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdGroupName(Type type, IdRegistryConfiguration idRegConfig)
+            : this(type.FullName(true), idRegConfig)
         {
         }
 
-        internal IdGroupName(DataPackage dataPackage)
-            : this(dataPackage.GetType())
+        /// <summary>
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="dataPackage"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
+        /// </summary>
+        /// <param name="dataPackage">The <see cref="DataPackage"/> to be the base of this <see cref="IdGroupName"/>.</param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdGroupName(DataPackage dataPackage, IdRegistryConfiguration idRegConfig)
+            : this(dataPackage.GetType(), idRegConfig)
         {
         }
 
@@ -84,9 +97,26 @@ public static class DataPackageValues
             return string.Join(":", baseTypeTree);
         }
 
-        internal IdGroupName(string value, IdRegistryConfiguration packageConfig) : this(packageConfig.ApplyDefaultNamespace(value))
+        /// <summary>
+        /// Converts the given <paramref name="value"/> into a <see cref="IdGroupName"/> while applying the provided <see cref="idRegConfig"/>
+        /// </summary>
+        /// <param name="value">The String which will become the value of this <see cref="IdGroupName"/></param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdGroupName(string value, IdRegistryConfiguration idRegConfig) : this(idRegConfig.ApplyDefaultNamespace(value))
         { }
-        internal IdGroupName(PropertyInfo property, IdRegistryConfiguration packageConfig) : this(ExtractKey(property), packageConfig)
+        /// <summary>
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="property"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
+        /// </summary>
+        /// <param name="property">The <see cref="DataPackage"/>'s <see cref="PropertyInfo"/> to get the full name from.</param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdGroupName(PropertyInfo property, IdRegistryConfiguration idRegConfig) : this(ExtractKey(property), idRegConfig)
+        {
+        }
+
+        /// <summary>
+        /// Converts the given string into a <see cref="IdGroupName"/>. In most cases, <see cref="IdGroupName("/>
+        /// </summary>
+        internal IdGroupName(string Value) : base(Value)
         {
         }
     }
@@ -100,15 +130,22 @@ public static class DataPackageValues
         /// Initializes a new instance of the <see cref="IdIdentifier"/> class with the specified property.
         /// </summary>
         /// <param name="property">The property to create the identifier from.</param>
-        public IdIdentifier(PropertyInfo property, IdRegistryConfiguration packageConfig)
-            : this(new IdGroupName(property, packageConfig), new(property, packageConfig))
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdIdentifier(PropertyInfo property, IdRegistryConfiguration idRegConfig)
+            : this(new IdGroupName(property, idRegConfig), new(property, idRegConfig))
         {
         }
 
-        public IdIdentifier(string idGroup, string idName, IdRegistryConfiguration packageConfig)
-            : this(new IdGroupName(idGroup, packageConfig), new(idName, packageConfig))
+        /// <summary>
+        /// Converts the given <paramref name="idGroup"/> and <paramref name="idName"/> into a <see cref="IdIdentifier"/> while applying the provided <paramref name="idRegConfig"/>
+        /// </summary>
+        /// <param name="idGroup">The <see cref="DataPackageValues.IdGroupName"/> of this <see cref="IdIdentifier"/></param>
+        /// <param name="idName">The <see cref="DataPackageValues.IdName"/> of this <see cref="IdIdentifier"/></param>
+        /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
+        public IdIdentifier(string idGroup, string idName, IdRegistryConfiguration idRegConfig)
+            : this(new IdGroupName(idGroup, idRegConfig), new(idName, idRegConfig))
         { }
-        public IdIdentifier(string idGroup, string idName) : this(new IdGroupName(idGroup), new(idName))
+        internal IdIdentifier(string idGroup, string idName) : this(new IdGroupName(idGroup), new(idName))
         {
         }
 

@@ -31,7 +31,7 @@ public interface IIdGenerator
 /// Runtime implementation of the <see cref="IIdGenerator"/> interface.<br/>
 /// Requires <see cref="IMapper"/>
 /// </summary>
-internal sealed class IdGenerator : IIdGenerator
+public sealed class IdGenerator : IIdGenerator
 {
     private readonly IMapper _mapper;
 

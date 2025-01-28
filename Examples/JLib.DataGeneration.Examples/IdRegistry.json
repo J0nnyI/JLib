@@ -26,6 +26,9 @@
   "GenerateIdsManually": {
     "Test": "aca4978e-5b3e-46f3-a708-53361793e5fd"
   },
+  "JLib.DataGeneration.Examples.Getting_Started.GenerateIdsManually": {
+    "Test": "666f1ae1-33f1-4939-a2b7-9743eb9fa07f"
+  },
   "JLib.DataGeneration.Examples.Getting_Started.MinimumCodeNativeIds.CustomerDp": {
     "CustomerId": "bb496875-f177-4fe5-a0bb-0dcd00852bb9"
   },

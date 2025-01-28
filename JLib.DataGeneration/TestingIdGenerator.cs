@@ -12,7 +12,7 @@ namespace JLib.DataGeneration;
 /// <summary>
 /// Represents a testing ID generator.
 /// </summary>
-internal sealed class TestingIdGenerator : IIdGenerator
+public sealed class TestingIdGenerator : IIdGenerator
 {
     private class Counter
     {
@@ -95,16 +95,11 @@ internal sealed class TestingIdGenerator : IIdGenerator
         var frame = stackTrace.GetFrame(stackTraceFrameIndex + 2);
         var method = frame?.GetMethod();
 
-        var x = method?.MethodImplementationFlags;
-
-
         var callCount = _callCounter.GetValueOrAdd(
             method?.FullName(true, true, false, true)
             ?? "", _ => new())
             .Increment();
-
-
-
+        
         IdName idName = method is not null
             ? new(CurrentIdScopeName, method, callCount, _idRegistryConfiguration)
             : new($"non Method Access {callCount}", _idRegistryConfiguration);
