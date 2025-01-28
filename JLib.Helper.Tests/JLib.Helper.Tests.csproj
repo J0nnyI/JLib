@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
+    <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
   </ItemGroup>
 
 </Project>
