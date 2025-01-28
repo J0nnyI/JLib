@@ -147,14 +147,15 @@ public static partial class ValueType
             where T : class
             => ExpressionCache.GetOrAdd(GetExpressionCacheKey<TVt>(true), _ =>
             {
-                var lambda = ForNonNullableClass<TVt, T>();
-                return ((Expression<Func<T?, TVt?>>)(value => value == null ? null : CtorPlaceholder<T, TVt>(value))).ReplaceMethod(PlaceholderMi, lambda);
+                var nonNullableLambda = ForNonNullableClass<TVt, T>();
+                var param = Expression.Parameter(typeof(T), "value");
+                var nullValue = Expression.Constant(null, typeof(TVt));
+                var isNull = Expression.Equal(param, Expression.Constant(null, typeof(T)));
+                var convertParam = Expression.Convert(param, typeof(T));
+                var nonNullableInvocation = Expression.Invoke(nonNullableLambda, convertParam);
+                var conditionalExpression = Expression.Condition(isNull, nullValue, nonNullableInvocation);
+                return Expression.Lambda<Func<T?, TVt?>>(conditionalExpression, param);
             }).CastTo<Expression<Func<T?, TVt?>>>();
-        private static readonly MethodInfo PlaceholderMi = typeof(FactoryExpressions).GetMethod(nameof(CtorPlaceholder), BindingFlags.Static | BindingFlags.NonPublic)
-                                                            ?? throw new InvalidSetupException("Ctor placeholder could not be found");
-        private static TVt CtorPlaceholder<T, TVt>(T value)
-            where TVt : ValueType<T>
-            => throw new InvalidSetupException("this should have been replaced");
 
         #endregion
 
