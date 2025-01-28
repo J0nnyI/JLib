@@ -81,7 +81,7 @@ public static partial class ValueType
                     var ctor = typeof(TVt).GetConstructor(new[] { typeof(T) });
 
                     if (ctor is null)
-                        throw new InvalidSetupException("ctor could not be found");
+                        throw new InvalidSetupException($"ctor of type {typeof(TVt).FullName()} could not be found");
 
                     var ctorEx = Expression.New(ctor, param);
 
@@ -125,7 +125,7 @@ public static partial class ValueType
                 var ctor = typeof(TVt).GetConstructor(new Type[] { typeof(T) });
 
                 if (ctor is null)
-                    throw new InvalidSetupException("ctor could not be found");
+                    throw new InvalidSetupException($"ctor of type  {typeof(TVt).FullName()} could not be found");
 
                 var ctorEx = Expression.New(ctor, param);
 
