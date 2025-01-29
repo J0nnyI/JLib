@@ -72,7 +72,7 @@ public sealed class SnapshotInfoUtilities : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Getting_Started" });
+            .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Getting_Started", "")} });
 
         exceptions.ThrowIfNotEmpty();
 

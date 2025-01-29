@@ -53,7 +53,7 @@ public class TestingIdGeneratorTests : IDisposable
         var provider = new ServiceCollection()
             .AddAutoMapper(cfg => { })
             .AddTestingIdGenerator()
-            .AddIdRegistry(new() { DefaultNamespace = "JLib.DataGeneration.Tests" })
+            .AddIdRegistry(new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } })
             .AddSingleton(typeof(Nested<>))
             .BuildServiceProvider();
         _disposables.Add(provider);

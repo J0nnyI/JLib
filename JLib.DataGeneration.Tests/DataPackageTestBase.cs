@@ -28,7 +28,7 @@ public abstract class DataPackageTestBase : IDisposable
             .AddTypeCache(out var typeCache, exceptions, logger, typePackage)
             .AddAutoMapper(x => x.AddProfiles(typeCache, logger))
             .AddLogging(x => x.AddXunit(toh))
-            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Tests" });
+            .AddDataPackages(typeCache, new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } });
         Provider = services.BuildServiceProvider().DisposeWith(_disposables);
     }
 
