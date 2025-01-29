@@ -7,7 +7,7 @@ namespace JLib.Reflection;
 /// a <see cref="ValueType{T}"/> for <see cref="PropertyInfo"/>s
 /// </summary>
 /// <param name="Value"></param>
-[Unmapped]
+[DisableAutoProfile]
 public abstract record PropertyInfoValueType(PropertyInfo Value) : ValueType<PropertyInfo>(Value)
 {
     /// <summary>
