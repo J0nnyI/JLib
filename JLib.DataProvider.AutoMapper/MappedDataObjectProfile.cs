@@ -14,11 +14,11 @@ public class MappedDataObjectProfile : Profile
     {
         logger.LogDebug("        Creating DataObjectMaps");
         foreach (var mapInfo in cache.All<IMappedDataObjectType>()
-                     .Where(x => !x.HasCustomAutoMapperProfile)
+                     .Where(x => !x.DisableAutomatedProfileGeneration)
                      .SelectMany(tvt => tvt.MappingInfo)
                      .Where(mapInfo =>
-                         !mapInfo.Source.HasCustomAutoMapperProfile
-                         && !mapInfo.Destination.HasCustomAutoMapperProfile)
+                         !mapInfo.Source.DisableAutomatedProfileGeneration
+                         && !mapInfo.Destination.DisableAutomatedProfileGeneration)
                      .ToArray()
                 )
         {
