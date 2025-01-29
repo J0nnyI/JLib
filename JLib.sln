@@ -67,6 +67,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JLib.Reflection", "JLib.Reflection", "{EFA2EA40-BBFA-474F-894E-655FDF9A0EE4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "__Tools__", "__Tools__", "{19B7F873-28AD-4EE6-B981-51A3FD42CAB0}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\LocalNugetPublish.ps1 = Tools\LocalNugetPublish.ps1
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JLib.Tools.TypePackageGenerator", "Tools\JLib.Tools.TypePackageGenerator\JLib.Tools.TypePackageGenerator.csproj", "{FB2C8A19-7E95-4A47-B288-8D12C5D7F32C}"
 EndProject

@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
+
 using AutoMapper;
+
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+
 using Microsoft.Extensions.Logging;
 
 namespace JLib.AutoMapper;
@@ -31,20 +34,27 @@ public record AutoMapperProfileType(Type Value) : TypeValueType(Value)
     /// <exception cref="InvalidOperationException"></exception>
     public Profile Create(ITypeCache typeCache, ILoggerFactory loggerFactory)
     {
-        var ctor = Value.GetConstructors().Single();
+        try
+        {
+            var ctor = Value.GetConstructors().Single();
 
-        var args = ctor.GetParameters().Select(p =>
-            p.ParameterType == typeof(ITypeCache)
-                ? typeCache.As<object>()
-                : p.ParameterType == typeof(ILoggerFactory)
-                    ? loggerFactory.As<object>()
-                    : p.ParameterType == typeof(ILogger<>).MakeGenericType(Value)
-                        ? CreateLogger.MakeGenericMethod(Value).Invoke(null, new object[] { loggerFactory })
-                        : throw new InvalidOperationException(
-                        $"unexpected ctor parameter {p.Name} of type {p.ParameterType.Name} in {Value.FullName()}")
-        ).ToArray();
+            var args = ctor.GetParameters().Select(p =>
+                p.ParameterType == typeof(ITypeCache)
+                    ? typeCache.As<object>()
+                    : p.ParameterType == typeof(ILoggerFactory)
+                        ? loggerFactory.As<object>()
+                        : p.ParameterType == typeof(ILogger<>).MakeGenericType(Value)
+                            ? CreateLogger.MakeGenericMethod(Value).Invoke(null, new object[] { loggerFactory })
+                            : throw new InvalidOperationException(
+                                $"unexpected ctor parameter {p.Name} of type {p.ParameterType.Name} in {Value.FullName()}")
+            ).ToArray();
 
-        return ctor.Invoke(args).As<Profile>()
-               ?? throw new InvalidOperationException($"Instantiation of {Name} failed.");
+            return ctor.Invoke(args).As<Profile>()
+                   ?? throw new InvalidOperationException($"Instantiation of {Name} failed.");
+        }
+        catch (Exception e)
+        {
+            throw new TargetInvocationException($"AutoMapperProfile {Value.FullName(true)} could not be created.", e);
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using JLib.Reflection;
-
-namespace JLib.AutoMapper;
+﻿namespace JLib.Reflection;
 
 /// <summary>
 /// when added to a type, no maps from and to this type should be created. This might or might not be implemented by a given feature.
