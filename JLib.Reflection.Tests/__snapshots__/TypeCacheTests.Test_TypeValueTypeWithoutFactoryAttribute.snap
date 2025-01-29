@@ -5,9 +5,9 @@
       "InvalidTypeValueType": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
-          "NullableContextAttribute",
-          "UnmappedAttribute"
+          "NullableContextAttribute"
         ],
         "ImplementedInterfaces": [
           "IEquatable<TypeCacheTests.TypeValueTypeWithoutFactoryAttribute.InvalidTypeValueType>",
