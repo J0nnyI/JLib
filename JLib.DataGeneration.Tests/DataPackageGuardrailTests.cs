@@ -42,7 +42,7 @@ public class DataPackageGuardrailTests
                     additionalTypes.Append(JLibDataGenerationTp.Instance).ToArray())
                 .AddAutoMapper(x => x.AddProfiles(typeCache, logger))
                 .AddLogging(x => x.AddXunit(_toh))
-                .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Tests" });
+                .AddDataPackages(typeCache, new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } });
             using var provider = services.BuildServiceProvider();
             providerAction(provider);
             exceptions.ThrowIfNotEmpty();

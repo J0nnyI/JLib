@@ -55,7 +55,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Getting_Started" });
+            .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Getting_Started") } });
 
         var serviceProvider = serviceCollection
             .BuildServiceProvider()

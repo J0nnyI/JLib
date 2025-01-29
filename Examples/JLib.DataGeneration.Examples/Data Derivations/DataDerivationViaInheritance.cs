@@ -69,7 +69,7 @@ public sealed class DataDerivationViaInheritance : IDisposable
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache, new() { DefaultNamespace = "JLib.DataGeneration.Examples.Data_Derivations" });
+            .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Data_Derivations")} });
 
         exceptions.ThrowIfNotEmpty();
 
