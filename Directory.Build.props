@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -92,8 +92,8 @@
                     <PrivateAssets>all</PrivateAssets>
                 </PackageReference>
                 <!--test methods-->
-                <PackageReference Include="Snapshooter.Xunit" Version="0.*" />
-                <PackageReference Include="FluentAssertions" Version="6.*" />
+                <PackageReference Include="Snapshooter.Xunit" Version="1.*" />
+                <PackageReference Include="FluentAssertions" Version="7.*" />
                 <PackageReference Include="Moq" Version="4.*" />
                 <!--logging-->
                 <PackageReference Include="Microsoft.Extensions.Logging" Version="8.*" />
