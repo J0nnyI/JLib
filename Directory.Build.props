@@ -83,7 +83,7 @@
                 <PackageReference Include="xunit" Version="2.*" />
                 <PackageReference Include="xunit.abstractions" Version="2.*" />
                 <PackageReference Include="xunit.assert" Version="2.*" />
-                <PackageReference Include="xunit.runner.visualstudio" Version="2.*">
+                <PackageReference Include="xunit.runner.visualstudio" Version="3.*">
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                     <PrivateAssets>all</PrivateAssets>
                 </PackageReference>
@@ -96,11 +96,11 @@
                 <PackageReference Include="FluentAssertions" Version="7.*" />
                 <PackageReference Include="Moq" Version="4.*" />
                 <!--logging-->
-                <PackageReference Include="Microsoft.Extensions.Logging" Version="8.*" />
-                <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
+                <PackageReference Include="Microsoft.Extensions.Logging" Version="9.*" />
+                <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
                 <PackageReference Include="Xunit.Extensions.Logging" Version="1.*" />
                 <!--dependency injection-->
-                <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
+                <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
             </ItemGroup>
         </When>
     </Choose>

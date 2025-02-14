@@ -20,14 +20,14 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <!--test methods-->
-        <PackageReference Include="Snapshooter.Xunit" Version="0.*" />
+        <PackageReference Include="Snapshooter.Xunit" Version="1.*" />
         <PackageReference Include="FluentAssertions" Version="7.*" />
         <!--logging-->
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
         <PackageReference Include="Xunit.Extensions.Logging" Version="1.*" />
         <!--dependency injection-->
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.*" />
     </ItemGroup>
 
     <ItemGroup>
