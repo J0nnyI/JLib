@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -70,15 +71,22 @@ public abstract class TvtFactoryAttribute : Attribute
     [AttributeUsage(AttributeTargets.Class)]
     public class HasAttributeAttribute : TvtFactoryAttribute
     {
-        public HasAttributeAttribute(Type attributeType)
+        public HasAttributeAttribute(Type attributeType, bool inherit = true)
         {
             AttributeType = attributeType;
+            Inherit = inherit;
+            IgnoreGenerics = attributeType is
+            {
+                IsGenericTypeDefinition: false
+            };
         }
 
         public Type AttributeType { get; }
+        public bool Inherit { get; }
+        public bool IgnoreGenerics { get; }
 
         public override bool Filter(Type type)
-            => type.HasCustomAttribute(AttributeType);
+            => type.HasCustomAttribute(AttributeType, Inherit, IgnoreGenerics);
     }
 
     [AttributeUsage(AttributeTargets.Class)]

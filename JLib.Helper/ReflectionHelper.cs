@@ -101,10 +101,19 @@ public static class ReflectionHelper
         return setMethodReturnParameterModifiers?.Contains(typeof(IsExternalInit)) ?? false;
     }
     /// <summary>
-    /// Checks, whether the given <paramref name="type"/> is decorated with the given <paramref name="attributeType"/>
+    /// Checks, whether the given <paramref name="type"/> is decorated with the given <paramref name="attributeType"/> ignoring all type arguments
     /// </summary>
-    public static bool HasCustomAttribute(this MemberInfo type, Type attributeType, bool inherit = true)
-        => type.GetCustomAttribute(attributeType, inherit) is not null;
+    public static bool HasCustomAttribute(this MemberInfo type, Type attributeType, bool inherit = true, bool ignoreGenerics = false)
+    {
+        if (ignoreGenerics && attributeType is { IsGenericType: true, IsGenericTypeDefinition: false })
+        {
+            var typeDefinition = attributeType.TryGetGenericTypeDefinition();
+            return type.GetCustomAttributes(inherit)
+                .Select(x => x.GetType())
+                .Any(x => x.TryGetGenericTypeDefinition() == typeDefinition);
+        }
+        return type.GetCustomAttribute(attributeType, inherit) is not null;
+    }
 
     /// <summary>
     /// converts the member into a code-like representation.<br/>

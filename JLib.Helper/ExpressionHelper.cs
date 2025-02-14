@@ -48,9 +48,10 @@ public static class ExpressionHelper
         if (propInfo.ReflectedType is null)
             throw new ArgumentException($"Expression '{propertyLambda}' has no ReflectedType.");
 
-        if (type != propInfo.ReflectedType && (propInfo.ReflectedType.IsInterface &&
-                                               !type.Implements(propInfo.ReflectedType))
-                                           && !type.IsSubclassOf(propInfo.ReflectedType))
+        if (type != propInfo.ReflectedType 
+            && propInfo.ReflectedType.IsInterface 
+            && !type.Implements(propInfo.ReflectedType)
+            && !type.IsSubclassOf(propInfo.ReflectedType))
             throw new ArgumentException(
                 $"Expression '{propertyLambda}' refers to a property that is not from type {type}.");
 
