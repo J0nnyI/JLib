@@ -111,7 +111,7 @@ public abstract class DataPackage
     /// <summary>
     /// loads the given <see cref="DataPackage"/>. should only be called inside the <see cref="DataPackage"/> ctor.
     /// </summary>
-    protected void Include(params Type[] dataPackages)
+    protected void IncludeDataPackages(params Type[] dataPackages)
         => _serviceProvider.GetRequiredServices(dataPackages);
 
     //The following methods have been generated using this code:
