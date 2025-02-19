@@ -697,7 +697,7 @@ public class AddDataProviderTests : ReflectionTestBase
     }
     #endregion
     #region DataProvider
-    public class TestDataProviderRw<T> : DataProviderRBase<T>, ISourceDataProviderR<T> where T : IEntity
+    public class TestDataProviderRw<T> : DataProviderRBase<T>, ISourceDataProviderRw<T> where T : IEntity
     {
         public override IQueryable<T> Get() => throw new NotImplementedException();
 

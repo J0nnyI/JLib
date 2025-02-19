@@ -82,11 +82,11 @@
           "ImplementationTypeArguments": []
         }
       ],
-      "JLib.DataProvider.IDataProviderRw<TData>": [
+      "JLib.DataProvider.IDataProviderRw<TDataObject>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Factory",
-          "ServiceType": "JLib.DataProvider.IDataProviderRw<TData>",
+          "ServiceType": "JLib.DataProvider.IDataProviderRw<TDataObject>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],
@@ -94,11 +94,11 @@
           "ImplementationTypeArguments": []
         }
       ],
-      "JLib.DataProvider.ISourceDataProviderR<TData>": [
+      "JLib.DataProvider.ISourceDataProviderR<TDataObject>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Factory",
-          "ServiceType": "JLib.DataProvider.ISourceDataProviderR<TData>",
+          "ServiceType": "JLib.DataProvider.ISourceDataProviderR<TDataObject>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],
@@ -108,11 +108,11 @@
           ]
         }
       ],
-      "JLib.DataProvider.ISourceDataProviderRw<TData>": [
+      "JLib.DataProvider.ISourceDataProviderRw<TDataObject>": [
         {
           "Lifetime": "Scoped",
           "ImplementationSource": "Factory",
-          "ServiceType": "JLib.DataProvider.ISourceDataProviderRw<TData>",
+          "ServiceType": "JLib.DataProvider.ISourceDataProviderRw<TDataObject>",
           "ServiceArguments": [
             "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity"
           ],

@@ -81,4 +81,13 @@ public abstract class DataProviderException : JLibException
             : DataObjectNotFoundException(dataProviderType, typeof(TDataObject), id);
     }
 
+    public abstract class InvalidSetupException(
+        Type dataProviderType,
+        Type dataObjectType,
+        string message,
+        Exception? innerException = null)
+        : DataProviderException(dataProviderType, dataObjectType, message, innerException), IInvalidSetupException
+    {
+        
+    }
 }

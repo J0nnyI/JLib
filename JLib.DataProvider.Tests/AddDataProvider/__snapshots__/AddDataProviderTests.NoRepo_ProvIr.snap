@@ -40,7 +40,7 @@
                   {
                     "Type": "System.ComponentModel.DataAnnotations.ValidationException",
                     "MessageLines": [
-                      "Should implement any JLib.DataProvider.ISourceDataProviderR<TData>"
+                      "Should implement any JLib.DataProvider.ISourceDataProviderR<TDataObject>"
                     ],
                     "InnerExceptions": []
                   }
