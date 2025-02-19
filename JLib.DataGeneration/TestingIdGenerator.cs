@@ -10,7 +10,7 @@ using static JLib.DataGeneration.DataPackageValues;
 
 namespace JLib.DataGeneration;
 /// <summary>
-/// Represents a testing ID generator.
+/// Generates Ids which are persistent between test runs using the stacktrace and a call counter.
 /// </summary>
 public sealed class TestingIdGenerator : IIdGenerator
 {

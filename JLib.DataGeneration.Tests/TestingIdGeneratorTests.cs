@@ -1,4 +1,8 @@
-﻿using FluentAssertions;
+﻿using System.Reflection;
+
+using Castle.Components.DictionaryAdapter;
+
+using FluentAssertions;
 
 using JLib.DependencyInjection;
 using JLib.Helper;
@@ -9,29 +13,27 @@ using Xunit;
 
 namespace JLib.DataGeneration.Tests;
 
-public class TestingIdGeneratorTests : IDisposable
+public abstract class TestingIdGeneratorTests : IDisposable
 {
-    public void Dispose()
-        => _disposables.DisposeAll();
-
-    class Nested<T>
+    void IDisposable.Dispose()
     {
-        private readonly TestingIdGenerator _idGenerator;
+        _disposables.DisposeAll();
+        GC.SuppressFinalize(this);
+    }
 
-        public Nested(TestingIdGenerator idGenerator)
-        {
-            _idGenerator = idGenerator;
-        }
+    class Derived<T>(TestingIdGenerator idGenerator) : Nested<T>(idGenerator);
 
+    class Nested<T>(TestingIdGenerator idGenerator)
+    {
         public Guid CreateId<T2, T3>()
             => CreateId<T2>(1);
 
         public Guid CreateId<T2>(int stackTraceFrameIndex = 0)
-            => _idGenerator.CreateGuid(stackTraceFrameIndex);
+            => idGenerator.CreateGuid(stackTraceFrameIndex);
 
         public Guid CreateIdViaAnonymous<T2>(int stackTraceFrameIndex = 0)
         {
-            var x = () => _idGenerator.CreateGuid(stackTraceFrameIndex);
+            var x = () => idGenerator.CreateGuid(stackTraceFrameIndex);
             return x();
         }
 
@@ -42,19 +44,20 @@ public class TestingIdGeneratorTests : IDisposable
             => CreateId<T2>(1);
     }
 
-    private readonly List<IDisposable> _disposables = new();
+    private readonly List<IDisposable> _disposables = [];
     private readonly TestingIdGenerator _idGenerator;
     private readonly IIdRegistry _idRegistry;
     private readonly IServiceProvider _provider;
 
 
-    public TestingIdGeneratorTests()
+    protected TestingIdGeneratorTests()
     {
         var provider = new ServiceCollection()
             .AddAutoMapper(cfg => { })
             .AddTestingIdGenerator()
-            .AddIdRegistry(new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } })
+            .AddIdRegistry(new() { NamespaceAliases = [new("JLib.DataGeneration.Tests")] })
             .AddSingleton(typeof(Nested<>))
+            .AddSingleton(typeof(Derived<>))
             .BuildServiceProvider();
         _disposables.Add(provider);
         provider.GetRequiredServices(out _idGenerator, out _idRegistry);
@@ -197,7 +200,7 @@ public class TestingIdGeneratorTests : IDisposable
         {
             Guid.Parse("75e01bcf-31cf-4601-80b3-bf7935278d54").IdInfo(_idRegistry)
                 .Should().Be(
-                    "Guid [~.TestingIdGeneratorTests.Nested<T>].[[Default]CreateId<>(System.Int32)-1] = 75e01bcf-31cf-4601-80b3-bf7935278d54");
+                    "Guid [~.RuntimeIdGeneratorTests.Nested<T>].[[Default]CreateId<>(System.Int32)-1] = 75e01bcf-31cf-4601-80b3-bf7935278d54");
         }
 
         [Fact]
@@ -209,7 +212,7 @@ public class TestingIdGeneratorTests : IDisposable
                 .ToSnapshotInfo();
 
             info.IdGroupName
-                .Should().Be("~.TestingIdGeneratorTests.Nested<T>");
+                .Should().Be("~.RuntimeIdGeneratorTests.Nested<T>");
 
             info.IdName
                 .Should().Be("[Default]CreateId<>(System.Int32)-1");
@@ -220,7 +223,26 @@ public class TestingIdGeneratorTests : IDisposable
             info.Value
                 .Should().Be(id);
         }
+        [Fact]
+        public void ReverseLookupForRuntimeGuidAsDerivedObject()
+        {
+            var id = Guid.Parse("75e01bcf-31cf-4601-80b3-bf7935278d54");
+            var info = id
+                .IdInfoObj(_idRegistry)
+                .ToSnapshotInfo();
 
+            info.IdGroupName
+                .Should().Be("~.RuntimeIdGeneratorTests.Nested<T>");
+
+            info.IdName
+                .Should().Be("[Default]CreateId<>(System.Int32)-1");
+
+            info.IdType
+                .Should().Be("Guid");
+
+            info.Value
+                .Should().Be(id);
+        }
     }
 
 }

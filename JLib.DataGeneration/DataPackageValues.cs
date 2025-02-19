@@ -21,12 +21,19 @@ public static class DataPackageValues
     /// </summary>
     public record IdName(string Value) : StringValueType(Value)
     {
+        private static string ExtractIdName(PropertyInfo property)
+            => $"{(property.DeclaringType != property.ReflectedType
+                && property.DeclaringType is not null
+                   ? $"{property.DeclaringType.FullName(true)}."
+                   : ""
+               )}{property.Name}";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IdName"/> class with the specified property.
         /// </summary>
         /// <param name="property">The property to get the name from.</param>
         /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
-        public IdName(PropertyInfo property, IdRegistryConfiguration idRegConfig) : this(property.Name, idRegConfig)
+        public IdName(PropertyInfo property, IdRegistryConfiguration idRegConfig) : this(ExtractIdName(property), idRegConfig)
         { }
 
         /// <summary>
@@ -49,7 +56,11 @@ public static class DataPackageValues
                        ? ""
                        : $"[{scopeName.Value}]"
                 )
-                   + $"{idRegConfig.ApplyDefaultNamespace(method.FullName(false, false, false, true))}-{callNumber}")
+                   + $"{(method.DeclaringType != method.ReflectedType
+                         && method.DeclaringType is not null
+                       ? method.DeclaringType.FullName(true) + "."
+                       : "")}{method.FullName(false, false, false, true)}-{callNumber}"
+                , idRegConfig)
         { }
     }
 
@@ -59,7 +70,7 @@ public static class DataPackageValues
     public record IdGroupName : StringValueType
     {
         /// <summary>
-        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="type"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="type"/> and applies the <see cref="IdRegistryConfiguration.NamespaceAliases"/> of the given <paramref name="idRegConfig"/>
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to be the base of this <see cref="IdGroupName"/>.</param>
         /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
@@ -69,7 +80,7 @@ public static class DataPackageValues
         }
 
         /// <summary>
-        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="dataPackage"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="dataPackage"/> and applies the <see cref="IdRegistryConfiguration.NamespaceAliases"/> of the given <paramref name="idRegConfig"/>
         /// </summary>
         /// <param name="dataPackage">The <see cref="DataPackage"/> to be the base of this <see cref="IdGroupName"/>.</param>
         /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
@@ -79,23 +90,8 @@ public static class DataPackageValues
         }
 
         private static string ExtractKey(PropertyInfo property)
-        {
-            if (property.DeclaringType is null)
-                return "No declaring type found";
-            if (property.ReflectedType is null)
-                return "No reflected type found";
-
-            if (property.DeclaringType == property.ReflectedType)
-                return property.ReflectedType.FullName(true);
-
-            var baseTypeTree = property.ReflectedType
-                .GetBaseTypeTree()
-                .TakeWhile(t => t != property.DeclaringType)
-                .Append(property.DeclaringType)
-                .Select(t => t.FullName(true));
-
-            return string.Join(":", baseTypeTree);
-        }
+            => property.ReflectedType?.FullName(true)
+               ?? "No declaring type found";
 
         /// <summary>
         /// Converts the given <paramref name="value"/> into a <see cref="IdGroupName"/> while applying the provided <see cref="idRegConfig"/>
@@ -105,7 +101,7 @@ public static class DataPackageValues
         public IdGroupName(string value, IdRegistryConfiguration idRegConfig) : this(idRegConfig.ApplyDefaultNamespace(value))
         { }
         /// <summary>
-        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="property"/> and applies the <see cref="IdRegistryConfiguration.DefaultNamespace"/> of the given <paramref name="idRegConfig"/>
+        /// Extracts the <see cref="IdGroupName"/> from the given <paramref name="property"/> and applies the <see cref="IdRegistryConfiguration.NamespaceAliases"/> of the given <paramref name="idRegConfig"/>
         /// </summary>
         /// <param name="property">The <see cref="DataPackage"/>'s <see cref="PropertyInfo"/> to get the full name from.</param>
         /// <param name="idRegConfig">The <see cref="IdRegistryConfiguration"/> to apply the default namespace from.</param>
@@ -114,7 +110,7 @@ public static class DataPackageValues
         }
 
         /// <summary>
-        /// Converts the given string into a <see cref="IdGroupName"/>. In most cases, <see cref="IdGroupName("/>
+        /// Converts the given string into a <see cref="IdGroupName"/>. In most cases, <see cref="IdGroupName"/>
         /// </summary>
         internal IdGroupName(string Value) : base(Value)
         {

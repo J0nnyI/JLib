@@ -1,24 +1,26 @@
 {
   "__registry__": {
-    "IdIncrement": 3
+    "IdIncrement": 4
   },
   "~.DataPackageGuardrailTests.DuplicatePropertyDp": {
+    "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id": "c1ce9f22-9b04-492e-bf90-42b8c5a5abea",
+    "~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>.Id2": 4,
     "Id": "5986ba8d-9b94-4d95-944f-0dd459d7c5e9"
   },
   "~.DataPackageGuardrailTests.DuplicatePropertyDp:~.ValidDataPackages.Base2Dp<System.Object>:~.ValidDataPackages.Base1Dp<~.DataPackageTestBase.TestTypeId>": {
     "Id": "7a866bfa-8b56-4d64-99e4-7e7608b340f1",
     "Id2": 1
   },
-  "~.TestingIdGeneratorTests.CreateGuidTests": {
+  "~.RuntimeIdGeneratorTests.CreateGuidTests": {
     "[Default]CreateGuid_ShouldReturnNewGuid()-1": "44bece3b-3bf2-4487-8a12-e93a2fc23305"
   },
-  "~.TestingIdGeneratorTests.Nested<T>": {
+  "~.RuntimeIdGeneratorTests.Nested<T>": {
     "[Default]CreateId<,>()-1": "c0614c1f-41c8-4188-bda7-04b2d348a24d",
     "[Default]CreateId<>(System.Int32)-1": "75e01bcf-31cf-4601-80b3-bf7935278d54",
     "[Default]CreateId<>(System.Int32)-2": "bb4eed1d-fa1b-47be-9726-cef1aea7c2b9",
     "[otherScope]CreateId<>(System.Int32)-1": "e375ff91-129e-4cf1-8360-3306b9228c0a"
   },
-  "~.TestingIdGeneratorTests.Nested<T>.<>c__DisplayClass4_0<T2>": {
+  "~.RuntimeIdGeneratorTests.Nested<T>.<>c__DisplayClass4_0<T2>": {
     "[Default]<CreateIdViaAnonymous>b__0()-1": "a249b3a5-c3ed-4562-9e6a-23c8e2f27617"
   },
   "~.ValidDataPackages.Test3Dp": {
