@@ -60,37 +60,37 @@ public class InMemoryDataProvider<TEntity> : DataProviderRBase<TEntity>, ISource
          : _items.Values.AsQueryable().Where(_authorize.Expression());
     }
 
-    public void Add(TEntity item)
+    public void Add(TEntity dataObject)
     {
-        _authorize?.AndRaiseException(item);
-        CreateAndSetId(item);
-        if (!_items.TryAdd(item.Id, item))
+        _authorize?.AndRaiseException(dataObject);
+        CreateAndSetId(dataObject);
+        if (!_items.TryAdd(dataObject.Id, dataObject))
             throw new InvalidOperationException("item could not be added");
     }
 
-    public void Add(IReadOnlyCollection<TEntity> items)
+    public void Add(IReadOnlyCollection<TEntity> dataObject)
     {
-        foreach (var entity in items)
+        foreach (var entity in dataObject)
             Add(entity);
     }
 
-    public void Remove(Guid itemId)
+    public void Remove(Guid dataObjectId)
     {
-        if (!_items.TryRemove(itemId, out _))
+        if (!_items.TryRemove(dataObjectId, out _))
             throw new Exception("item could not be removed");
     }
 
-    public void Remove(TEntity item) => Remove(item.Id);
+    public void Remove(TEntity dataObject) => Remove(dataObject.Id);
 
-    public void Remove(IReadOnlyCollection<Guid> itemIds)
+    public void Remove(IReadOnlyCollection<Guid> dataObjectIds)
     {
-        foreach (var id in itemIds)
+        foreach (var id in dataObjectIds)
             Remove(id);
     }
 
-    public void Remove(IReadOnlyCollection<TEntity> items)
+    public void Remove(IReadOnlyCollection<TEntity> dataObjects)
     {
-        foreach (var item in items)
+        foreach (var item in dataObjects)
             Remove(item);
     }
 }

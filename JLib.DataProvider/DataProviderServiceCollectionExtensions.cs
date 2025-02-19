@@ -62,9 +62,9 @@ public static class DataProviderServiceCollectionExtensions
     /// <br/>ㅤAlways - <typeparamref name="TImplementation"/> as using <paramref name="implementationTypeArgumentResolver"/> to resolve the type arguments
     /// <br/>Alias for <typeparamref name="TImplementation"/>
     /// <br/>ㅤAlways - <see cref="ISourceDataProviderR{TData}"/> as Alias 
-    /// <br/>ㅤ<typeparamref name="TImplementation"/> implements <see cref="ISourceDataProviderRw{TData}"/> - <see cref="ISourceDataProviderRw{TData}"/>
+    /// <br/>ㅤ<typeparamref name="TImplementation"/> implements <see cref="ISourceDataProviderRw{TData}"/>
     /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> - <see cref="IDataProviderR{TData}"/>
-    /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> and <typeparamref name="TImplementation"/> implements <see cref="IDataProviderRw{TData}"/> - <see cref="IDataProviderRw{TData}"/>
+    /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> and <typeparamref name="TImplementation"/> implements <see cref="IDataProviderRw{TDataObject}"/> - <see cref="IDataProviderRw{TDataObject}"/>
     /// </summary>
     /// <typeparam name="TTvt">the <see cref="Reflection.TypeValueType"/> which instances will be added as <see cref="IDataProviderR{TDataObject}"/></typeparam>
     /// <typeparam name="TImplementation">the implementation of the <see cref="IDataProviderR{TDataObject}"/> to be used. Generics will be ignored.</typeparam>
@@ -73,7 +73,7 @@ public static class DataProviderServiceCollectionExtensions
     /// <param name="typeCache"><see cref="AddTypeCache(IServiceCollection,out ITypeCache, ExceptionBuilder, ITypePackage[])"/></param>
     /// <param name="filter">if the filter is provided and returns false, no <see cref="IDataProviderR{TDataObject}"/> will be created for the given <see cref="Reflection.TypeValueType"/><br/>
     /// null defaults to '_=>true'</param>
-    /// <param name="forceReadOnly">if provided and true, only <see cref="IDataProviderR{TDataObject}"/> and <see cref="ISourceDataProviderR{TData}"/> will be provided but not <see cref="IDataProviderRw{TData}"/> or <see cref="ISourceDataProviderRw{TData}"/><br/>
+    /// <param name="forceReadOnly">if provided and true, only <see cref="IDataProviderR{TDataObject}"/> and <see cref="ISourceDataProviderR{TData}"/> will be provided but not <see cref="IDataProviderRw{TDataObject}"/> or <see cref="ISourceDataProviderRw{TData}"/><br/>
     /// null defaults to '_=>false'</param>
     /// <param name="implementationTypeArgumentResolver">
     /// resolves the type arguments for the implementation in order.<br/>
