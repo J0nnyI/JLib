@@ -35,6 +35,12 @@ public class SystemTextJsonConverterTests : IDisposable
 
     }
 
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _provider.Dispose();
+    }
+
     [Fact]
     public void String_Deserialize()
     {
@@ -83,7 +89,7 @@ public class SystemTextJsonConverterTests : IDisposable
     public void Int_Deserialize()
     {
         var raw = 5;
-        var value = JsonSerializer.Deserialize<IntVt>(raw,
+        var value = JsonSerializer.Deserialize<IntVt>(raw.ToString(),
             new JsonSerializerOptions(JsonSerializerDefaults.General)
             {
                 Converters = { new ValueTypeJsonConverterFactory(_mapper) }
@@ -134,8 +140,4 @@ public class SystemTextJsonConverterTests : IDisposable
     }
 
 
-    public void Dispose()
-    {
-        _provider.Dispose();
-    }
 }
