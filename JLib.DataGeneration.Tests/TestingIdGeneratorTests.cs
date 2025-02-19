@@ -151,7 +151,7 @@ public abstract class TestingIdGeneratorTests : IDisposable
             const int id = 2;
             var info = id
                 .IdInfoObj(_idRegistry)
-                .ToSnapshotInfo();
+                .ToSnapshotInfo(true);
 
             info.IdGroupName
                 .Should().Be("~.ValidDataPackages.Test3Dp");
@@ -180,7 +180,7 @@ public abstract class TestingIdGeneratorTests : IDisposable
             var id = Guid.Parse("8ca6e4e4-8e69-4e80-b906-8609475aba84");
             var info = id
                 .IdInfoObj(_idRegistry)
-                .ToSnapshotInfo();
+                .ToSnapshotInfo(true);
 
             info.IdGroupName
                 .Should().Be("~.ValidDataPackages.Test3Dp");
@@ -200,7 +200,7 @@ public abstract class TestingIdGeneratorTests : IDisposable
         {
             Guid.Parse("75e01bcf-31cf-4601-80b3-bf7935278d54").IdInfo(_idRegistry)
                 .Should().Be(
-                    "Guid [~.RuntimeIdGeneratorTests.Nested<T>].[[Default]CreateId<>(System.Int32)-1] = 75e01bcf-31cf-4601-80b3-bf7935278d54");
+                    "Guid [~.TestingIdGeneratorTests.Nested<T>].[[Default]CreateId<>(System.Int32)-1] = 75e01bcf-31cf-4601-80b3-bf7935278d54");
         }
 
         [Fact]
@@ -209,10 +209,10 @@ public abstract class TestingIdGeneratorTests : IDisposable
             var id = Guid.Parse("75e01bcf-31cf-4601-80b3-bf7935278d54");
             var info = id
                 .IdInfoObj(_idRegistry)
-                .ToSnapshotInfo();
+                .ToSnapshotInfo(true);
 
             info.IdGroupName
-                .Should().Be("~.RuntimeIdGeneratorTests.Nested<T>");
+                .Should().Be("~.TestingIdGeneratorTests.Nested<T>");
 
             info.IdName
                 .Should().Be("[Default]CreateId<>(System.Int32)-1");
@@ -229,10 +229,10 @@ public abstract class TestingIdGeneratorTests : IDisposable
             var id = Guid.Parse("75e01bcf-31cf-4601-80b3-bf7935278d54");
             var info = id
                 .IdInfoObj(_idRegistry)
-                .ToSnapshotInfo();
+                .ToSnapshotInfo(true);
 
             info.IdGroupName
-                .Should().Be("~.RuntimeIdGeneratorTests.Nested<T>");
+                .Should().Be("~.TestingIdGeneratorTests.Nested<T>");
 
             info.IdName
                 .Should().Be("[Default]CreateId<>(System.Int32)-1");
