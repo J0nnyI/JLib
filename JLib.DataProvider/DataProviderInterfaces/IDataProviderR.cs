@@ -16,18 +16,18 @@ public interface IDataProviderR<TDataObject>
 
     /// <param name="id">the <see cref="IDataObject.Id"/> of the requested <typeparamref name="TDataObject"/> </param>
     /// <returns>the  requested <typeparamref name="TDataObject"/> with <see cref="IDataObject.Id"/> <paramref name="id"/>.
-    /// Throws an <see cref="DataProviderException.DataException.DataObjectNotFoundException{TDataObject}"/> if it could not be found.</returns>
-    /// <exception cref="DataProviderException.DataException.DataObjectNotFoundException{TDataObject}"/>
+    /// Throws an <see cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/> if it could not be found.</returns>
+    /// <exception cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
     public TDataObject Get(Guid id);
 
     /// <param name="ids">the <see cref="IDataObject.Id"/> of the requested <typeparamref name="TDataObject"/>s.</param>
     /// <returns>the  requested <typeparamref name="TDataObject"/>s per <see cref="IDataObject.Id"/></returns>
-    /// <exception cref="DataProviderException.DataException.DataObjectNotFoundException{TDataObject}"/>
+    /// <exception cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
     public IReadOnlyDictionary<Guid, TDataObject> Get(IReadOnlyCollection<Guid> ids);
 
     /// <param name="id">the <see cref="IDataObject.Id"/> of the requested <typeparamref name="TDataObject"/> </param>
     /// <returns>The  requested <typeparamref name="TDataObject"/> with <see cref="IDataObject.Id"/> <paramref name="id"/> or null, if it could not be found</returns>
-    /// <exception cref="DataProviderException.DataException.DataObjectNotFoundException{TDataObject}"/>
+    /// <exception cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
     public TDataObject? TryGet(Guid? id);
     /// <param name="id">the <see cref="IDataObject.Id"/> to look for.</param>
     /// <returns>true, if an entity of type <typeparamref name="TDataObject"/> could be found.</returns>

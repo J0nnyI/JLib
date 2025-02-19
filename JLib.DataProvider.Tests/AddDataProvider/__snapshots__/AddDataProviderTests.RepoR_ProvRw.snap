@@ -39,7 +39,7 @@
                 ],
                 "InnerExceptions": [
                   {
-                    "Type": "JLib.Exceptions.InvalidSetupException",
+                    "Type": "JLib.DataProvider.DataProviderException.InvalidSetupException.RepositoryDataAccessMismatchException.ImplementationWritableButReadOnlyRepository",
                     "MessageLines": [
                       "The data provider Implementation JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity> can write data but the Repository JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryR can not. ",
                       "Force the dataProvider to be ReadOnly or Implement IDataProviderRw with the repository."

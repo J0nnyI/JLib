@@ -19,10 +19,10 @@ public abstract class DataProviderRBase<TDataObject> : IDataProviderR<TDataObjec
     /// <summary>
     /// <inheritdoc cref="IDataProviderR{TDataObject}.Get(Guid)"/>
     /// </summary>
-    /// <exception cref="DataProviderException.DataException.DataObjectNotFoundException{TDataObject}"/>
+    /// <exception cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
     public TDataObject Get(Guid id)
         => Get().SingleOrDefault(x => x.Id == id)
-           ?? throw new DataProviderException.DataException.DataObjectNotFoundException<TDataObject>(GetType(), id);
+           ?? throw new DataProviderException.RuntimeException.DataObjectNotFoundException<TDataObject>(GetType(), id);
 
     /// <summary>
     /// raises a <see cref="KeyNotFoundException"/> when a key could not be found or the user is not authorized to access the given entity;
@@ -34,7 +34,7 @@ public abstract class DataProviderRBase<TDataObject> : IDataProviderR<TDataObjec
             .Where(x => ids.Contains(x.Id))
             .ToDictionary(x => x.Id);
         ids.Except(res.Keys)
-            .Select(id => new DataProviderException.DataException.DataObjectNotFoundException<TDataObject>(GetType(), id))
+            .Select(id => new DataProviderException.RuntimeException.DataObjectNotFoundException<TDataObject>(GetType(), id))
             .ThrowExceptionIfNotEmpty("Some Keys could not be found");
         return res;
     }

@@ -15,4 +15,8 @@
     <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AddDataProvider\__snapshots__\__mismatch__\" />
+  </ItemGroup>
+
 </Project>
