@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper;
 
 namespace JLib.ValueTypes.Mapping.SystemTextJson;
 
@@ -13,19 +12,8 @@ namespace JLib.ValueTypes.Mapping.SystemTextJson;
 internal class StringValueTypeJsonConverter<T> : JsonConverter<T>
     where T: ValueType<string>
 {
-    private readonly IMapper _mapper;
-
-    public StringValueTypeJsonConverter(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        var value = reader.GetString();
-        return value is null 
-            ? null 
-            : _mapper.Map<T>(value);
-    }
+    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) 
+        => ValueType.CreateNullable<T,string>(reader.GetString());
 
     public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
     {

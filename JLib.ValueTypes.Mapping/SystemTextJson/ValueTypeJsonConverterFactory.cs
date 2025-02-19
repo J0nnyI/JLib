@@ -1,18 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper;
-using JLib.AutoMapper;
 using JLib.Exceptions;
 using JLib.Helper;
-using JLib.Reflection;
 
 namespace JLib.ValueTypes.Mapping.SystemTextJson;
 
 /// <summary>
 /// used by the <see cref="ValueTypeJsonConverterFactory"/> to enable <see cref="ValueType{T}"/> interpretation of types<br/>
 /// uses automapper to instantiate the <see cref="ValueType{T}"/>.<br/>
-/// <seealso cref="ValueTypeProfile"/> can generate all required maps and is included in <seealso cref="AutoMapperHelper.AddProfiles"/> as long as the <seealso cref="ITypeCache"/> contains said <seealso cref="ValueType{T}"/><br/>
 /// supports <seealso cref="Dictionary{TKey,TValue}"/> conversions where the key is a value type
 /// <list type="bullet">
 /// <item><see cref="Guid"/></item>
@@ -32,38 +28,20 @@ namespace JLib.ValueTypes.Mapping.SystemTextJson;
 /// </summary>
 public class ValueTypeJsonConverterFactory : JsonConverterFactory
 {
-    private IMapper? _mapper;
     private readonly ConcurrentDictionary<Type, JsonConverter> _converters = new();
 
     /// <summary>
-    /// 
+    /// <inheritdoc cref="JsonConverter.CanConvert"/>
     /// </summary>
-    /// <param name="mapper">
-    ///     when null, it has to be set later using <see cref="AddMapper"/>.<br/>
-    ///     this enabled the mapper initialization 
-    /// </param>
-    public ValueTypeJsonConverterFactory(IMapper? mapper)
-    {
-        _mapper = mapper;
-    }
-
-    /// <summary>
-    /// adds the automapper reference after the constructor has been called with a null argument.<br/>
-    /// </summary>
-    /// <param name="mapper"></param>
-    public void AddMapper(IMapper mapper)
-    {
-        if (_mapper is not null)
-            throw new InvalidOperationException("Mapper has already been set");
-        _mapper = mapper;
-    }
-
     public override bool CanConvert(Type typeToConvert)
     {
         return IsValueType(typeToConvert) || IsValueTypeDictionary(typeToConvert);
     }
 
-    public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    /// <summary>
+    /// <inheritdoc cref="JsonConverterFactory.CreateConverter"/>
+    /// </summary>
+    public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         => _converters.GetValueOrAdd(typeToConvert, CreateConverter);
 
 
@@ -95,10 +73,7 @@ public class ValueTypeJsonConverterFactory : JsonConverterFactory
                 $"Type {typeToConvert.FullName()} is not supported. Only Numbers, strings and Guids are supported")
         };
 
-        if (_mapper is null)
-            throw new InvalidOperationException($"Mapper has not been set. Use {AddMapper} to set the AutoMapper reference");
-
-        return Activator.CreateInstance(converterType, _mapper)
+        return Activator.CreateInstance(converterType)
                    ?.As<JsonConverter>()
                ?? throw new InvalidOperationException($"Activator failed to create converter of type {converterType.FullName()}");
 
@@ -120,10 +95,8 @@ public class ValueTypeJsonConverterFactory : JsonConverterFactory
             ?? throw new InvalidSetupException("native type not found");
         var valueType = args[1];
         var converterType = typeof(ValueTypeDictionaryJsonConverter<,,>).MakeGenericType(keyValueType, keyNativeType, valueType);
-        if (_mapper is null)
-            throw new InvalidOperationException($"Mapper has not been set. Use {AddMapper} to set the AutoMapper reference");
 
-        return Activator.CreateInstance(converterType, _mapper)
+        return Activator.CreateInstance(converterType)
                    ?.As<JsonConverter>()
                ?? throw new InvalidOperationException($"Activator failed to create converter of type {converterType.FullName()}");
     }
