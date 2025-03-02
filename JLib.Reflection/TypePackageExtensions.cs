@@ -1,4 +1,5 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Collections.Immutable;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 using JLib.Helper;
@@ -58,9 +59,9 @@ public static class TypePackageExtensions
                 .Replace("{Children}", typePackage.Children.Count().ToString())
                 .Replace("{Types}", typePackage.Types.Count().ToString()),
             ["Types"] = typePackage.Types.GroupBy(t => t.Namespace)
-                .ToDictionary(
+                .ToImmutableSortedDictionary(
                     kv => kv.Key ?? "-",
-                    kv => kv.Select(t => t.FullName()).ToReadOnlyCollection()
+                    kv => kv.Select(t => t.FullName()).Order().ToReadOnlyCollection()
                 ),
             ["Children"] = typePackage.Children.Select(ToJsonObject).ToReadOnlyCollection()
         };

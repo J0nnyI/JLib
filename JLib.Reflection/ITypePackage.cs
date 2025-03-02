@@ -3,7 +3,8 @@
 namespace JLib.Reflection;
 
 /// <summary>
-/// Contains types to be used by the <see cref="TypeCache"/>
+/// Contains types to be used by the <see cref="TypeCache"/>.<br/>
+/// Created by the <see cref="TypePackageBuilder"/>
 /// </summary>
 public interface ITypePackage
 {
@@ -23,13 +24,12 @@ public interface ITypePackage
 
     /// <summary>
     /// a short description of the contents of the type package.<br/>
-    /// {0} is replaced by the number of <see cref="Children"/><br/>
-    /// {1} is replaced by the number of <see cref="Types"/>
     /// </summary>
     public string DescriptionTemplate { get; }
 
     /// <summary>
     /// returns a type package which is a combination of the given packages
     /// </summary>
+    [Obsolete]
     public ITypePackage Combine(params ITypePackage[] packages);
 }
