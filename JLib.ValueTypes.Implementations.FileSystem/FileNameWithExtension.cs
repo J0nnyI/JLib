@@ -67,7 +67,7 @@ public static class FilePathValidationExtensions
     /// </summary>
     public static IValidationContext<string?> HaveNoExtension(this IValidationContext<string?> context)
     {
-        if (Path.HasExtension(context.Value) is false)
+        if (Path.HasExtension(context.Value))
             context.AddError("Must have no extension");
         return context;
     }
