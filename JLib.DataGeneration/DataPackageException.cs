@@ -74,5 +74,11 @@ public abstract class DataPackageException : JLibException
             }
         }
 
+        /// <summary>
+        /// thrown, when a <see cref="Type"/> was expected to be derived from <see cref="DataPackage"/> but was not.
+        /// </summary>
+        public sealed class NotADataPackageException(Type dataPackageType) 
+            : InitializationException(dataPackageType,
+                $"{dataPackageType.FullName()} is not derived from {typeof(DataPackage).FullName()}");
     }
 }

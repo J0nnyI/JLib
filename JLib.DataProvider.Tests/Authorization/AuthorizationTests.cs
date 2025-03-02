@@ -161,7 +161,8 @@ public abstract class AuthorizationTestsBase<TProfile> : AuthorizationTestsBaseT
                 .Should()
                 .Be(_dataPackage.FirstUnauthorizedId);
         };
-        f.Should().Throw<InvalidOperationException>();
+        f.Should().Throw<DataProviderException.RuntimeException.DataObjectNotFoundException<TestDataObject>>()
+            .Which.Id.Should().Be(_dataPackage.FirstUnauthorizedId);
     }
 
     [Fact]

@@ -1,9 +1,13 @@
 using FluentAssertions;
+
 using JLib.DependencyInjection;
 using JLib.Helper;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+
 using Moq;
+
 using Xunit;
 
 namespace JLib.AspNetCore.Tests;
@@ -11,6 +15,7 @@ namespace JLib.AspNetCore.Tests;
 public class RequestScopedTests : IDisposable
 {
     #region test services
+    public interface ITestService { }
     public class ThrowOnCreate
     {
         public class Exception : System.Exception { }
@@ -36,7 +41,7 @@ public class RequestScopedTests : IDisposable
     }
 
     public class NotProvided { }
-    public class Identifiyable
+    public class Identifiyable : ITestService
     {
         public Guid ServiceId { get; } = Guid.NewGuid();
     }
@@ -60,6 +65,7 @@ public class RequestScopedTests : IDisposable
         services.AddRequestScoped(typeof(ReferenceOther<NotProvided>));
         services.AddRequestScoped<ThrowOnCreate>();
         services.AddRequestScoped<Identifiyable>();
+        services.AddRequestScoped<ITestService, Identifiyable>();
 
         _provider = services.BuildServiceProvider()
             .DisposeWith(_disposables);
@@ -135,5 +141,15 @@ public class RequestScopedTests : IDisposable
         Action act = () => _provider.GetRequiredService<Identifiyable>();
         act.Should()
             .Throw<AspNetCoreServiceCollectionExtensions.AddRequestScopedServiceException.OutsideHttpContextScopeException>();
+    }
+    [Fact]
+    public void ByInterface()
+    {
+        CreateRequestScope(out var contextA, out var providerA);
+        CreateSubScope(contextA, out var providerA2);
+
+        //_provider.GetRequiredService<ITestService>().Should().BeOfType<Identifiyable>();
+        providerA.GetRequiredService<ITestService>().Should().BeOfType<Identifiyable>();
+        providerA2.GetRequiredService<ITestService>().Should().BeOfType<Identifiyable>();
     }
 }

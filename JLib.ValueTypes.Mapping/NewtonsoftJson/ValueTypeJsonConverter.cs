@@ -1,21 +1,14 @@
-﻿using System.Collections.Concurrent;
-using AutoMapper;
-using JLib.Helper;
+﻿using JLib.Helper;
+
 using Newtonsoft.Json;
 
 // Other necessary using directives...
 
 namespace JLib.ValueTypes.Mapping.NewtonsoftJson;
 // not implemented yet
-#if DEBUG
+#if false
 public class ValueTypeDictionaryJsonConverter : JsonConverter
 {
-    private readonly IMapper _mapper;
-
-    public ValueTypeDictionaryJsonConverter(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) => throw new NotImplementedException();
 
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
@@ -29,46 +22,41 @@ public class ValueTypeDictionaryJsonConverter : JsonConverter
 
         serializer.Populate(reader, nativeDict);
 
-        return _mapper.Map(nativeDict, nativeDictType, objectType);
+        throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// <inheritdoc cref="JsonConverter.CanConvert"/>
+    /// </summary>
     public override bool CanConvert(Type objectType)
         => objectType.IsGenericTypeDefinition
            && objectType.GetGenericTypeDefinition() == typeof(Dictionary<,>)
            && objectType.GetGenericTypeDefinition().GenericTypeArguments.First() == typeof(ValueType<>);
 }
 #endif
+/// <summary>
+/// Allows the <see cref="JsonSerializer"/> to Serialize and Deserialize ValueTypes as if they were native
+/// </summary>
 public class ValueTypeJsonConverter : JsonConverter
 {
-    private IMapper? _mapper;
-    private readonly ConcurrentDictionary<Type, JsonConverter> _converters = new();
-
-    public ValueTypeJsonConverter(IMapper? mapper)
-    {
-        _mapper = mapper;
-    }
-
-    public void AddMapper(IMapper mapper)
-    {
-        if (_mapper is not null)
-            throw new InvalidOperationException("Mapper has already been set");
-        _mapper = mapper;
-    }
-
+    /// <summary>
+    /// <inheritdoc cref="JsonConverter.CanConvert"/>
+    /// </summary>
     public override bool CanConvert(Type objectType)
     {
         return objectType.IsDerivedFromAny<ValueType<Ignored>>();
     }
 
+    /// <summary>
+    /// <inheritdoc cref="JsonConverter.ReadJson"/>
+    /// </summary>
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
-        if (_mapper is null)
-            throw new InvalidOperationException($"Mapper has not been set. Use {AddMapper} to set the AutoMapper reference");
-
         // todo: add dictionary primary key support
         var nativeType = objectType
             .GetAnyBaseType<ValueType<Ignored>>()
             ?.GenericTypeArguments.First();
+
         object? value = nativeType
             switch
         {
@@ -89,10 +77,13 @@ public class ValueTypeJsonConverter : JsonConverter
             _ => throw new NotSupportedException(
                 $"Type {objectType.FullName()} is not supported. Only Numbers are supported")
         };
-        return _mapper.Map(value, nativeType, objectType);
+        return ValueType.CreateNullable(objectType, value);
 
     }
 
+    /// <summary>
+    /// <inheritdoc cref="JsonConverter.WriteJson"/>
+    /// </summary>
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         if (value?.GetType().IsDerivedFromAny<ValueType<Ignored>>() == false)

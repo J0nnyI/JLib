@@ -14,7 +14,7 @@ public static class DataProviderAutomapperExtensions
     /// <summary>
     /// adds map data providers for each <see cref="IMappedDataObjectType"/>.
     /// <br/>generates a <see cref="IDataProviderR{TData}"/> if <see cref="IMappedDataObjectType.ReverseMap"/> is false
-    /// <br/>generates a <see cref="IDataProviderRw{TData}"/> and a <see cref="IDataProviderR{TData}"/> as alias if it is true
+    /// <br/>generates a <see cref="IDataProviderRw{TDataObject}"/> and a <see cref="IDataProviderR{TData}"/> as alias if it is true
     /// </summary>
     public static IServiceCollection AddMapDataProvider(
         this IServiceCollection services,

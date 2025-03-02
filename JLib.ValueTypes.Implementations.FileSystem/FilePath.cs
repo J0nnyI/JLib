@@ -1,4 +1,5 @@
 ﻿using System.Text;
+
 using Microsoft.Win32.SafeHandles;
 
 namespace JLib.ValueTypes.Implementations.FileSystem;
@@ -90,31 +91,31 @@ public abstract record FilePath(string Value) : StringValueType(Value)
 
     #region set attributes
     /// <summary>
-    /// <inheritdoc cref="File.SetAttributes"/>
+    /// <inheritdoc cref="File.SetAttributes(string,FileAttributes)"/>
     /// </summary>
     public void SetAttributes(FileAttributes attributes) => File.SetAttributes(Value, attributes);
     /// <summary>
-    /// <inheritdoc cref="File.C"/>
+    /// <inheritdoc cref="File.SetCreationTime(string,DateTime)"/>
     /// </summary>
     public void SetCreationTime(DateTime creationTime) => File.SetCreationTime(Value, creationTime);
     /// <summary>
-    /// <inheritdoc cref="File.SetCreationTimeUtc"/>
+    /// <inheritdoc cref="File.SetCreationTimeUtc(string,DateTime)"/>
     /// </summary>
     public void SetCreationTimeUtc(DateTime creationTimeUtc) => File.SetCreationTimeUtc(Value, creationTimeUtc);
     /// <summary>
-    /// <inheritdoc cref="File.SetLastAccessTime"/>
+    /// <inheritdoc cref="File.SetLastAccessTime(string,DateTime)"/>
     /// </summary>
     public void SetLastAccessTime(DateTime lastAccessTime) => File.SetLastAccessTime(Value, lastAccessTime);
     /// <summary>
-    /// <inheritdoc cref="File.SetLastAccessTimeUtc"/>
+    /// <inheritdoc cref="File.SetLastAccessTimeUtc(string,DateTime)"/>
     /// </summary>
     public void SetLastAccessTimeUtc(DateTime lastAccessTimeUtc) => File.SetLastAccessTimeUtc(Value, lastAccessTimeUtc);
     /// <summary>
-    /// <inheritdoc cref="File.SetLastWriteTime"/>
+    /// <inheritdoc cref="File.SetLastWriteTime(string,DateTime)"/>
     /// </summary>
     public void SetLastWriteTime(DateTime lastWriteTime) => File.SetLastWriteTime(Value, lastWriteTime);
     /// <summary>
-    /// <inheritdoc cref="File.SetLastWriteTimeUtc"/>
+    /// <inheritdoc cref="File.SetLastWriteTimeUtc(string,DateTime)"/>
     /// </summary>
     public void SetLastWriteTimeUtc(DateTime lastWriteTimeUtc) => File.SetLastWriteTimeUtc(Value, lastWriteTimeUtc);
 
@@ -122,31 +123,31 @@ public abstract record FilePath(string Value) : StringValueType(Value)
 
     #region get attributes
     /// <summary>
-    /// <inheritdoc cref="File.GetAttributes"/>
+    /// <inheritdoc cref="File.GetAttributes(string)"/>
     /// </summary>
     public FileAttributes GetAttributes() => File.GetAttributes(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetCreationTime"/>
+    /// <inheritdoc cref="File.GetCreationTime(string)"/>
     /// </summary>
     public DateTime GetCreationTime() => File.GetCreationTime(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetCreationTimeUtc"/>
+    /// <inheritdoc cref="File.GetCreationTimeUtc(string)"/>
     /// </summary>
     public DateTime GetCreationTimeUtc() => File.GetCreationTimeUtc(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetLastAccessTime"/>
+    /// <inheritdoc cref="File.GetLastAccessTime(string)"/>
     /// </summary>
     public DateTime GetLastAccessTime() => File.GetLastAccessTime(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetLastAccessTimeUtc"/>
+    /// <inheritdoc cref="File.GetLastAccessTimeUtc(string)"/>
     /// </summary>
     public DateTime GetLastAccessTimeUtc() => File.GetLastAccessTimeUtc(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetLastWriteTime"/>
+    /// <inheritdoc cref="File.GetLastWriteTime(string)"/>
     /// </summary>
     public DateTime GetLastWriteTime() => File.GetLastWriteTime(Value);
     /// <summary>
-    /// <inheritdoc cref="File.GetLastWriteTimeUtc"/>
+    /// <inheritdoc cref="File.GetLastWriteTimeUtc(string)"/>
     /// </summary>
     public DateTime GetLastWriteTimeUtc() => File.GetLastWriteTimeUtc(Value);
     #endregion
@@ -289,7 +290,7 @@ public abstract record FilePath(string Value) : StringValueType(Value)
     /// <summary>
     /// creates the directory of this file directory
     /// </summary>
-    public void CreateDirectory() => GetDirectory()?.Create();
+    public void CreateDirectory() => GetDirectory().Create();
     #endregion
 
     #region fileSystem operations

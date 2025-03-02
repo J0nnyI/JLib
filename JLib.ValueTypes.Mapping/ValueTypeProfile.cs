@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Reflection;
-using AutoMapper;
+﻿using AutoMapper;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
@@ -15,34 +13,6 @@ namespace JLib.ValueTypes.Mapping;
 /// </summary>
 public class ValueTypeProfile : Profile
 {
-    /// <summary>
-    /// replaces the valueType Placeholder Method with the valid constructor
-    /// </summary>
-    /// <typeparam name="TValueType"></typeparam>
-    /// <typeparam name="TNative"></typeparam>
-    private class CtorReplacementExpressionVisitor<TValueType, TNative> : ExpressionVisitor
-    {
-        public static TValueType CtorPlaceholder(TNative Value) =>
-            throw new InvalidSetupException("this should have been replaced");
-
-        private static readonly MethodInfo PlaceholderMi =
-            typeof(CtorReplacementExpressionVisitor<TValueType, TNative>).GetMethod(nameof(CtorPlaceholder))
-            ?? throw new InvalidSetupException("PlaceholderMethodInfo not found");
-
-        protected override Expression VisitMethodCall(MethodCallExpression node)
-        {
-            if (node.Method != PlaceholderMi)
-                return node;
-
-            var ctor = typeof(TValueType).GetConstructor(new[] { typeof(TNative) })
-                       ?? throw new InvalidSetupException("valueType ctor not found");
-            return Expression.New(ctor, node.Arguments);
-        }
-
-        public Expression<Func<TNative, TValueType>> Visit(Expression<Func<TNative, TValueType>> expression)
-            => (Expression<Func<TNative, TValueType>>)base.Visit(expression);
-    }
-
     private static class ClassValueTypeConversions<TValueType, TNative>
         where TValueType : ValueType<TNative>
         where TNative : class
@@ -89,32 +59,43 @@ public class ValueTypeProfile : Profile
         }
     }
 
-
+    /// <summary>
+    /// <inheritdoc cref="ValueTypeProfile"/>
+    /// </summary>
     public ValueTypeProfile(ITypeCache cache, ILogger<ValueTypeProfile> logger)
     {
-        foreach (var valueType in cache.All<ValueTypeType>().Where(vt => vt is { Mapped: true }))
+        using var exceptions = new ExceptionBuilder(nameof(ValueTypeProfile));
+        foreach (var valueType in cache.All<ValueTypeType>().Where(vt => vt is { DisableAutomatedProfileGeneration: false, Value.IsAbstract: false }))
         {
-            if (valueType.NativeType.IsClass)
+            try
             {
-                logger.LogDebug("        adding map for class-valueType {valueType}", valueType.Name);
+                if (valueType.NativeType.IsClass)
+                {
+                    logger.LogDebug("        adding map for class-valueType {valueType}", valueType.Name);
 
-                var addMapping = typeof(ClassValueTypeConversions<,>)
-                                     .MakeGenericType(valueType.Value, valueType.NativeType)
-                                     .GetMethod(nameof(ClassValueTypeConversions<ValueType<Ignored>, Ignored>.AddMapping)) ??
-                                 throw new InvalidSetupException("AddProfileMethodNotFound");
+                    var addMapping = typeof(ClassValueTypeConversions<,>)
+                                         .MakeGenericType(valueType.Value, valueType.NativeType)
+                                         .GetMethod(nameof(ClassValueTypeConversions<ValueType<Ignored>, Ignored>.AddMapping)) ??
+                                     throw new InvalidSetupException("AddProfileMethodNotFound");
 
-                addMapping.Invoke(null, new object?[] { this, logger });
+                    addMapping.Invoke(null, new object?[] { this, logger });
+
+                }
+                else
+                {
+                    logger.LogDebug("        adding map for struct-valueType {valueType}", valueType.Name);
+                    var addMapping = typeof(StructValueTypeConversions<,>)
+                                         .MakeGenericType(valueType.Value, valueType.NativeType)
+                                         .GetMethod(nameof(StructValueTypeConversions<ValueType<int>, int>.AddMapping)) ??
+                                     throw new InvalidSetupException("AddProfileMethodNotFound");
+
+                    addMapping.Invoke(null, new object?[] { this, logger });
+                }
 
             }
-            else
+            catch (Exception e)
             {
-                logger.LogDebug("        adding map for struct-valueType {valueType}", valueType.Name);
-                var addMapping = typeof(StructValueTypeConversions<,>)
-                                     .MakeGenericType(valueType.Value, valueType.NativeType)
-                                     .GetMethod(nameof(StructValueTypeConversions<ValueType<int>, int>.AddMapping)) ??
-                                 throw new InvalidSetupException("AddProfileMethodNotFound");
-
-                addMapping.Invoke(null, new object?[] { this, logger });
+                exceptions.Add(new Exception($"failed to map {valueType.Value.FullName()}", e));
             }
         }
     }

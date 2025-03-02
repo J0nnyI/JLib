@@ -2,34 +2,37 @@
   "__registry__": {
     "IdIncrement": 0
   },
-  "~.DataDerivationViaGenerics.CustomerDp:~.DataDerivationViaGenerics.CustomerDpb": {
-    "Id": "d10e96ba-fbc6-4549-b3a2-138f9e3b356f"
+  "~.DataDerivationViaGenerics.CustomerDp": {
+    "~.DataDerivationViaGenerics.CustomerDpb.Id": "a7e9d526-0652-452d-aa93-3f284f449af6"
   },
   "~.DataDerivationViaGenerics.OrderDp<~.DataDerivationViaGenerics.CustomerDp>": {
-    "Id": "b6cc5bfa-f44f-4e35-8723-50f3efe2ecac"
+    "Id": "fe999487-6a34-492f-9824-f7062d7c0ed6"
   },
   "~.DataDerivationViaGenerics.OrderDp<~.DataDerivationViaGenerics.OtherCustomerDp>": {
-    "Id": "da18c207-4c98-46f7-a47d-37fccadfbe18"
+    "Id": "6c530a81-da32-4723-8ef6-fc9bbbe135a9"
   },
-  "~.DataDerivationViaGenerics.OtherCustomerDp:~.DataDerivationViaGenerics.CustomerDpb": {
-    "Id": "f2623b9d-1962-44b3-8fc5-ca22efc1066e"
+  "~.DataDerivationViaGenerics.OtherCustomerDp": {
+    "~.DataDerivationViaGenerics.CustomerDpb.Id": "29400ccf-0f43-462a-9af8-0bd87de0644a"
   },
   "~.DataDerivationViaInheritance.CustomerDp": {
-    "CustomerId": "a8a3ff0c-fa42-42dd-a0bd-0c435daac200"
+    "CustomerId": "64e648bf-f6c3-44c2-806e-4a5e4ea14443"
   },
   "~.SnapshotInfoUtilities.CustomerDp": {
-    "CustomerId": "c0a59dbb-86d1-4f9f-9960-ebace91bdde6"
+    "CustomerId": "d815e4f8-8bb8-4d66-85de-0b508b1f8d87"
   },
   "~.UsingTheDefaultNamespace.CustomerDp": {
-    "CustomerId": "d569a81a-27e8-4a21-b0ac-ca165deac3fe"
+    "CustomerId": "7f0ac227-fc48-4b2e-9f30-4ccdd0fa30e7"
   },
   "GenerateIdsManually": {
-    "Test": "aca4978e-5b3e-46f3-a708-53361793e5fd"
+    "Test": "d6c3996b-9bdd-41fe-8f64-5ea08a8df039"
+  },
+  "JLib.DataGeneration.Examples.Getting_Started.GenerateIdsManually": {
+    "Test": "9f6ee79e-e828-4e5b-906a-508956092696"
   },
   "JLib.DataGeneration.Examples.Getting_Started.MinimumCodeNativeIds.CustomerDp": {
-    "CustomerId": "bb496875-f177-4fe5-a0bb-0dcd00852bb9"
+    "CustomerId": "9bf1f13d-73cd-484e-b01a-0e2489dac5af"
   },
   "JLib.DataGeneration.Examples.Getting_Started.MinimumCodeValueTypeIds.CustomerDp": {
-    "CustomerId": "8d25ad25-2b6a-4b1b-88b9-8192461c9359"
+    "CustomerId": "6a481da5-5a31-4868-93d7-454fc71e4c0a"
   }
 }

@@ -3,7 +3,7 @@
     "Id": {
       "IdGroupName": "~.DataDerivationViaInheritance.CustomerDp",
       "IdName": "CustomerId",
-      "Value": "a8a3ff0c-fa42-42dd-a0bd-0c435daac200",
+      "Value": null,
       "IdType": "CustomerId"
     },
     "UserName": "[~.DataDerivationViaInheritance.CustomerDp].[CustomerId]"

@@ -142,52 +142,10 @@ public class UnitTest : IDisposable
 
 ### classes
 - DataPackage
-- DataPackageManager
-    - information about the init state (uninitialized/initializing/initialized)
+- IIdGenerator
+- IdGenerator
+- TestIdGenerator
 
 
 -------------------------------
     
-
-# todo
-- speichern von int ids
-- persistieren von ids die zur test-laufzeit erstellt werden
-    - probleme
-        - die laufzeit dienste brauchen einen weg die IDs zu generieren, werden jedoch als fertiger provider dem DataPackageManager übergeben
-    - ansatz 1: testIdIdentifier = testklasse+methode+entität+inkrementnummer/entität
-        - probleme: 
-            - race-conditions
-            - wird das anlegen einer neuen entität nötig, werden alle folgenden IDs invalide
-                - dies könnte reduziert werden, indem man nach jedem methodenaufruf einen neuen inkrement-bereich erstellt
-            - 
-    - ansatz 2: testIdentifier = callstack 
-        - ressourcen
-            - https://stackoverflow.com/questions/6624326/programmatically-get-c-sharp-stack-trace
-        - probleme: 
-            - extrem anfällig für private anpassungen/umbenennungen von internen methoden
-            - der callstacktext ändert sich nach debug/release build
-        - vorteile
-            - jeder aufruf kann eindeutig zugeordnet werden
-
-# Evaluieren
-- zusammenführen des data providers für services und datenpakete
-    - vorteile
-        - würde das problem vom übergeben des ID-generators elegant lösen
-        - es würde den code vereinfachen
-    - nachteile
-        - die initalisierung könnte komplizierter werden, da man nach dem hinzufügen der pakete diese exakt ein mal initalisieren muss
-            - ServiceCollection.addDataPackages()
-            - ServiceProvider.LoadDataPackages()
-                - nach dem laden müssen die neuen IDs gespeichert werden
-    - ergebnisse
-        - man könnte sich in den tests die datenpakete injecten.
-        - man könnte sich den DataPackageStore Injecten
-            - das nachträgliche Injecten von Paketen, z.B. durch referenzierungen in diensten, könnte zur laufzeit daten hinzufügen und so die Datenbaser intransparenter machen
-                - Lösung: 
-                    - beim instantiieren eines pakets wird geprüft, ob das laden bereits abgeschlossen ist. wenn ja, würde eine exception geworfen werden
-                      da tests deterministisch sein sollen, würde die exception auch zuverlässig den test direkt am durchlaufen hindern.
-                    - über reflection prüfen, ob eine klasse die datenpakete unerlaubt nutzt.
-                      **nachteil:** das anfragen von datenpaketen via serviceProvider.GetRequiredService würde nicht gefunden werden
-        - datenpakete können direkt den relevanten service injecten
-    - **alternative**
-        - die IdRegistry wird als singleton vom serviceProvider bereitgestellt und vom packageProvider als singleton-instanz referenziert

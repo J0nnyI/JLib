@@ -94,7 +94,8 @@ public class AuthorizationTestsMulti
                     .Should()
                     .Be(package.FirstUnauthorizedId);
             };
-            f.Should().Throw<InvalidOperationException>();
+            f.Should().Throw<DataProviderException.RuntimeException.DataObjectNotFoundException<TestDataObjectBase>>()
+                .Which.Id.Should().Be(package.FirstUnauthorizedId);
         });
 
     [Fact]

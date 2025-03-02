@@ -5,12 +5,12 @@
       "GenericTypeValueType`1": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
-          "NullableContextAttribute",
-          "UnmappedAttribute"
+          "NullableContextAttribute"
         ],
         "ImplementedInterfaces": [
-          "IEquatable<TypeCacheTests.GenericType.GenericTypeValueType<>>",
+          "IEquatable<TypeCacheTests.GenericType.GenericTypeValueType<T>>",
           "IEquatable<TypeValueType>",
           "IEquatable<ValueType<Type>>",
           "ITypeValueType",
@@ -40,7 +40,7 @@
               {
                 "Type": "JLib.Reflection.InvalidTypeException",
                 "MessageLines": [
-                  "JLib.Reflection.Tests.TypeCacheTests.GenericType.GenericTypeValueType<>"
+                  "JLib.Reflection.Tests.TypeCacheTests.GenericType.GenericTypeValueType<T>"
                 ],
                 "InnerExceptions": []
               }

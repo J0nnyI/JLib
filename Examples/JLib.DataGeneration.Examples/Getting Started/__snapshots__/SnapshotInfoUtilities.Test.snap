@@ -3,7 +3,7 @@
     "Id": {
       "IdGroupName": "~.SnapshotInfoUtilities.CustomerDp",
       "IdName": "CustomerId",
-      "Value": "c0a59dbb-86d1-4f9f-9960-ebace91bdde6",
+      "Value": null,
       "IdType": "CustomerId"
     },
     "UserName": "[~.SnapshotInfoUtilities.CustomerDp].[CustomerId]"

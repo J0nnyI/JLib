@@ -9,11 +9,11 @@ using Xunit.Abstractions;
 
 namespace JLib.Configuration.Tests;
 
-public class UnitTest1
+public class ConfigurationTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public UnitTest1(ITestOutputHelper testOutputHelper)
+    public ConfigurationTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }

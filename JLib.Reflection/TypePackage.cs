@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+
 using JLib.Helper;
 
 namespace JLib.Reflection;
@@ -9,6 +10,11 @@ namespace JLib.Reflection;
 /// </summary>
 public sealed class TypePackage : ITypePackage
 {
+    /// <summary>
+    /// an empty <see cref="ITypePackage"/>
+    /// </summary>
+    public static ITypePackage Empty { get; } = new TypePackage(
+        Enumerable.Empty<Type>(), Enumerable.Empty<ITypePackage>(), "EMPTY");
     /// <param name="assembly"></param>
     /// <param name="name">the name of the type package, defaulting to <see cref="AssemblyName.Name"/></param>
     /// <returns>an <see cref="ITypePackage"/> containing all <see cref="Assembly.GetTypes"/> of the given <paramref name="assembly"/></returns>
@@ -44,8 +50,17 @@ public sealed class TypePackage : ITypePackage
     /// this can be useful for testing purposes
     /// </summary>
     public static ITypePackage GetNested(params Type[] types)
-        => new TypePackage(types.SelectMany(x => x.GetNestedTypes()), null,
-            "nested types of " + string.Join(", ", types.Select(x => x.FullName())));
+    {
+        var nested = types.SelectMany(x => x.GetNestedTypes()).ToArray();
+        if (nested.Length == 0)
+            return Empty;
+        return new TypePackage(nested,
+                nested.Length == 0 
+                    ? null 
+                    : new[] { GetNested(nested) },
+                "nested types of " +
+                string.Join(", ", types.Select(x => x.FullName())));
+    }
 
     /// <summary>
     /// creates a <see cref="ITypePackage"/> which contains all types nested in <typeparamref nameTemplate="T"/> but not <typeparamref nameTemplate="T"/> itself.
@@ -113,7 +128,7 @@ public sealed class TypePackage : ITypePackage
     private TypePackage(IEnumerable<Type>? types, IEnumerable<ITypePackage>? children, string nameTemplate)
     {
         Types = types ?? Enumerable.Empty<Type>();
-        Children = children ?? Array.Empty<ITypePackage>();
+        Children = (children?.Except(Empty)) ?? Array.Empty<ITypePackage>();
         DescriptionTemplate = nameTemplate;
         _content = new(() => GetContent(this).ToImmutableHashSet());
     }

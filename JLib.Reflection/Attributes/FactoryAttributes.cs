@@ -39,29 +39,6 @@ public abstract class TvtFactoryAttribute : Attribute
 
         public const int DefaultPriority = 10_000;
     }
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class FactoryAttribute : TvtFactoryAttribute
-    {
-        private readonly ITypeValueTypeFilter _factory;
-
-        /// <summary>
-        /// type has to be of type <see cref="ITypeValueTypeFilter"/>
-        /// </summary>
-        /// <param name="type">the filter to be applied. requires an empty constructor.</param>
-        public FactoryAttribute(Type type)
-        {
-            var ctor = type.GetConstructor(Array.Empty<Type>())
-                ?? throw new InvalidSetupException(
-                    $"Type {type.FullName(true)} does not have an empty constructor");
-
-            _factory = ctor.Invoke(null) as ITypeValueTypeFilter
-                ?? throw new InvalidSetupException(
-                    $"Type {type.FullName(true)} does not implement {nameof(ITypeValueTypeFilter)}");
-        }
-
-        public override bool Filter(Type type) => _factory.Filter(type);
-    }
-
 
     [AttributeUsage(AttributeTargets.Class)]
     public class IsInterfaceAttribute : TvtFactoryAttribute

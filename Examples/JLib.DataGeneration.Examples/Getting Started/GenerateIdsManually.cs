@@ -5,9 +5,12 @@ using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
 using JLib.Reflection.DependencyInjection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Snapshooter.Xunit;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,6 +25,7 @@ public sealed class GenerateIdsManually : IDisposable
     \*************************************************************/
     private readonly List<IDisposable> _disposables = new();
     private readonly IIdRegistry _idRegistry;
+    private readonly IdRegistryConfiguration _idRegConfig;
 
     public GenerateIdsManually(ITestOutputHelper testOutputHelper)
     {
@@ -45,6 +49,7 @@ public sealed class GenerateIdsManually : IDisposable
             .IncludeDataPackages(Array.Empty<Type>());
 
         _idRegistry = serviceProvider.GetRequiredService<IIdRegistry>();
+        _idRegConfig = serviceProvider.GetRequiredService<IdRegistryConfiguration>();
     }
 
     public void Dispose()
@@ -58,8 +63,8 @@ public sealed class GenerateIdsManually : IDisposable
     [Fact]
     public void Test()
     {
-        DataPackageValues.IdGroupName groupName = new(nameof(GenerateIdsManually));
-        DataPackageValues.IdName name = new(nameof(Test));
+        DataPackageValues.IdGroupName groupName = new(nameof(GenerateIdsManually), _idRegConfig);
+        DataPackageValues.IdName name = new(nameof(Test), _idRegConfig);
         DataPackageValues.IdIdentifier identifier = new(groupName, name);
         _idRegistry.GetGuidId(identifier).MatchSnapshot();
     }

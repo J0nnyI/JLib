@@ -8,6 +8,9 @@ using ITypeValueType = JLib.Reflection.ITypeValueType;
 
 namespace JLib.DependencyInjection;
 
+/// <summary>
+/// Utility methods for adding services to the <see cref="IServiceCollection"/>
+/// </summary>
 public static class ServiceCollectionHelper
 {
 
@@ -117,8 +120,8 @@ public static class ServiceCollectionHelper
         var logger = loggerFactory.CreateLogger(typeof(ServiceCollectionHelper).FullName!);
         using var _ = logger.BeginScope(nameof(AddGenericAlias));
 
-        aliasTypeArgumentResolver ??= new Func<TTvt, ITypeValueType>[] { e => e };
-        providedTypeArgumentResolver ??= new Func<TTvt, ITypeValueType>[] { e => e };
+        aliasTypeArgumentResolver ??= [e => e];
+        providedTypeArgumentResolver ??= [e => e];
         filter ??= _ => true;
 
         var alias = aliasType.GetGenericTypeDefinition();
@@ -191,8 +194,8 @@ public static class ServiceCollectionHelper
         var logger = loggerFactory.CreateLogger(typeof(ServiceCollectionHelper).FullName!);
         using var _ = logger.BeginScope(nameof(AddGenericServices));
 
-        serviceTypeArgumentResolver ??= new Func<TTvt, ITypeValueType>[] { e => e };
-        implementationTypeArgumentResolver ??= new Func<TTvt, ITypeValueType>[] { e => e };
+        serviceTypeArgumentResolver ??= [e => e];
+        implementationTypeArgumentResolver ??= [e => e];
 
         var serviceDefinition = serviceType.GetGenericTypeDefinition();
         var implementationDefinition = implementationType.GetGenericTypeDefinition();
@@ -248,14 +251,9 @@ public static class ServiceCollectionHelper
     public static IServiceCollection AddScopeProvider(this IServiceCollection services)
         => services.AddScoped<IServiceScope, ServiceScopeProxy>();
 
-    private class ServiceScopeProxy : IServiceScope
+    private class ServiceScopeProxy(IServiceProvider provider) : IServiceScope
     {
-        public IServiceProvider ServiceProvider { get; }
-
-        public ServiceScopeProxy(IServiceProvider provider)
-        {
-            ServiceProvider = provider;
-        }
+        public IServiceProvider ServiceProvider { get; } = provider;
 
         public void Dispose()
         {

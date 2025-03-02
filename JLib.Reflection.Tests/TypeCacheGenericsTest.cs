@@ -2,11 +2,12 @@
 
 using JLib.Exceptions;
 using JLib.Helper;
-
+using JLib.ValueTypes;
 using Microsoft.Extensions.Logging;
 
 using Xunit;
 using Xunit.Abstractions;
+
 
 namespace JLib.Reflection.Tests;
 
@@ -53,14 +54,38 @@ public class TypeCacheGenericsTest : IDisposable
         [TvtFactoryAttribute.ImplementsAny(typeof(IInvalidMatch<>))]
         public record InvalidTvt(Type Value) : TypeValueType(Value), IValidatedType
         {
-            public void Validate(ITypeCache cache, TypeValidationContext value)
+            public void Validate(ITypeCache cache, IValidationContext<Type> value)
             {
                 if (value.Value is { IsGenericTypeDefinition: false, IsGenericType: true })
                     value.AddError("error");
             }
         }
+
+        public class Generic1<T>
+        {
+            private Generic1()
+            {
+
+            }
+
+            public class Generic2<T2> : IDemoSelectorInterface
+            {
+            }
+        }
+
+        public class Nested1
+        {
+            public class Nested2 : IDemoSelectorInterface { }
+        }
     }
 
+
+    [Fact]
+    public void DoubleNested()
+    {
+        _cache.Get<Common.DemoTypeValueType>(typeof(Common.Nested1.Nested2))
+            .Value.Should().Be(typeof(Common.Nested1.Nested2));
+    }
 
     [Fact]
     public void GetGenericTypeDefinition()
@@ -73,6 +98,12 @@ public class TypeCacheGenericsTest : IDisposable
     {
         _cache.Get<Common.DemoTypeValueType>(typeof(Common.GenericType<int>))
             .Value.Should().Be(typeof(Common.GenericType<int>));
+    }
+    [Fact]
+    public void GetNestedGenericType()
+    {
+        _cache.Get<Common.DemoTypeValueType>(typeof(Common.Generic1<int>.Generic2<string>))
+            .Value.Should().Be(typeof(Common.Generic1<int>.Generic2<string>));
     }
     [Fact]
     public void Navigation()

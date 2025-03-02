@@ -4,7 +4,7 @@ using Xunit;
 
 // ReSharper disable all
 
-namespace Examples.ExtensionMethods
+namespace Examples
 {
     /// <summary>
     /// this method is recommended if you reuse the same validation logic in multiple places and only use the built-in validator

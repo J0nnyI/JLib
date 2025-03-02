@@ -227,11 +227,9 @@ public static class AspNetCoreServiceCollectionExtensions
     public static IServiceCollection AddRequestScoped(this IServiceCollection services, Type serviceType, Type implementationType)
     {
         if (implementationType.IsGenericTypeDefinition)
-        {
             throw new UnsupportedGenericServiceException(serviceType, implementationType);
-        }
 
-        var factory = ActivatorUtilities.CreateFactory(serviceType, Array.Empty<Type>());
+        var factory = ActivatorUtilities.CreateFactory(implementationType, Array.Empty<Type>());
 
         return services.AddRequestScoped(provider => factory.Invoke(provider, null), serviceType, implementationType);
     }

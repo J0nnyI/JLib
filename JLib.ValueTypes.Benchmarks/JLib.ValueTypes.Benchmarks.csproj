@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Update="Lib.Harmony" Version="2.3.5" />
+    </ItemGroup>
+</Project>

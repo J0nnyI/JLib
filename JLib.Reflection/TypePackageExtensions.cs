@@ -1,5 +1,6 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
+
 using JLib.Helper;
 using JLib.ValueTypes;
 
@@ -16,8 +17,8 @@ public static class TypePackageExtensions
     public static ITypePackage ApplyFilter(this ITypePackage typePackage, Func<Type, bool> filter, string? filterDescription = null)
         => TypePackage.Get(
             typePackage.Types.Where(filter),
-            typePackage.Children.Select(c => c.ApplyFilter(filter, filterDescription)),
-            typePackage.DescriptionTemplate + (filterDescription is null ? "" : $"Filtered: {filterDescription}"));
+            typePackage.Children.Select(tp => tp.ApplyFilter(filter, filterDescription)),
+            typePackage.DescriptionTemplate + " Filtered" + (filterDescription is null ? "" : $": {filterDescription}"));
 
     /// <summary>
     /// Creates a <see cref="ITypePackage"/> from the given <paramref name="typePackage"/> which contains only <see cref="TypeValueType"/>s and <see cref="ITypeValueType"/>s

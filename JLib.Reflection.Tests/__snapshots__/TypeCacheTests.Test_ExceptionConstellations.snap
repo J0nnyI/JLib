@@ -10,10 +10,10 @@
       "DemoTypeValueType": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
           "NullableContextAttribute",
-          "TvtFactoryAttribute.DerivedFromAnyAttribute",
-          "UnmappedAttribute"
+          "TvtFactoryAttribute.DerivedFromAnyAttribute"
         ],
         "ImplementedInterfaces": [
           "IEquatable<TypeCacheTests.ExceptionConstellations.DemoTypeValueType>",

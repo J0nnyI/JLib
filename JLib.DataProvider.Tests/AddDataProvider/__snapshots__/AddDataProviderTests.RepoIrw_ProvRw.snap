@@ -10,7 +10,7 @@
     ],
     "includedTypes": [
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity",
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<>",
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<T>",
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestInvalidRepositoryRw"
     ]
   },
@@ -33,11 +33,19 @@
             ],
             "InnerExceptions": [
               {
-                "Type": "JLib.Reflection.InvalidTypeException",
+                "Type": "JLib.Exceptions.JLibAggregateException",
                 "MessageLines": [
-                  "Should not implement JLib.DataProvider.ISourceDataProviderR<>"
+                  "Value Validation Failed"
                 ],
-                "InnerExceptions": []
+                "InnerExceptions": [
+                  {
+                    "Type": "System.ComponentModel.DataAnnotations.ValidationException",
+                    "MessageLines": [
+                      "Should not implement JLib.DataProvider.ISourceDataProviderR<TDataObject>"
+                    ],
+                    "InnerExceptions": []
+                  }
+                ]
               }
             ]
           }

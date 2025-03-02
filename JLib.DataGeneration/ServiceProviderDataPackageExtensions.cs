@@ -9,10 +9,12 @@ namespace JLib.DataGeneration;
 //     sb.AppendLine("    /// <summary>")
 //         .AppendLine("    /// loads the given <see cref=\"DataPackage\"/>. should only be used inside the <see cref=\"DataPackage\"/> ctor.")
 //         .AppendLine("    /// </summary>")
-//         .Append("    public static IServiceProvider LoadDataProviders<").AppendJoin(", ", Enumerable.Range(1, i).Select(i => $"TDp{i}")).AppendLine(">(this IServiceProvider serviceProvider)")
+//         .Append("    public static void IncludeDataPackages<").AppendJoin(", ", Enumerable.Range(1, i).Select(i => $"TDp{i}")).AppendLine(">(this IServiceProvider serviceProvider)")
 //         .AppendJoin(Environment.NewLine, Enumerable.Range(1, i).Select(i => $"        where TDp{i} : DataPackage")).AppendLine()
 //         .AppendLine("    {")
-//         .AppendJoin(Environment.NewLine, Enumerable.Range(1, i).Select(i => $"        serviceProvider.GetRequiredService<TDp{i}>();")).AppendLine()
+//         .AppendLine($"        serviceProvider.IncludeDataPackages(")).AppendLine()
+//         .AppendJoin(","+Environment.NewLine, Enumerable.Range(1, i).Select(i => $"            typeof(TDp{i})")).AppendLine()
+//         .AppendLine("        ")
 //         .AppendLine("        return serviceProvider;")
 //         .AppendLine("    }");
 // }

@@ -1,39 +1,15 @@
-﻿using AutoMapper;
-using FluentAssertions;
-using JLib.AutoMapper;
-using JLib.Exceptions;
-using JLib.Reflection;
-using JLib.Reflection.DependencyInjection;
+﻿using FluentAssertions;
 using JLib.ValueTypes.Mapping.NewtonsoftJson;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace JLib.ValueTypes.Mapping.Tests;
 
-public class NewtonsoftJsonConverterTests : IDisposable
+public class NewtonsoftJsonConverterTests
 {
-    private readonly ServiceProvider _provider;
-    private readonly IMapper _mapper;
-
     record StringVt(string Value) : StringValueType(Value);
     record GuidVt(Guid Value) : GuidValueType(Value);
     record IntVt(int Value) : IntValueType(Value);
-
-    public NewtonsoftJsonConverterTests(ITestOutputHelper testOutputHelper)
-    {
-        var loggerFactory = new LoggerFactory().AddXunit(testOutputHelper);
-        var exceptions = new ExceptionBuilder("setup");
-        var services = new ServiceCollection()
-            .AddTypeCache(out var typeCache, exceptions, loggerFactory, JLibReflectionTp.Instance, TypePackage.GetNested<NewtonsoftJsonConverterTests>())
-            .AddAutoMapper(m => m.AddProfiles(typeCache, loggerFactory));
-
-        _provider = services.BuildServiceProvider();
-        _mapper = _provider.GetRequiredService<IMapper>();
-
-    }
 
     [Fact]
     public void String_DeserializeObject()
@@ -41,7 +17,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.DeserializeObject<StringVt>("\"description\"",
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().BeOfType<StringVt>();
         value?.Value.Should().BeEquivalentTo("description");
@@ -52,7 +28,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.SerializeObject(new StringVt("description"),
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().Be("\"description\"");
     }
@@ -63,7 +39,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.DeserializeObject<Dictionary<string, GuidVt>>(@$"{{""x"":""{raw}""}}",
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().NotBeNull();
         value.Should().ContainKey("x");
@@ -77,9 +53,9 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.SerializeObject(new GuidVt(raw),
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
-        value?.Should().Be($"\"{raw}\"");
+        value.Should().Be($"\"{raw}\"");
     }
     [Fact]
     public void Int_DeserializeObject()
@@ -87,7 +63,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.DeserializeObject<Dictionary<string, IntVt>>(@"{""x"":5}",
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().NotBeNull();
         value.Should().ContainKey("x");
@@ -101,11 +77,11 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.SerializeObject(new IntVt(raw),
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().Be(raw.ToString());
     }
-#if(DEBUG)
+#if(false)
     [Fact (Skip = "niy")]
     public void Dict_SerializeObject()
     {
@@ -119,7 +95,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.SerializeObject(raw,
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter() }
             });
         value.Should().Be("{\"1\":\"one\"}");
     }
@@ -130,7 +106,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.DeserializeObject<Dictionary<IntVt, StringVt>>(raw,
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper), new ValueTypeDictionaryJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter(), new ValueTypeDictionaryJsonConverter() }
             });
         value.Should().BeOfType<Dictionary<IntVt, StringVt>>();
         value.Should().HaveCount(1);
@@ -143,7 +119,7 @@ public class NewtonsoftJsonConverterTests : IDisposable
         var value = JsonConvert.DeserializeObject<Dictionary<IntVt, StringVt>>(raw,
             new JsonSerializerSettings
             {
-                Converters = { new ValueTypeJsonConverter(_mapper), new ValueTypeDictionaryJsonConverter(_mapper) }
+                Converters = { new ValueTypeJsonConverter(), new ValueTypeDictionaryJsonConverter() }
             });
         value.Should().BeOfType<Dictionary<IntVt, StringVt>>();
         value.Should().HaveCount(1);
@@ -151,8 +127,4 @@ public class NewtonsoftJsonConverterTests : IDisposable
     }
 #endif
 
-    public void Dispose()
-    {
-        _provider.Dispose();
-    }
 }

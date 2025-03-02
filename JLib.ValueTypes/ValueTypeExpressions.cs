@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -8,6 +9,7 @@ namespace JLib.ValueTypes;
 
 public static partial class ValueType
 {
+
     /// <summary>
     /// Contains further utility methods which generate <see cref="ValueType{T}"/> Factory <see cref="LambdaExpression"/>s
     /// </summary>
@@ -78,14 +80,9 @@ public static partial class ValueType
                 {
                     var param = Expression.Parameter(typeof(T), "value");
 
-                    var ctor = typeof(TVt).GetConstructor(new[] { typeof(T) });
+                    var ctor = ReflectionResolver.CreateValueTypeExpression<TVt, T>(param);
 
-                    if (ctor is null)
-                        throw new InvalidSetupException("ctor could not be found");
-
-                    var ctorEx = Expression.New(ctor, param);
-
-                    return Expression.Lambda<Func<T, TVt>>(ctorEx, param);
+                    return Expression.Lambda<Func<T, TVt>>(ctor, param);
                 }).CastTo<Expression<Func<T, TVt>>>();
 
         /// <summary>
@@ -103,7 +100,13 @@ public static partial class ValueType
             => ExpressionCache.GetOrAdd(GetExpressionCacheKey<TVt>(true), _ =>
             {
                 var lambda = ForNonNullableStruct<TVt, T>();
-                return ((Expression<Func<T?, TVt?>>)(value => value == null ? null : CtorPlaceholder<T, TVt>(value.Value))).ReplaceMethod(PlaceholderMi, lambda);
+                return (
+                    (Expression<Func<T?, TVt?>>)(value =>
+                        value == null
+                        ? null
+                        : CtorPlaceholder<T, TVt>(value.Value)
+                    )
+                ).ReplaceMethod(PlaceholderMi, lambda);
             }).CastTo<Expression<Func<T?, TVt?>>>();
 
         /// <summary>
@@ -122,14 +125,9 @@ public static partial class ValueType
             {
                 var param = Expression.Parameter(typeof(T), "value");
 
-                var ctor = typeof(TVt).GetConstructor(new Type[] { typeof(T) });
+                var ctor = ReflectionResolver.CreateValueTypeExpression<TVt, T>(param);
 
-                if (ctor is null)
-                    throw new InvalidSetupException("ctor could not be found");
-
-                var ctorEx = Expression.New(ctor, param);
-
-                return Expression.Lambda<Func<T, TVt>>(ctorEx, param);
+                return Expression.Lambda<Func<T, TVt>>(ctor, param);
             }).CastTo<Expression<Func<T, TVt>>>();
 
 

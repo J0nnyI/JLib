@@ -42,12 +42,20 @@
 // Console.WriteLine( sb.ToString())
 
 
+using JLib.Helper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JLib.DependencyInjection;
 
 public static partial class ServiceProviderExtensions
 {
+    /// <summary>
+    /// Requests all <paramref name="requestedServices"/> from the given <paramref name="provider"/> and returns them.<br/>
+    /// </summary>
+    /// <returns>an <see cref="IReadOnlyCollection{T}"/> with the instances of all requested services.</returns>
+    public static IReadOnlyCollection<object> GetRequiredServices
+        (this IServiceProvider provider, params Type[] requestedServices)
+        => requestedServices.Select(provider.GetRequiredService).ToReadOnlyCollection();
 
     /// <returns>the requested services</returns>
     public static IServiceProvider GetRequiredServices

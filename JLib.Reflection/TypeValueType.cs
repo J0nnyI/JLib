@@ -26,7 +26,7 @@ public interface IValidatedType : ITypeValueType
     /// </summary>
     /// <param name="cache"></param>
     /// <param name="value"></param>
-    void Validate(ITypeCache cache, TypeValidationContext value);
+    void Validate(ITypeCache cache, IValidationContext<Type> value);
 }
 /// <summary>
 /// Interface for <see cref="TypeValueType"/>s which expands the possibilities when designing type argument constraints.
@@ -44,7 +44,7 @@ public interface ITypeValueType
     /// <summary>
     /// Indicates whether the automated Automapper profile generation for this type is enabled or not.
     /// </summary>
-    public bool HasCustomAutoMapperProfile { get; }
+    public bool DisableAutomatedProfileGeneration { get; }
 }
 
 /// <summary>
@@ -57,7 +57,7 @@ public interface ITypeValueType
 /// <item><seealso cref="ITypeValueType"/></item>
 /// </list>
 /// </summary>
-[Unmapped]
+[DisableAutoProfile]
 public abstract record TypeValueType(Type Value) : ValueType<Type>(Value), ITypeValueType
 {
     /// <summary>
@@ -73,7 +73,7 @@ public abstract record TypeValueType(Type Value) : ValueType<Type>(Value), IType
         => new(GetType(), Value, message);
 
     /// <summary>
-    /// <inheritdoc cref="ITypeValueType.HasCustomAutoMapperProfile"/>
+    /// <inheritdoc cref="ITypeValueType.DisableAutomatedProfileGeneration"/>
     /// </summary>
-    public bool HasCustomAutoMapperProfile => Value.GetCustomAttributes().Any(a => a is IDisableAutoProfileAttribute);
+    public bool DisableAutomatedProfileGeneration => Value.GetCustomAttributes().Any(a => a is IDisableAutoProfileAttribute);
 }
