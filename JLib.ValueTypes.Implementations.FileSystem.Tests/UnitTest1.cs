@@ -35,4 +35,34 @@ public class UnitTest1
             @"G:\directory\file.extension");
         act.Should().Throw<AggregateException>();
     }
+    [Fact]
+    public void FileNameWithoutExtension_Valid()
+    {
+        // this should not throw
+        new FileNameWithoutExtension(
+            @"file");
+    }
+    [Fact]
+    public void FileNameWithoutExtension_Invalid()
+    {
+        // this should not throw
+        var act = () => new FileNameWithoutExtension(
+            @"file.ext");
+        act.Should().Throw<AggregateException>();
+    }
+    [Fact]
+    public void FileNameWithExtension_Valid()
+    {
+        // this should not throw
+        new FileNameWithExtension(
+            @"file.ext");
+    }
+    [Fact]
+    public void FileNameWithExtension_Invalid()
+    {
+        // this should not throw
+        var act = () => new FileNameWithExtension(
+            @"file");
+        act.Should().Throw<AggregateException>();
+    }
 }
