@@ -9,7 +9,7 @@ public record AbsoluteFilePath(string Value) : FilePath(Value)
     private static void Validate(ValidationContext<string> must)
         => must
             .BeRootPath()
-            .NotContain(Path.GetInvalidFileNameChars())
+            .NotContainInvalidPathChars()
             .HaveAnDirectory();
 
 }

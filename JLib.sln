@@ -129,6 +129,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JLib.Exceptions", "JLib.Exc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JLib.Helper", "JLib.Helper", "{C323FDB0-1C03-4285-AD54-BECC0099EE09}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JLib.ValueTypes.Implementations.FileSystem.Tests", "JLib.ValueTypes.Implementations.FileSystem.Tests\JLib.ValueTypes.Implementations.FileSystem.Tests.csproj", "{C2159112-4F20-4E96-8E0D-D4DCBD772590}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -311,6 +313,10 @@ Global
 		{97518FBD-7945-4D46-8F82-5F1EB8AE33A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97518FBD-7945-4D46-8F82-5F1EB8AE33A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97518FBD-7945-4D46-8F82-5F1EB8AE33A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2159112-4F20-4E96-8E0D-D4DCBD772590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2159112-4F20-4E96-8E0D-D4DCBD772590}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2159112-4F20-4E96-8E0D-D4DCBD772590}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2159112-4F20-4E96-8E0D-D4DCBD772590}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -355,6 +361,7 @@ Global
 		{596AB982-CCE1-4658-9703-16E814AA64BA} = {808BE219-022F-4DFB-BED4-D639DFAE4F43}
 		{8528D4F4-378D-4726-853F-EE2A274A52B0} = {808BE219-022F-4DFB-BED4-D639DFAE4F43}
 		{97518FBD-7945-4D46-8F82-5F1EB8AE33A1} = {80BEDE7B-0252-461E-B890-C652AA9F0A01}
+		{C2159112-4F20-4E96-8E0D-D4DCBD772590} = {7F914D27-9431-4AC4-A0C2-1A5775E001B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9007D83B-9D61-4FD9-927F-EEAC8281BF90}

@@ -9,5 +9,5 @@ public record RelativeFilePath(string Value) : FilePath(Value)
     private static void Validate(ValidationContext<string> must)
         => must
             .BeRelativePath()
-            .NotContainInvalidFileNameChars();
+            .NotContainInvalidPathChars();
 }
