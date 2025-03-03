@@ -1,9 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.InteropServices;
-
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -40,6 +37,16 @@ public static partial class ValueType
 
         return null;
     }
+
+    /// <summary>
+    /// Checks, whether there have been any errors made while implementing the given value type.
+    /// </summary>
+    /// <typeparam name="TVt"></typeparam>
+    /// <returns></returns>
+    /// <remarks>executes <see cref="ValidateValueTypeSetup{TVt,T}"/> with the types extracted form <typeparamref name="TVt"/></remarks>
+    public static Exception? ValidateValueTypeSetup<TVt>()
+        where TVt:IValueType
+        => ValidateValueTypeSetup(typeof(TVt));
     /// <summary>
     /// Checks, whether there have been any errors made while implementing the given value type.
     /// </summary>
@@ -92,18 +99,18 @@ public static partial class ValueType
         where TVt : ValueType<T>
         => GetErrors(typeof(TVt), value);
     /// <summary>
-    /// checks, whether the given <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns all validation errors
+    /// checks, whether the given <paramref name="value"/> is a valid <paramref name="tVt"/> and returns all validation errors
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</typeparam>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</param>
     /// <typeparam name="T">The native value of the <see cref="ValueType{T}"/></typeparam>
     /// <param name="value">the value to validate</param>
     /// <returns>an <see cref="IExceptionProvider"/> containing all validation errors. Use <see cref="IExceptionProvider.HasErrors"/> to check if the value is valid</returns>
     public static IExceptionProvider GetErrors<T>(Type tVt, T? value)
         => ValidationProfile<T>.Get(tVt).Validate(value);
     /// <summary>
-    /// checks, whether the given <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns all validation errors
+    /// checks, whether the given <paramref name="value"/> is a valid <paramref name="tVt"/> and returns all validation errors
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</typeparam>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</param>
     /// <typeparam name="T">The native value of the <see cref="ValueType{T}"/></typeparam>
     /// <param name="value">the value to validate</param>
     /// <returns>an <see cref="IExceptionProvider"/> containing all validation errors. Use <see cref="IExceptionProvider.HasErrors"/> to check if the value is valid</returns>
@@ -119,10 +126,9 @@ public static partial class ValueType
     }
 
     /// <summary>
-    /// checks, whether the given <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns all validation errors
+    /// checks, whether the given <paramref name="value"/> is a valid <paramref name="tVt"/> and returns all validation errors
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <see cref="ValueType{T}"/></typeparam>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to validate the <paramref name="value"/> for</param>
     /// <param name="value">the value to validate</param>
     /// <returns>an <see cref="IExceptionProvider"/> containing all validation errors. Use <see cref="IExceptionProvider.HasErrors"/> to check if the value is valid</returns>
     public static IExceptionProvider GetErrors(Type tVt, object? value)
@@ -134,7 +140,7 @@ public static partial class ValueType
             return new ArgumentException($"{ErrorPrefix()}{tVt.FullName()} is not derived from {typeof(ValueType<Ignored>).FullName(true)}").ToProvider();
 
         var tValue = tvtBase.GenericTypeArguments[0];
-        
+
         var tValidator = typeof(ValidationProfile<>).MakeGenericType(tValue);
         var tValidatorInterface = typeof(IValidationProfile<>).MakeGenericType(tValue);
 
@@ -152,8 +158,8 @@ public static partial class ValueType
         var instance = miGet.Invoke(null, new object[] { tVt });
         var result = miValidate.Invoke(instance, new[] { value });
 
-        return result is null 
-            ? new InvalidOperationException("validator unexpectedly returned null").ToProvider() 
+        return result is null
+            ? new InvalidOperationException("validator unexpectedly returned null").ToProvider()
             : (IExceptionProvider)result;
 
         string ErrorPrefix() => $"{tVt.FullName()}.{nameof(GetErrors)}: ";
@@ -205,39 +211,39 @@ public static partial class ValueType
     }
 
     /// <summary>
-    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <typeparamref name="TVt"/></typeparam>
-    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <typeparam name="T">The native value of the <paramref name="tVt"/></typeparam>
+    /// <param name="value">the value to create to a new <paramref name="tVt"/></param>
     /// <param name="validationErrors">the errors, if any when tryCreate failed.</param>
-    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    /// <returns>a new instance of <paramref name="tVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     public static ValueType<T>? TryCreate<T>(Type tVt, T? value, out IExceptionProvider validationErrors)
         where T : struct
     {
         validationErrors = EmptyExceptionProvider.Instance;
         if (value.HasValue is false)
             return null;
-        validationErrors = GetErrors<T>(tVt, value.Value);
+        validationErrors = GetErrors(tVt, value.Value);
 
         return validationErrors.HasErrors()
             ? null
             : CreateNullable(tVt, value);
     }
     /// <summary>
-    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <typeparamref name="TVt"/></typeparam>
-    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <typeparam name="T">The native value of the <paramref name="tVt"/></typeparam>
+    /// <param name="value">the value to create to a new <paramref name="tVt"/></param>
     /// <param name="validationErrors">the errors, if any when tryCreate failed.</param>
-    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    /// <returns>a new instance of <paramref name="tVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     public static ValueType<T>? TryCreate<T>(Type tVt, T? value, out IExceptionProvider validationErrors)
     {
         validationErrors = EmptyExceptionProvider.Instance;
         if (value is null)
             return null;
-        validationErrors = GetErrors<T>(tVt, value);
+        validationErrors = GetErrors(tVt, value);
         if (validationErrors.HasErrors())
             return null;
 
@@ -247,13 +253,12 @@ public static partial class ValueType
     }
 
     /// <summary>
-    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <typeparamref name="TVt"/></typeparam>
-    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <param name="tVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <param name="value">the value to create to a new <paramref name="tVt"/></param>
     /// <param name="validationErrors">the errors, if any when tryCreate failed.</param>
-    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    /// <returns>a new instance of <paramref name="tVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     public static IValueType? TryCreate(Type tVt, object? value, out IExceptionProvider validationErrors)
     {
         validationErrors = EmptyExceptionProvider.Instance;
@@ -265,9 +270,22 @@ public static partial class ValueType
             ? null
             : CreateNullable(tVt, value);
     }
+
+
+    /// <summary>
+    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise null and the validation errors via <paramref name="validationErrors"/>.
+    /// </summary>
+    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
+    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <param name="validationErrors">the errors, if any when tryCreate failed.</param>
+    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    public static IValueType? TryCreate<TVt>(object? value, out IExceptionProvider validationErrors)
+        where TVt : IValueType
+        => TryCreate(typeof(TVt), value, out validationErrors);
+
     #endregion
 
-    #region create nullable
+        #region create nullable
 
     /// <summary>
     /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
@@ -303,34 +321,54 @@ public static partial class ValueType
 
 
     /// <summary>
-    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tValueType"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
     /// </summary>
-    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <typeparamref name="TVt"/></typeparam>
-    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <param name="tValueType">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <typeparam name="T">The native value of the <paramref name="tValueType"/></typeparam>
+    /// <param name="value">the value to create to a new <paramref name="tValueType"/></param>
     /// <exception cref="AggregateException"></exception>
-    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    /// <returns>a new instance of <paramref name="tValueType"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     [return: NotNullIfNotNull("value")]
     public static ValueType<T>? CreateNullable<T>(Type tValueType, T? value)
         => value is null
             ? null
-            : Create<T>(tValueType, value);
+            : Create(tValueType, value);
 
+    /// <summary>
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tValueType"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
+    /// </summary>
+    /// <param name="tValueType">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <typeparam name="T">The native value of the <paramref name="tValueType"/></typeparam>
+    /// <param name="value">the value to create to a new <paramref name="tValueType"/></param>
+    /// <exception cref="AggregateException"></exception>
+    /// <returns>a new instance of <paramref name="tValueType"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     [return: NotNullIfNotNull("value")]
     public static ValueType<T>? CreateNullable<T>(Type tValueType, T? value)
         where T : struct
         => value.HasValue
-            ? Create<T>(tValueType, value.Value)
+            ? Create(tValueType, value.Value)
             : null;
 
     /// <summary>
     /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
     /// </summary>
     /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
-    /// <typeparam name="T">The native value of the <typeparamref name="TVt"/></typeparam>
     /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
     /// <exception cref="AggregateException"></exception>
     /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    [return: NotNullIfNotNull("value")]
+    public static IValueType? CreateNullable<TVt>(object? value)
+        where TVt : IValueType
+        => CreateNullable(typeof(TVt), value);
+
+
+    /// <summary>
+    /// Checks whether <paramref name="value"/> is a valid <paramref name="tValueType"/> and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.
+    /// </summary>
+    /// <param name="tValueType">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
+    /// <param name="value">the value to create to a new <paramref name="tValueType"/></param>
+    /// <exception cref="AggregateException"></exception>
+    /// <returns>a new instance of <paramref name="tValueType"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     [return: NotNullIfNotNull("value")]
     public static IValueType? CreateNullable(Type tValueType, object? value)
         => value is null
@@ -345,18 +383,27 @@ public static partial class ValueType
     private static readonly ConcurrentDictionary<string, Delegate> CompiledExpressionCache = new();
 
 
+    /// <summary>
+    /// Checks whether <paramref name="value"/> is a valid <typeparamref name="TVt"/> value and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.<br/>
+    /// values may be null. if they are, null will be returned.
+    /// </summary>
+    /// <typeparam name="TVt">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</typeparam>
+    /// <param name="value">the value to create to a new <typeparamref name="TVt"/></param>
+    /// <exception cref="AggregateException"></exception>
+    /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
+    public static IValueType Create<TVt>(object value)
+        where TVt : IValueType
+        => Create(typeof(TVt), value);
 
     /// <summary>
     /// Checks whether <paramref name="value"/> is a valid <paramref name="tValueType"/> value and returns the value if it is valid, otherwise throws an <see cref="AggregateException"/>.<br/>
     /// values may be null. if they are, null will be returned.
     /// </summary>
-    /// <typeparam name="T">The native value of the <paramref name="tValueType"/></typeparam>
     /// <param name="tValueType">The specific <see cref="ValueType{T}"/> to create the <paramref name="value"/> for</param>
     /// <param name="value">the value to create to a new <paramref name="tValueType"/></param>
     /// <exception cref="AggregateException"></exception>
     /// <returns>a new instance of <paramref name="tValueType"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
-    [return: NotNullIfNotNull("value")]
-    public static IValueType? Create(Type tValueType, object? value)
+    public static IValueType Create(Type tValueType, object value)
     {
         try
         {
@@ -364,7 +411,8 @@ public static partial class ValueType
                 GetExpressionCacheKey(tValueType, false),
                 _ => FactoryExpressions.ForAnyType(tValueType, false).Compile()
             );
-            return del.DynamicInvoke(value) as IValueType ?? throw new NullReferenceException(
+            var res = del.DynamicInvoke(value);
+            return res as IValueType ?? throw new NullReferenceException(
                 $"unexpected null result of type '{tValueType.FullName()}' with value '{value}'"); // let's hope this is not too slow
         }
         catch (TargetInvocationException e)
@@ -385,8 +433,7 @@ public static partial class ValueType
     /// <param name="value">the value to create to a new <paramref name="tValueType"/></param>
     /// <exception cref="AggregateException"></exception>
     /// <returns>a new instance of <paramref name="tValueType"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
-    [return: NotNullIfNotNull("value")]
-    public static ValueType<T>? Create<T>(Type tValueType, T? value)
+    public static ValueType<T> Create<T>(Type tValueType, T value)
     {
         var del = CompiledExpressionCache.GetOrAdd(
             GetExpressionCacheKey(tValueType, false),
@@ -394,9 +441,11 @@ public static partial class ValueType
         );
         try
         {
-            return typeof(T).IsValueType
+            return (typeof(T).IsValueType
                 ? del.DynamicInvoke(value) as ValueType<T> // let's hope this is not too slow
-                : del.CastTo<Func<T?, ValueType<T>?>>().Invoke(value);
+                : del.CastTo<Func<T?, ValueType<T>?>>().Invoke(value))
+                   ?? throw new NullReferenceException(
+                       $"unexpected null result of type '{tValueType.FullName()}' with value '{value}'"); // let's hope this is not too slow;
         }
         catch (TargetInvocationException e)
         {
@@ -416,7 +465,7 @@ public static partial class ValueType
     /// <exception cref="AggregateException"></exception>
     /// <returns>a new instance of <typeparamref name="TVt"/> containing <paramref name="value"/> as it's value ot null, if the validation failed.</returns>
     [return: NotNullIfNotNull("value")]
-    public static TVt? Create<TVt, T>(T? value)
+    public static TVt Create<TVt, T>(T value)
         where TVt : ValueType<T>
     {
         var del = CompiledExpressionCache.GetOrAdd(
@@ -425,9 +474,11 @@ public static partial class ValueType
         );
         try
         {
-            return typeof(T).IsValueType
-                ? del.DynamicInvoke(value) as TVt // let's hope this is not too slow
-                : del.CastTo<Func<T?, TVt?>>().Invoke(value);
+            return (typeof(T).IsValueType
+                       ? del.DynamicInvoke(value) as TVt // let's hope this is not too slow
+                       : del.CastTo<Func<T?, TVt?>>().Invoke(value))
+                   ?? throw new NullReferenceException(
+                       $"unexpected null result of type '{typeof(TVt).FullName()}' with value '{value}'"); // let's hope this is not too slow;
         }
         catch (TargetInvocationException e)
         {
@@ -450,7 +501,7 @@ public static partial class ValueType
 /// A <see cref="ValueType{T}"/> of unknown type.<br/>
 /// Should not be implemented directly, but by deriving from <see cref="ValueType{T}"/>
 /// </summary>
-public interface IValueType { }
+public interface IValueType;
 
 /// <summary>
 /// Base class for all value types<br/>
