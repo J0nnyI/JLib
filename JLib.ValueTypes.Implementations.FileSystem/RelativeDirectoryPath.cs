@@ -12,14 +12,13 @@
 /// </remarks>
 /// </summary>
 /// <param name="Value">the directory name</param>
-public record RelativeDirectoryPath(string Value) : StringValueType(Value)
+public record RelativeDirectoryPath(string Value) : DirectoryPath(Value)
 {
     [Validation]
     private static void Validate(ValidationContext<string> context)
     {
         if (Path.IsPathRooted(context.Value))
             context.AddError("The path must not be rooted");
-        context.NotContain(Path.GetInvalidPathChars());
     }
     /// <returns>the directory which contains this directory</returns>
     public RelativeDirectoryPath? GetParent()
@@ -27,4 +26,20 @@ public record RelativeDirectoryPath(string Value) : StringValueType(Value)
     /// <returns>the name of the current directory</returns>
     public DirectoryName GetCurrent()
         => new(Path.GetFileName(Value));
+
+
+    /// <returns>a <see cref="RelativeDirectoryPath"/> with <paramref name="dir"/>/<paramref name="file"/></returns>
+    public static RelativeFilePath operator +(RelativeDirectoryPath dir, FileNameWithExtension file)
+        => new(Path.Combine(dir.Value, file.Value));
+    /// <returns>a <see cref="RelativeDirectoryPath"/> with <paramref name="dir"/>/<paramref name="file"/></returns>
+    public static RelativeFilePath operator +(RelativeDirectoryPath dir, RelativeFilePath file)
+        => new(Path.Combine(dir.Value, file.Value));
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="dirName"></param>
+    /// <returns></returns>
+    public static implicit operator RelativeDirectoryPath(DirectoryName dirName)
+        => new(dirName);
 }

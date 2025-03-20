@@ -16,4 +16,8 @@ public record DirectoryName(string Value) : StringValueType(Value)
             .NotContain(Path.GetInvalidPathChars())
             .NotContain(Path.DirectorySeparatorChar)
             .NotContain(Path.AltDirectorySeparatorChar);
+
+    /// <returns><paramref name="dir1"/> and <paramref name="dir2"/> combined into a <see cref="RelativeDirectoryPath"/></returns>
+    public static RelativeDirectoryPath operator +(DirectoryName dir1, DirectoryName dir2)
+        => new(Path.Combine(dir1.Value, dir2.Value));
 }

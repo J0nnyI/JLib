@@ -1,5 +1,4 @@
 ﻿using System.Text;
-
 using Microsoft.Win32.SafeHandles;
 
 namespace JLib.ValueTypes.Implementations.FileSystem;
@@ -8,11 +7,29 @@ namespace JLib.ValueTypes.Implementations.FileSystem;
 /// the path to a file, it might be either <see cref="AbsoluteFilePath"/> or <see cref="RelativeFilePath"/>
 /// </summary>
 /// <param name="Value"></param>
-public abstract record FilePath(string Value) : StringValueType(Value)
+public abstract record FilePath(string Value) : FileSystemPath(Value)
 {
+    [Validation]
+    private static void Validate(ValidationContext<string> must)
+        => must
+            .HaveAnDirectory();
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    /// <seealso cref="Path.GetFullPath(string,string)"/>
+    public AbsoluteFilePath GetFullPath()
+        => new(Path.GetFullPath(Value));
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="basePath"></param>
+    /// <returns></returns>
+    /// <seealso cref="Path.GetFullPath(string,string)"/>
+    public AbsoluteFilePath GetFullPath(AbsoluteDirectoryPath basePath)
+        => new(Path.GetFullPath(Value, basePath.Value));
     /// <returns>the directory of this path</returns>
-    public AbsoluteDirectoryPath GetDirectory()
-        => new(Path.GetDirectoryName(Value)!);// guaranteed to be not null by validation
+    public abstract DirectoryPath GetDirectory();
     /// <returns>the filename of this path</returns>-
     public FileNameWithExtension GetFileName()
         => new(Path.GetFileName(Value));
@@ -301,15 +318,15 @@ public abstract record FilePath(string Value) : StringValueType(Value)
     /// <summary>
     /// <inheritdoc cref="File.Copy(string,string,bool)"/>
     /// </summary>
-    public void Copy(AbsoluteFilePath destination, bool overwrite) => File.Copy(Value, destination.Value, overwrite);
+    public void Copy(FilePath destination, bool overwrite) => File.Copy(Value, destination.Value, overwrite);
     /// <summary>
     /// <inheritdoc cref="File.Move(string,string)"/>
     /// </summary>
-    public void Move(AbsoluteFilePath destination) => File.Move(Value, destination.Value);
+    public void Move(FilePath destination) => File.Move(Value, destination.Value);
     /// <summary>
     /// <inheritdoc cref="File.Move(string,string,bool)"/>
     /// </summary>
-    public void Move(AbsoluteFilePath destination, bool overwrite) => File.Move(Value, destination.Value, overwrite);
+    public void Move(FilePath destination, bool overwrite) => File.Move(Value, destination.Value, overwrite);
     /// <summary>
     /// <inheritdoc cref="File.Move(string,string)"/>
     /// </summary>

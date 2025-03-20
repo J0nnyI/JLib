@@ -1,17 +1,17 @@
-﻿using JLib.Helper;
+﻿ using JLib.Helper;
 
 namespace JLib.ValueTypes.Implementations.FileSystem;
 
 /// <summary>
 /// a rooted path to a directory which may or may not exist
 /// </summary>
-public record AbsoluteDirectoryPath(string Value) : StringValueType(Value)
+public record AbsoluteDirectoryPath(string Value) : DirectoryPath(Value)
 {
     [Validation]
+    // ReSharper disable once UnusedMember.Local
     private static void Validate(ValidationContext<string> must)
         => must
-            .BeRootPath()
-            .NotContainInvalidPathChars();
+            .BeRootPath();
 
     /// <summary>
     /// appends the <paramref name="relativePath"/> to the <param name="path"/> and returns the resulting <see cref="AbsoluteDirectoryPath"/>
@@ -64,4 +64,5 @@ public record AbsoluteDirectoryPath(string Value) : StringValueType(Value)
     /// Creates this directory
     /// </summary>
     public void Create() => Directory.CreateDirectory(Value);
+
 }

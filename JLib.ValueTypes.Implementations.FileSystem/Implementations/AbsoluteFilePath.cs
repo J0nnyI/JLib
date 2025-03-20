@@ -12,4 +12,6 @@ public record AbsoluteFilePath(string Value) : FilePath(Value)
             .NotContainInvalidPathChars()
             .HaveAnDirectory();
 
+    public override DirectoryPath GetDirectory()
+        => new AbsoluteDirectoryPath(Path.GetDirectoryName(Value) ?? @"\");
 }

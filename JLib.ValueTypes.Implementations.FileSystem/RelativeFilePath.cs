@@ -10,4 +10,15 @@ public record RelativeFilePath(string Value) : FilePath(Value)
         => must
             .BeRelativePath()
             .NotContainInvalidPathChars();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="dirName"></param>
+    /// <returns></returns>
+    public static implicit operator RelativeFilePath(FileNameWithExtension dirName)
+        => new(dirName);
+
+    public override DirectoryPath GetDirectory() 
+        => new RelativeDirectoryPath(Path.GetDirectoryName(Value) ?? "./");
 }

@@ -1,6 +1,4 @@
-﻿
-
-// ReSharper disable UnusedMember.Local
+﻿// ReSharper disable UnusedMember.Local
 
 namespace JLib.ValueTypes.Implementations.FileSystem;
 
@@ -11,12 +9,11 @@ namespace JLib.ValueTypes.Implementations.FileSystem;
 /// must contain '.'
 /// </summary>
 /// <param name="Value">the filename</param>
-public record FileNameWithExtension(string Value) : StringValueType(Value), IPathSegment
+public record FileNameWithExtension(string Value) : FileName(Value)
 {
     [Validation]
     private static void Validate(ValidationContext<string> must)
         => must
-            .NotContainInvalidFileNameChars()
             .HaveAnExtension();
 
     /// <returns>the <see cref="FileExtension"/></returns>
@@ -26,4 +23,9 @@ public record FileNameWithExtension(string Value) : StringValueType(Value), IPat
     /// <returns>the <see cref="FileNameWithoutExtension"/></returns>
     public FileNameWithoutExtension RemoveExtension()
         => new(Path.GetFileNameWithoutExtension(Value));
+
+    /// <returns>a <see cref="RelativeFilePath"/> of <paramref name="dirName"/>/<paramref name="fileName"/></returns>
+    public static RelativeFilePath operator +(DirectoryName dirName, FileNameWithExtension fileName)
+        => new(Path.Combine(dirName.Value, fileName.Value));
+
 }
