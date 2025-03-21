@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 
 using JLib.Exceptions;
@@ -121,17 +122,38 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                      ?? new(ExceptionBuilderName);
 
         var logger = loggerFactory?.CreateLogger<TypePackageBuilder>();
-        Dictionary<Assembly, ITypePackage> packagesToInclude = [];
-        var referencesToCheck = _includedAssemblies.ToHashSet();
+        Dictionary<AssemblyName, ITypePackage> packagesToInclude = [];
+        var peerDependencies = _includedAssemblies.Select(assembly => assembly.GetName()).ToHashSet();
 
 
-        for (int i = 0; i < _options.MaxDepth && referencesToCheck.Count > 0; i++)
+        for (int i = 0; i < _options.MaxDepth && peerDependencies.Count > 0; i++)
         {
-            var currentReferences = referencesToCheck.ToArray();
-            referencesToCheck.Clear();
-            foreach (var assemblyName in currentReferences
-                         .SelectMany(a => a.GetReferencedAssemblies()))
-                LoadAssembly(assemblyName);
+            var currentDependencies = peerDependencies.ToArray();
+            peerDependencies.Clear();
+
+            foreach (var assemblyName in currentDependencies)
+            {
+                try
+                {
+                    if (_assemblyBlacklist.Count != 0 && _assemblyBlacklist.Any(name => AssemblyName.ReferenceMatchesDefinition(name, assemblyName)))
+                        continue;
+
+                    if (packagesToInclude.Keys.Any(name => AssemblyName.ReferenceMatchesDefinition(name, assemblyName)))
+                        continue;
+
+                    var typePackage = CreateContentTypePackage(assemblyName, out var assembly);
+
+                    packagesToInclude.Add(assemblyName, typePackage);
+
+                    peerDependencies.AddRange(assembly.GetReferencedAssemblies());
+                }
+                catch (Exception e)
+                {
+
+                    logger?.LogError(e, "could not load assembly {assemblyName}", assemblyName.FullName);
+                    exceptions.Add(new Exception($"could not load assembly {assemblyName.FullName}", e));
+                }
+            }
 
             if (i == _options.MaxDepth - 1)
                 exceptions.Add(new InvalidOperationException("Max peer dependency depth exceeded"));
@@ -149,29 +171,6 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                         || _typeFilters.All(f => f(t))
                 )
                 .ToImmutableHashSet();
-
-        void LoadAssembly(AssemblyName assemblyName)
-        {
-            try
-            {
-                if (_assemblyBlacklist.Contains(assemblyName))
-                    return;
-
-                var typePackage = CreateContentTypePackage(assemblyName, out var assembly);
-
-                if (packagesToInclude.TryAdd(assembly, typePackage))
-                    // if the assembly has already been added, it has also already been checked for peer dependencies.
-                    return;
-
-                referencesToCheck.Add(assembly);
-            }
-            catch (Exception e)
-            {
-
-                logger?.LogError(e, "could not load assembly {assemblyName}", assemblyName.FullName);
-                exceptions.Add(new Exception($"could not load assembly {assemblyName.FullName}", e));
-            }
-        }
 
         ITypePackage CreateContentTypePackage(AssemblyName assemblyName, out Assembly assembly)
         {

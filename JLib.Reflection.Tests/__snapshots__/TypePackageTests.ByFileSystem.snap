@@ -1,5 +1,5 @@
 ﻿{
-  "Description": "2 Assemblies",
+  "Description": "3 Assemblies",
   "Types": {},
   "Children": [
     {
@@ -9,6 +9,17 @@
           "TestAssemblyDemoClassA",
           "TestAssemblyDemoClassB",
           "TestAssemblyDemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly1A": [
+          "TestAssembly1ADemoClassA",
+          "TestAssembly1ADemoClassB",
+          "TestAssembly1ADemoClassC"
         ]
       },
       "Children": []
