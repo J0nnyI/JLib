@@ -6,7 +6,7 @@
       "Description": "1 Types",
       "Types": {
         "JLib.Reflection.Tests": [
-          "TypePackageTests.DemoClassA"
+          "DemoTypes.DemoClassA"
         ]
       },
       "Children": []
@@ -15,8 +15,8 @@
       "Description": "2 Types",
       "Types": {
         "JLib.Reflection.Tests": [
-          "TypePackageTests.DemoClassB",
-          "TypePackageTests.DemoClassC"
+          "DemoTypes.DemoClassB",
+          "DemoTypes.DemoClassC"
         ]
       },
       "Children": []

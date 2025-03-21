@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "__Solution Items__", "__Sol
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		Changelog.md = Changelog.md
 		Directory.Build.props = Directory.Build.props
 		JLib.sln.DotSettings = JLib.sln.DotSettings
 		README.md = README.md

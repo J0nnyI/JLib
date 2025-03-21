@@ -11,6 +11,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace JLib.Reflection;
 
 /// <summary>
+/// This Attribute forces a reference to an Assembly, the types of which may not be referenced otherwise by this assembly.<br/>
+/// This is Required, when the referencing assembly does require the types of the referenced assembly for reflection but does not reference them directly.
+/// </summary>
+public class EnforceReferenceTo
+{
+    public EnforceReferenceTo(Type type) { }
+    public EnforceReferenceTo(Assembly assembly) { }
+    public EnforceReferenceTo(AssemblyName assemblyName) { }
+    public EnforceReferenceTo(string assemblyName) { }
+}
+
+/// <summary>
 /// Options which control the <see cref="TypePackageBuilder"/>s behavior
 /// </summary>
 public class TypePackageBuilderOptions
@@ -122,36 +134,75 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                      ?? new(ExceptionBuilderName);
 
         var logger = loggerFactory?.CreateLogger<TypePackageBuilder>();
-        Dictionary<AssemblyName, ITypePackage> packagesToInclude = [];
-        var peerDependencies = _includedAssemblies.Select(assembly => assembly.GetName()).ToHashSet();
+        Dictionary<Assembly, ITypePackage> packagesToInclude = [];
+        var peerDependencies = _includedAssemblies.ToHashSet();
 
+        exceptions.CreateChild("Some Assemblies have been both explicitly included and added to the blacklist",
+            _includedAssemblies
+                .Where(includedAssembly => _assemblyBlacklist
+                    .Any(blacklistAssembly => AssemblyName.ReferenceMatchesDefinition(includedAssembly.GetName(), blacklistAssembly))
+                ).Select(name => name.FullName ?? "no name"));
 
         for (int i = 0; i < _options.MaxDepth && peerDependencies.Count > 0; i++)
         {
             var currentDependencies = peerDependencies.ToArray();
             peerDependencies.Clear();
 
-            foreach (var assemblyName in currentDependencies)
+            foreach (var assembly in currentDependencies)
             {
                 try
                 {
+                    var assemblyName = assembly.GetName();
                     if (_assemblyBlacklist.Count != 0 && _assemblyBlacklist.Any(name => AssemblyName.ReferenceMatchesDefinition(name, assemblyName)))
                         continue;
 
-                    if (packagesToInclude.Keys.Any(name => AssemblyName.ReferenceMatchesDefinition(name, assemblyName)))
+                    if (packagesToInclude.Keys.Any(assembly => AssemblyName.ReferenceMatchesDefinition(assembly.GetName(), assemblyName)))
                         continue;
 
-                    var typePackage = CreateContentTypePackage(assemblyName, out var assembly);
+                    var typePackage = CreateContentTypePackage(assembly);
 
-                    packagesToInclude.Add(assemblyName, typePackage);
+                    packagesToInclude.Add(assembly, typePackage);
 
-                    peerDependencies.AddRange(assembly.GetReferencedAssemblies());
+                    var dependencyNames = assembly
+                        .GetReferencedAssemblies()
+                        .Except(_assemblyBlacklist)
+                        .Select(name =>
+                        {
+                            try
+                            {
+                                return new
+                                {
+                                    assembly = (Assembly?)Assembly.Load(name),
+                                    exception = (Exception?)null,
+                                    assemblyName = name
+                                }
+                                ;
+                            }
+                            catch (Exception e)
+                            {
+                                return new
+                                {
+                                    assembly = (Assembly?)null,
+                                    exception = (Exception?)e,
+                                    assemblyName = name
+                                };
+                            }
+                        }).ToReadOnlyCollection();
+
+                    exceptions.CreateChild("Some assemblies could not be loaded", dependencyNames
+                        .Where(x => x.exception is not null)
+                        .Select(x => $"{x.assemblyName.FullName}: {x.exception}"));
+                    exceptions.CreateChild("Some Assemblies could but threw no exception:", dependencyNames
+                        .Where(x => x.exception is null && x.assembly is null)
+                        .Select(x => x.assemblyName.FullName));
+
+                    peerDependencies.AddRange(dependencyNames.Select(x => x.assembly).WhereNotNull());
                 }
                 catch (Exception e)
                 {
 
-                    logger?.LogError(e, "could not load assembly {assemblyName}", assemblyName.FullName);
-                    exceptions.Add(new Exception($"could not load assembly {assemblyName.FullName}", e));
+                    logger?.LogError(e, "could not load assembly {assemblyName}", assembly.FullName);
+                    exceptions.Add(new Exception($"could not load assembly {assembly.FullName}", e));
                 }
             }
 
@@ -172,10 +223,9 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                 )
                 .ToImmutableHashSet();
 
-        ITypePackage CreateContentTypePackage(AssemblyName assemblyName, out Assembly assembly)
+        ITypePackage CreateContentTypePackage(Assembly assembly)
         {
             // loading an assembly might fail, for example when nuget packages are incompatible with one another.
-            assembly = Assembly.Load(assemblyName);
             var allTypes = assembly.GetTypes();
             var filteredTypes = ApplyFilter(assembly.GetTypes());
 

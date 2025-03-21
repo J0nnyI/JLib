@@ -114,7 +114,8 @@ public class TypePackageTests
     public void ByFileSystem()
     {
         RunTest(
-            TypePackage.Get(null, new[] { "JLib.Reflection.Tests.Demo" }), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types).Concat(DemoAssemblyContent.Assembly1ATypes));
+            TypePackage.Get(null, new[] { "JLib.Reflection.Tests.Demo" }),
+            DemoAssemblyContent.AllAssemblyTypes);
     }
 
     private void RunTest(

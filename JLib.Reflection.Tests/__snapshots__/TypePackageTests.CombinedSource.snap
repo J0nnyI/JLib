@@ -2,9 +2,9 @@
   "Description": "2 Assemblies and 3 types",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.DemoClassA",
-      "TypePackageTests.DemoClassB",
-      "TypePackageTests.DemoClassC"
+      "DemoTypes.DemoClassA",
+      "DemoTypes.DemoClassB",
+      "DemoTypes.DemoClassC"
     ]
   },
   "Children": [

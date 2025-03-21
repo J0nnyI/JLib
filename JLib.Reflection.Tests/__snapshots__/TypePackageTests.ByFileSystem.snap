@@ -1,5 +1,5 @@
 ﻿{
-  "Description": "3 Assemblies",
+  "Description": "5 Assemblies",
   "Types": {},
   "Children": [
     {
@@ -25,12 +25,34 @@
       "Children": []
     },
     {
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A1",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly1A1": [
+          "TestAssembly1A1DemoClassA",
+          "TestAssembly1A1DemoClassB",
+          "TestAssembly1A1DemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
       "Description": "JLib.Reflection.Tests.DemoAssembly2",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly2": [
           "TestAssembly2DemoClassA",
           "TestAssembly2DemoClassB",
           "TestAssembly2DemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssemblyA",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssemblyA": [
+          "TestAssemblyADemoClassA",
+          "TestAssemblyADemoClassB",
+          "TestAssemblyADemoClassC"
         ]
       },
       "Children": []

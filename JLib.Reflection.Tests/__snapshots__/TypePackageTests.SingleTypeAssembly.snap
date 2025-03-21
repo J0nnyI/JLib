@@ -2,7 +2,7 @@
   "Description": "1 Types",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.DemoClassA"
+      "DemoTypes.DemoClassA"
     ]
   },
   "Children": []
