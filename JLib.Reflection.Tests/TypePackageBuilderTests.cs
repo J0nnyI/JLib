@@ -1,21 +1,22 @@
 ﻿using System.Reflection;
 
 using FluentAssertions;
-
-using JLib.Reflection.Tests.DemoAssembly1;
 using JLib.Reflection.Tests.DemoAssembly2;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
-
-using Snapshooter.Xunit;
-
 using Xunit;
 
 namespace JLib.Reflection.Tests;
 
 public class TypePackageBuilderTests
 {
-    private void RunTest(IReadOnlyCollection<Assembly> assembliesIn, IReadOnlyCollection<Type> typesIn, IReadOnlyCollection<Type> expectedTypes, Action<TypePackageBuilder>? otherHandlers = null, Action<ITypePackage>? validate = null)
+    private void RunTest(
+        IReadOnlyCollection<Assembly> assembliesIn,
+        IReadOnlyCollection<Type> typesIn,
+        IReadOnlyCollection<Type> expectedTypes,
+        Action<TypePackageBuilder>? otherHandlers = null,
+        Action<ITypePackage>? validate = null
+        )
     {
         var builder = new TypePackageBuilder()
             .Add(assembliesIn.ToArray())
@@ -52,17 +53,17 @@ public class TypePackageBuilderTests
     [Fact]
     public void AssemblyBlacklist()
         => RunTest([Assembly1, AssemblyA], [],
-            AssemblyARecursive,
-            b => b.AddToBlacklist(Assembly1),
-            tp => tp.GetContent().Should().NotContain(Assembly1Types)
+            Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
+            b => b.AddToBlacklist(Assembly1A),
+            tp => tp.GetContent().Should().NotContain(Assembly1ATypes).And.NotContain(Assembly1A1Types)
         );
 
     [Fact]
     public void AssemblyNameBlacklist()
         => RunTest([Assembly1, AssemblyA], [],
-                AssemblyARecursive,
-                b => b.AddToBlacklist(Assembly1.GetName()),
-                tp => tp.GetContent().Should().NotContain(Assembly1Types)
+            Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
+            b => b.AddToBlacklist(Assembly1A.GetName()),
+            tp => tp.GetContent().Should().NotContain(Assembly1ATypes).And.NotContain(Assembly1A1Types)
                 );
 
     [Fact]
@@ -80,9 +81,21 @@ public class TypePackageBuilderTests
             tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
 
     [Fact]
+    public void TypeFilter()
+        => RunTest([], DemoTypes.Types,
+            DemoTypes.Types.Except([typeof(DemoTypes.DemoClassA)]).ToArray(),
+            b => b.AddTypeFilter(t => t != typeof(DemoTypes.DemoClassA)),
+            tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
+
+    [Fact]
     public void MultipleNested()
         => RunTest([], [],
             DemoTypes.NestedTypes2.Concat(DemoTypes.NestedTypes2).ToArray(),
             b => b.AddNestedTypes<DemoTypes.NestingDemoClass>().AddNestedTypes<DemoTypes.NestingDemoClass2>());
 
+    [Fact]
+    public void ByFileSystem()
+        => RunTest([], [],
+            AllAssemblyTypes,
+            b => b.AddFromPath(null, ["JLib"]));
 }
