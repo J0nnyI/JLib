@@ -3,15 +3,9 @@ using JLib.ValueTypes;
 
 namespace JLib.Reflection;
 
-internal sealed class TypeValidationContext : ValidationContext<Type>
+internal sealed class TypeValidationContext(TypeValueType valueType, Type targetType)
+    : ValidationContext<Type>(valueType.Value, targetType)
 {
-    private readonly TypeValueType _valueType;
-
-    public TypeValidationContext(TypeValueType valueType, Type targetType) : base(valueType.Value, targetType)
-    {
-        _valueType = valueType;
-    }
-
     protected override string GetExceptionMessage()
-        => $"{_valueType.Value.FullName(true)} is not a valid {_valueType.GetType().FullName(true)}";
+        => $"{valueType.Value.FullName(true)} is not a valid {valueType.GetType().FullName(true)}";
 }
