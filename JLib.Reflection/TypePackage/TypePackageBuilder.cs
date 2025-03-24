@@ -288,9 +288,9 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
             }).ToReadOnlyCollection();
 
         parentExceptionBuilder.CreateChild("Some assemblies could not be loaded", dependencyNames
-            .Select(x=>x.exception)
+            .Select(x => x.exception)
             .WhereNotNull());
-        
+
         return dependencyNames
             .Select(x => x.assembly)
             .WhereNotNull()
