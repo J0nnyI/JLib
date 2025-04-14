@@ -4,21 +4,14 @@ using JLib.Exceptions;
 
 namespace JLib.Reflection;
 
-public abstract class TypePackageBuilderException : JLibException
+public sealed class AssemblyLoadFailedBuilderException : JLibException
 {
-    protected TypePackageBuilderException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+    public AssemblyName? AssemblyName;
 
-    public sealed class AssemblyLoadFailedBuilderException : TypePackageBuilderException
+    public AssemblyLoadFailedBuilderException(AssemblyName assemblyName, Exception innerException) : base(
+        $"Assembly {assemblyName} could not be loaded: {innerException.Message}", innerException)
     {
-        public AssemblyName? AssemblyName;
-
-        public AssemblyLoadFailedBuilderException(AssemblyName assemblyName, Exception innerException) : base(
-            $"Assembly {assemblyName} could not be loaded: {innerException.Message}", innerException)
-        {
-            Data[nameof(AssemblyName)] = assemblyName;
-            AssemblyName = assemblyName;
-        }
+        Data[nameof(AssemblyName)] = assemblyName;
+        AssemblyName = assemblyName;
     }
 }
