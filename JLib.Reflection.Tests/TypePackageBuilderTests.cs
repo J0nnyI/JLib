@@ -5,6 +5,7 @@ using JLib.Exceptions;
 using JLib.Exceptions.CommonExceptions;
 using JLib.Helper;
 using JLib.Reflection.Tests.DemoAssembly2;
+using JLib.Reflection.Tests.DemoAssembly1A;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
 using Xunit;
@@ -173,4 +174,13 @@ public class TypePackageBuilderTests
             additionalSetup: b => b.AddFromPath(null, ["JLib"]),
             expectedTypes: AllAssemblyTypes
             );
+
+    [Fact]
+    public void AssemblyFilter()
+    => RunTest(
+        recursiveAssemblies: [Assembly1],
+        additionalSetup: b => b.AddAssemblyFilter(assembly => assembly != Assembly1A),
+        expectedTypes: Assembly1Recursive.Except(Assembly1ATypes).ToArray(),
+        additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly1ADemoClassA))
+        );
 }
