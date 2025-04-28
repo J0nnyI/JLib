@@ -9,6 +9,7 @@ using JLib.Reflection.Tests.DemoAssembly1A;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
 using Xunit;
+using System.Collections.Immutable;
 
 namespace JLib.Reflection.Tests;
 
@@ -183,4 +184,49 @@ public class TypePackageBuilderTests
         expectedTypes: Assembly1Recursive.Except(Assembly1ATypes).ToArray(),
         additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly1ADemoClassA))
         );
+
+    [Fact]
+    public void LoadRecursivePeerDependencies()
+    {
+        var assemblies = ImmutableHashSet.Create(Assembly1.GetName()).ToReadOnlyCollection();
+        var result = assemblies
+            .LoadRecursivePeerDependencies(
+                new ExceptionBuilder(nameof(LoadRecursivePeerDependencies)),
+                maxDependencyDepth: 99);
+        result.Should()
+            .Contain(Assembly1A);
+    }
+
+    [Fact]
+    public void TryLoadAll()
+    {
+        var assemblies = ImmutableHashSet.Create([Assembly1.GetName(), Assembly2.GetName()]);
+        var result = assemblies.TryLoadAll(
+            new ExceptionBuilder(nameof(TryLoadAll))
+        );
+        result.Should()
+            .Contain([Assembly1, Assembly2]);
+    }
+
+    [Fact]
+    public void TryLoad_ShouldThrowException()
+    {
+        var assembly = new AssemblyName("foo");
+        var exceptions = new ExceptionBuilder(nameof(TryLoad_ShouldThrowException));
+        var result = assembly.TryLoad(
+            exceptions
+        );
+        result.Should()
+            .BeNull();
+
+        ((Action)(() => exceptions.ThrowIfNotEmpty()))
+            .Should()
+            .Throw<AggregateException>()
+            .Where(ex => ex
+                .FlattenAll()
+                .OfType<AssemblyLoadFailedException>()
+                .Count() == 1);
+        ;
+
+    }
 }
