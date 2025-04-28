@@ -1,15 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.Marshalling;
-
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace JLib.Reflection;
 
@@ -20,11 +15,15 @@ namespace JLib.Reflection;
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class EnforceReferenceToAttribute : Attribute
 {
+
     /// <summary>
     /// <inheritdoc cref="EnforceReferenceToAttribute"/>
     /// </summary>
     /// <param name="type">The Type, which is defined by the assembly </param>
-    public EnforceReferenceToAttribute(Type type) { }
+    // ReSharper disable once UnusedParameter.Local
+    public EnforceReferenceToAttribute(params Type[] type)
+    {
+    }
 }
 
 /// <summary>
@@ -45,9 +44,18 @@ public class TypePackageBuilderOptions
 
 }
 
+/// <summary>
+/// Controls, how the <see cref="TypePackageBuilder"/> loads the <see cref="Assembly"/>s.<br/>
+/// </summary>
 public enum AssemblyLoadMode
 {
+    /// <summary>
+    /// Only the given assembly will be added, peer dependencies will not be loaded
+    /// </summary>
     TopLevelOnly,
+    /// <summary>
+    /// The given assembly and all its peer dependencies will be loaded
+    /// </summary>
     Recursive
 }
 /**********************************************************************************************************
@@ -62,6 +70,7 @@ public enum AssemblyLoadMode
 /// <summary>
 /// Builds a new <see cref="ITypePackage"/> used to initialize a <see cref="ITypeCache"/>
 /// </summary>
+/// <seealso cref="TypePackageBuilderExtensions"/>
 public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, TypePackageBuilderOptions? options = null)
 {
     /*
@@ -204,27 +213,12 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     }
 
     #region setup methods
-
+    
     /// <summary>
     /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
-    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
-    /// <seealso cref="Add(AssemblyName?[])"/>
-    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
-    /// <seealso cref="Add(Type?[])"/>
-    public TypePackageBuilder Add(params Assembly?[] assemblies)
-        => Add(AssemblyLoadMode.Recursive, assemblies);
-    /// <summary>
-    /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
-    /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
-    /// </summary>
-    /// <returns><see langword="this"/> instance</returns>
-    /// <seealso cref="Add(Assembly?[])"/>
-    /// <seealso cref="Add(AssemblyName?[])"/>
-    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
-    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(AssemblyLoadMode loadMode, params Assembly?[] assemblies)
     {
         _includedAssemblyNames.AddRange(
@@ -238,21 +232,6 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
-    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
-    /// <seealso cref="Add(Assembly?[])"/>
-    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
-    /// <seealso cref="Add(Type?[])"/>
-    public TypePackageBuilder Add(params AssemblyName?[] assemblyNames)
-        => Add(AssemblyLoadMode.Recursive, assemblyNames);
-    /// <summary>
-    /// Adds the given <paramref name="assemblyNames"/> to the <see cref="ITypePackage"/>.<br/>
-    /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
-    /// </summary>
-    /// <returns><see langword="this"/> instance</returns>
-    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
-    /// <seealso cref="Add(Assembly?[])"/>
-    /// <seealso cref="Add(AssemblyName?[])"/>
-    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(AssemblyLoadMode loadMode, params AssemblyName?[] assemblyNames)
     {
         _includedAssemblyNames.AddRange(assemblyNames.WhereNotNull().Select(x => new AssemblyLoadInfo(x, loadMode)), x => x.FullName);
@@ -263,11 +242,6 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// Adds the given <paramref name="types"/> to the <see cref="ITypePackage"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
-    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
-    /// <seealso cref="Add(Assembly?[])"/>
-    /// <seealso cref="Add(AssemblyName?[])"/>
-    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
-    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(params Type?[] types)
     {
         _includedTypes.AddRange(types.WhereNotNull());
@@ -320,8 +294,9 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         return this;
     }
     /// <summary>
-    /// Applies the given <paramref name="filters"/> to all types of the resulting <see cref="ITypePackage"/>.<br/>
-    /// All types which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.
+    /// Applies the given <paramref name="filters"/> to all assemblies of the resulting <see cref="ITypePackage"/>.<br/>
+    /// All assemblies which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.<br/>
+    /// Their peer dependencies will not be loaded either.
     /// </summary>
     /// <param name="filters"></param>
     /// <returns></returns>

@@ -15,6 +15,11 @@ using static JLib.Reflection.Tests.DemoTypes;
 
 namespace JLib.Reflection.Tests;
 
+/// <summary>
+/// todo:
+/// <see cref="TypePackageBuilderExtensions.AddNestedTypes"/>
+/// </summary>
+/// <param name="toh"></param>
 public class TypePackageTests(ITestOutputHelper toh)
 {
     #region Assembly
