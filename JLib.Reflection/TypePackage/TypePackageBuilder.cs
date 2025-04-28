@@ -65,7 +65,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     private readonly HashSet<AssemblyFullName> _assemblyBlacklist = [];
     private readonly HashSet<Type> _typeBlacklist = [];
     private readonly List<Func<Type, bool>> _typeFilters = [];
-    private readonly List<Func<Assembly, bool>> _assemblyFilters = [];
+    private readonly List<Func<AssemblyName, bool>> _assemblyFilters = [];
 
     private const string ExceptionBuilderName = $"{nameof(TypePackageBuilder)}.{nameof(Build)}";
 
@@ -88,13 +88,15 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                 .Where(includedAssembly => _assemblyBlacklist.Contains(includedAssembly.Key))
                 .Select(kv => kv.Key.Value));
 
-        content.Add(new ContentTypePackage($"{_includedTypes.Count} Manually added types", _includedTypes.ToImmutableHashSet()));
+        var filteredIncludedTypes = ApplyTypeFilter(_includedTypes);
+        content.Add(new ContentTypePackage($"{filteredIncludedTypes.Count} Manually added types", filteredIncludedTypes.ToImmutableHashSet()));
 
         logger?.LogTrace("preparing direct dependencies");
         var loadDependencyExceptions = Enum.GetValues<AssemblyLoadMode>()
             .ToDictionary(value => value, value => exceptions.CreateChild(value.ToString()));
 
         var loadGroups = _includedAssemblyNames
+            .Where(x => AssemblyFilter(x.Value.Name))
             .Select(kv => kv.Value)
             .GroupBy(
                 loadInfo => loadInfo.Mode,
@@ -128,15 +130,9 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
              .WhereNotNull()
              .LoadRecursivePeerDependencies(
                  exceptions.CreateChild("peer dependencies"),
-                 name => _assemblyBlacklist.Count == 0 || _assemblyBlacklist.Contains(new(name.FullName)),
+                 AssemblyFilter,
                  _options.MaxDepth)
              .WhereNotNull()
-             // remove blacklisted assemblies
-             .Where(assembly
-                 // take all if there are no filters
-                 => _assemblyFilters.Count == 0
-                     // remove all types where at east one filter returned false
-                     || _assemblyFilters.All(filter => filter(assembly)))
              .Select(assembly => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter))
              .ToReadOnlyCollection()
          ?? []);
@@ -161,6 +157,11 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                        || _typeFilters.All(f => f(t))
                 )
                 .ToImmutableHashSet();
+
+        bool AssemblyFilter(AssemblyName name)
+            => (_assemblyBlacklist.Count == 0 || !_assemblyBlacklist.Contains(new(name.FullName)))
+               && (_assemblyFilters.Count == 0 || _assemblyFilters.All(filter => filter(name)));
+
     }
 
     #region setup methods
@@ -238,7 +239,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     #region filter
     /// <summary>
     /// Applies the given <paramref name="filters"/> to all types of the resulting <see cref="ITypePackage"/>.<br/>
-    /// All types which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.
+    /// All types which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.<br/>
+    /// This filter will also be applied to all explicitly included types.
     /// </summary>
     /// <param name="filters"></param>
     /// <returns></returns>
@@ -250,11 +252,14 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// <summary>
     /// Applies the given <paramref name="filters"/> to all assemblies of the resulting <see cref="ITypePackage"/>.<br/>
     /// All assemblies which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.<br/>
-    /// Their peer dependencies will not be loaded either.
+    /// Their peer dependencies will not be loaded either.<br/>
+    /// This filter will also be applied to all explicitly included assemblies.<br/>
+    /// <b>do not use this method to exclude assemblies by <see cref="AssemblyName"/>. Use <see cref="AddToBlacklist(Assembly?[])"/> instead.</b><br/>
+    /// The <see cref="AssemblyName"/> class compared by reference and not by values. <see cref="Assembly.GetName()"/> == <see cref="Assembly.GetName()"/> evaluates to false!
     /// </summary>
     /// <param name="filters"></param>
     /// <returns></returns>
-    public TypePackageBuilder AddAssemblyFilter(params Func<Assembly, bool>[] filters)
+    public TypePackageBuilder AddAssemblyFilter(params Func<AssemblyName, bool>[] filters)
     {
         _assemblyFilters.AddRange(filters);
         return this;

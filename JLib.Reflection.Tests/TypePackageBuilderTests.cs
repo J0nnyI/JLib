@@ -4,18 +4,20 @@ using FluentAssertions;
 using JLib.Exceptions;
 using JLib.Exceptions.CommonExceptions;
 using JLib.Helper;
+using JLib.Reflection.Tests.DemoAssembly1;
 using JLib.Reflection.Tests.DemoAssembly2;
 using JLib.Reflection.Tests.DemoAssembly1A;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace JLib.Reflection.Tests;
 
-public class TypePackageBuilderTests
+public class TypePackageBuilderTests(ITestOutputHelper toh)
 {
     private void RunTest(
-        IReadOnlyCollection<Assembly>? topOnlyAssembliesIn = null,
+        IReadOnlyCollection<Assembly>? topOnlyAssemblies = null,
         IReadOnlyCollection<Assembly>? recursiveAssemblies = null,
         IReadOnlyCollection<Type>? types = null,
         IReadOnlyCollection<Type>? expectedTypes = null,
@@ -24,7 +26,7 @@ public class TypePackageBuilderTests
         int maxIterationDepth = 100
         )
     {
-        topOnlyAssembliesIn ??= [];
+        topOnlyAssemblies ??= [];
         recursiveAssemblies ??= [];
         types ??= [];
         expectedTypes ??= [];
@@ -36,14 +38,17 @@ public class TypePackageBuilderTests
             MaxDepth = maxIterationDepth
         })
             .Add(AssemblyLoadMode.Recursive, recursiveAssemblies.ToArray())
-            .Add(AssemblyLoadMode.TopLevelOnly, topOnlyAssembliesIn.ToArray())
+            .Add(AssemblyLoadMode.TopLevelOnly, topOnlyAssemblies.ToArray())
             .Add(types.ToArray());
         additionalSetup?.Invoke(builder);
         var package = builder
             .Build(exceptions);
 
+        toh.WriteLine(package.ToJson());
+
         exceptions.ThrowIfNotEmpty();
-        package.GetContent().Should().Contain(expectedTypes);
+        if (expectedTypes.Count > 0)
+            package.GetContent().Should().Contain(expectedTypes);
         additionalValidation?.Invoke(package);
     }
 
@@ -51,14 +56,14 @@ public class TypePackageBuilderTests
     public void MixedDependencyTest()
         => RunTest(
             recursiveAssemblies: [Assembly1],
-            topOnlyAssembliesIn: [Assembly2],
+            topOnlyAssemblies: [Assembly2],
             expectedTypes: Assembly2Types
                 .Concat(Assembly1Recursive)
                 .ToReadOnlyCollection());
     [Fact]
     public void NoPeerDependencies()
         => RunTest(
-            topOnlyAssembliesIn: [Assembly2],
+            topOnlyAssemblies: [Assembly2],
             expectedTypes: Assembly2Types);
     [Fact]
     public void PeerDependencies()
@@ -154,12 +159,54 @@ public class TypePackageBuilderTests
 
     [Fact]
     public void TypeFilter()
-        => RunTest([],
-            types: DemoTypes.Types,
-            additionalSetup: b => b.AddTypeFilter(t => t != typeof(DemoTypes.DemoClassA)),
-            expectedTypes: Enumerable.Except(DemoTypes.Types, [typeof(DemoTypes.DemoClassA)]).ToArray(),
-            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA))
+        => RunTest(
+            topOnlyAssemblies: [Assembly1],
+            additionalSetup: b => b.AddTypeFilter(t => t != typeof(TestAssemblyDemoClassA)),
+            expectedTypes: Enumerable.Except(Assembly1Types, [typeof(TestAssemblyDemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssemblyDemoClassA))
             );
+
+    [Fact]
+    public void FilterIncludedType()// todo
+        => RunTest(
+            types: Assembly1Types,
+            additionalSetup: b => b.AddTypeFilter(t => t != typeof(TestAssemblyDemoClassA)),
+            expectedTypes: Enumerable.Except(Assembly1Types, [typeof(TestAssemblyDemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssemblyDemoClassA))
+        );
+    [Fact]
+    public void FilterAssemblyType()
+        => RunTest(
+            topOnlyAssemblies: [Assembly1],
+            additionalSetup: b => b.AddTypeFilter(t => t != typeof(TestAssemblyDemoClassA)),
+            expectedTypes: Enumerable.Except(Assembly1Types, [typeof(TestAssemblyDemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssemblyDemoClassA))
+        );
+    [Fact]
+    public void FilterAssemblyTypeNested()
+        => RunTest(
+            recursiveAssemblies: [Assembly1],
+            additionalSetup: b => b.AddTypeFilter(t => t != typeof(TestAssembly1ADemoClassA)),
+            expectedTypes: Enumerable.Except(Assembly1Recursive, [typeof(TestAssembly1ADemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly1ADemoClassA))
+        );
+
+    [Fact]
+    public void FilterIncludedAssembly()
+        => RunTest(
+            recursiveAssemblies: [Assembly1],
+            additionalSetup: b => b.AddAssemblyFilter(a => a.FullName != Assembly1.FullName),
+            expectedTypes: [],
+            additionalValidation: tp => tp.GetContent().Should().BeEmpty()
+        );
+    [Fact]
+    public void FilterIncludedAssembly2()
+        => RunTest(
+            recursiveAssemblies: [Assembly1],
+            additionalSetup: b => b.AddAssemblyFilter(a => a.FullName != Assembly1A.FullName),
+            expectedTypes: Assembly1Types,
+            additionalValidation: tp => tp.GetContent().Should().NotContain(Assembly1ATypes.Concat(Assembly1A1Types))
+        );
 
     [Fact]
     public void MultipleNested()
@@ -179,7 +226,7 @@ public class TypePackageBuilderTests
     public void AssemblyFilter()
     => RunTest(
         recursiveAssemblies: [Assembly1],
-        additionalSetup: b => b.AddAssemblyFilter(assembly => assembly != Assembly1A),
+        additionalSetup: b => b.AddAssemblyFilter(assembly => assembly.FullName != Assembly1A.GetName().FullName),
         expectedTypes: Assembly1Recursive.Except(Assembly1ATypes).ToArray(),
         additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly1ADemoClassA))
         );
