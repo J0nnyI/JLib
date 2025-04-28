@@ -207,6 +207,12 @@ public class TypePackageBuilderTests(ITestOutputHelper toh)
             expectedTypes: Assembly1Types,
             additionalValidation: tp => tp.GetContent().Should().NotContain(Assembly1ATypes.Concat(Assembly1A1Types))
         );
+    [Fact]
+    public void ByFilepath()
+        => RunTest(
+            additionalSetup: b => b.AddFromPath(directory: null, includedPrefixes: ["JLib.Reflection.Tests.DemoAssembly"]),
+            expectedTypes: AllAssemblyTypes
+        );
 
     [Fact]
     public void MultipleNested()
