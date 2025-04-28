@@ -4,6 +4,7 @@ public static class ConfigurationSections
 {
     /// <summary>
     /// the key under which environments can be specified.
+    /// this should only be overriden when the app launches to prevent enforcing the usage of the environment subgroups.
     /// </summary>
-    public const string Environment = "Environment";
+    public static string Environment { get; set; }= "Environment";
 }
