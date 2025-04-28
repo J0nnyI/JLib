@@ -7,14 +7,14 @@ using JLib.Helper;
 using Snapshooter.Xunit;
 
 using Xunit;
+using Xunit.Abstractions;
 using static JLib.Reflection.Tests.DemoTypes;
 #pragma warning disable CS0618 // Type or member is obsolete
 
 namespace JLib.Reflection.Tests;
 
-public class TypePackageTests
+public class TypePackageTests(ITestOutputHelper toh)
 {
-
     #region Assembly
     [Fact]
     public void SingleAssemblyWithNameTemplate()
@@ -121,6 +121,8 @@ public class TypePackageTests
     private void RunTest(
          ITypePackage package, IEnumerable<Type> expectedTypes, [CallerMemberName] string name = "")
     {
+        toh.WriteLine("Type Package Content:");
+        toh.WriteLine(package.ToJson());
         // .net 7 adds some attributes which are not included in any other .net version,
         // which means we have to remove them from the result to match all other versions
         package
