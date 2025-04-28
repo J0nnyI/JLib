@@ -22,7 +22,13 @@ public abstract class TypeCacheException : JLibException
 /// </summary>
 public abstract class TypeResolverException : TypeCacheException
 {
+    /// <summary>
+    /// The <see cref="TypeValueType"/> which was requested
+    /// </summary>
     public Type RequestedTypeValueType { get; }
+    /// <summary>
+    /// The Type which was requested to be resolved
+    /// </summary>
     public Type? GivenType { get; }
 
     internal TypeResolverException(Type requestedTypeValueType, Type? givenType, string message) : base(message)
@@ -39,8 +45,8 @@ public abstract class TypeResolverException : TypeCacheException
 /// </summary>
 public abstract class TypeNotFoundException : TypeResolverException
 {
-    internal TypeNotFoundException(Type requestedTypeValueType, Type? givenType) 
-        : base(requestedTypeValueType, givenType, 
+    internal TypeNotFoundException(Type requestedTypeValueType, Type? givenType)
+        : base(requestedTypeValueType, givenType,
             $"The TypeCache does not contain an instance of {givenType?.FullName(true)}. It was requested as {requestedTypeValueType.FullName(true)}")
     {
     }
@@ -86,14 +92,24 @@ public sealed class NotUniqueTypeFilterException<TRequestedTypeValueType> : NotU
     }
 }
 
+/// <summary>
+/// Thrown, when the <see cref="ITypeCache"/> does not contain the given <see cref="TypeResolverException.RequestedTypeValueType"/>.<br/>
+/// This points to an incomplete <see cref="ITypePackage"/> passed to the <see cref="ITypeCache"/>
+/// </summary>
 public abstract class UnknownTypeValueTypeException : TypeResolverException
 {
-    internal UnknownTypeValueTypeException(Type requestedTypeValueType, Type givenType) 
-        : base(requestedTypeValueType, givenType, 
+    internal UnknownTypeValueTypeException(Type requestedTypeValueType, Type givenType)
+        : base(requestedTypeValueType, givenType,
             $"The TypePackage passed to the TypeCache did not contain the requested TypeValueType {requestedTypeValueType.FullName(true)} while resolving {givenType.FullName(true)}")
     {
     }
 }
+
+/// <summary>
+/// Thrown, when the <see cref="ITypeCache"/> does not contain <typeparamref cref="TRequestedTypeValueType"/>.<br/>
+/// This points to an incomplete <see cref="ITypePackage"/> passed to the <see cref="ITypeCache"/>
+/// </summary>
+/// <typeparam name="TRequestedTypeValueType"></typeparam>
 public sealed class UnknownTypeValueTypeException<TRequestedTypeValueType> : UnknownTypeValueTypeException
     where TRequestedTypeValueType : ITypeValueType
 {
@@ -102,18 +118,18 @@ public sealed class UnknownTypeValueTypeException<TRequestedTypeValueType> : Unk
     }
 }
 /// <summary>
-/// Indicates, that the <see cref="TypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
+/// Indicates, that the <see cref="ITypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
 /// </summary>
 public abstract class UnknownTypeException : TypeResolverException
 {
     internal UnknownTypeException(Type requestedTypeValueType, Type givenType)
-        : base(requestedTypeValueType, givenType, 
+        : base(requestedTypeValueType, givenType,
             $"The TypePackage passed to the TypeCache did not contain {givenType.FullName(true)} as {requestedTypeValueType.FullName(true)}")
     {
     }
 }
 /// <summary>
-/// Indicates, that the <see cref="TypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
+/// Indicates, that the <see cref="ITypePackage"/> passed to the <see cref="ITypeCache"/> did not contain the <see cref="TypeResolverException.GivenType"/>
 /// </summary>
 public sealed class UnknownTypeException<TRequestedTypeValueType> : UnknownTypeException
     where TRequestedTypeValueType : ITypeValueType
@@ -133,8 +149,8 @@ public abstract class TypeValueTypeMismatchException : TypeResolverException
     /// </summary>
     public Type ActualTypeValueType { get; }
 
-    internal TypeValueTypeMismatchException(Type requestedTypeValueType, Type actualTypeValueType, Type givenType) 
-        : base(requestedTypeValueType, givenType, 
+    internal TypeValueTypeMismatchException(Type requestedTypeValueType, Type actualTypeValueType, Type givenType)
+        : base(requestedTypeValueType, givenType,
             $"{givenType.FullName(true)} was requested as {requestedTypeValueType.FullName(true)} which is not assignable to its actual {nameof(TypeValueType)} of {actualTypeValueType.FullName(true)}")
     {
         ActualTypeValueType = actualTypeValueType;
@@ -147,7 +163,7 @@ public abstract class TypeValueTypeMismatchException : TypeResolverException
 public sealed class TypeValueTypeMismatchException<TRequestedTypeValueType> : TypeValueTypeMismatchException
     where TRequestedTypeValueType : ITypeValueType
 {
-    internal TypeValueTypeMismatchException(Type actualTypeValueType, Type givenType) 
+    internal TypeValueTypeMismatchException(Type actualTypeValueType, Type givenType)
         : base(typeof(TRequestedTypeValueType), actualTypeValueType, givenType)
     {
     }

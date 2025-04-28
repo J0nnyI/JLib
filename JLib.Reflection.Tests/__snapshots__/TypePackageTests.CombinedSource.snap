@@ -1,15 +1,15 @@
 ﻿{
-  "Description": "2 Assemblies and 3 types",
+  "Description": "2 Assemblies and 3 types Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.DemoClassA",
-      "TypePackageTests.DemoClassB",
-      "TypePackageTests.DemoClassC"
+      "DemoTypes.DemoClassA",
+      "DemoTypes.DemoClassB",
+      "DemoTypes.DemoClassC"
     ]
   },
   "Children": [
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly1",
+      "Description": "JLib.Reflection.Tests.DemoAssembly1 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly1": [
           "TestAssemblyDemoClassA",
@@ -17,10 +17,16 @@
           "TestAssemblyDemoClassC"
         ]
       },
-      "Children": []
+      "Children": [
+        {
+          "Description": "JLib.Reflection Filtered",
+          "Types": {},
+          "Children": []
+        }
+      ]
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly2",
+      "Description": "JLib.Reflection.Tests.DemoAssembly2 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly2": [
           "TestAssembly2DemoClassA",

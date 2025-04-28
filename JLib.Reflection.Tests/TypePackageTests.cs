@@ -1,102 +1,50 @@
-﻿using System.Net;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using FluentAssertions;
 
 using JLib.Helper;
-using JLib.Reflection.Tests.DemoAssembly1;
-using JLib.Reflection.Tests.DemoAssembly2;
 
 using Snapshooter.Xunit;
 
 using Xunit;
+using Xunit.Abstractions;
+
+using static JLib.Reflection.Tests.DemoTypes;
+#pragma warning disable CS0618 // Type or member is obsolete
 
 namespace JLib.Reflection.Tests;
-public class TypePackageTests
-{
-    #region nested classes
-    private class NestingDemoClass
-    {
-        public class NestedDemoClassA { }
-        public class NestedDemoClassB { }
-        public class NestedDemoClassC { }
-    }
-    private class NestingDemoClass2
-    {
-        public class NestedDemoClass2A { }
-        public class NestedDemoClass2B { }
-        public class NestedDemoClass2C { }
-    }
-    public static IReadOnlyCollection<Type> NestedTypes => new[]
-    {
-        typeof(NestingDemoClass.NestedDemoClassA),
-        typeof(NestingDemoClass.NestedDemoClassB),
-        typeof(NestingDemoClass.NestedDemoClassC),
-    };
-    public static IReadOnlyCollection<Type> NestedTypes2 => new[]
-    {
-        typeof(NestingDemoClass2.NestedDemoClass2A),
-        typeof(NestingDemoClass2.NestedDemoClass2B),
-        typeof(NestingDemoClass2.NestedDemoClass2C),
-    };
-    #endregion
-    #region direct classes
-    private class DemoClassA { }
-    private class DemoClassB { }
-    private class DemoClassC { }
-    private static readonly IReadOnlyCollection<Type> DemoTypes = new[]
-    {
-        typeof(DemoClassA),
-        typeof(DemoClassB),
-        typeof(DemoClassC),
-    };
-    #endregion
-    #region assembly
-    private static readonly IReadOnlyCollection<Type> DemoAssemblyTypes = new[]
-    {
-        typeof(TestAssemblyDemoClassA),
-        typeof(TestAssemblyDemoClassB),
-        typeof(TestAssemblyDemoClassC),
-    };
-    private static readonly Assembly DemoAssembly = DemoAssemblyTypes.First().Assembly;
-    private static readonly IReadOnlyCollection<Type> DemoAssembly2Types = new[]
-    {
-        typeof(TestAssembly2DemoClassA),
-        typeof(TestAssembly2DemoClassB),
-        typeof(TestAssembly2DemoClassC),
-    };
-    private static readonly Assembly DemoAssembly2 = DemoAssembly2Types.First().Assembly;
-    #endregion
 
+/// <summary>
+/// todo:
+/// <see cref="TypePackageBuilderExtensions.AddNestedTypes"/>
+/// </summary>
+/// <param name="toh"></param>
+public class TypePackageTests(ITestOutputHelper toh)
+{
     #region Assembly
     [Fact]
     public void SingleAssemblyWithNameTemplate()
     => RunTest(
-        TypePackage.Get(DemoAssembly, "Testing Assembly {0} {1}"),
-        DemoAssemblyTypes
+        TypePackage.Get(DemoAssemblyContent.Assembly1, "Testing Assembly {0} {1}"), DemoAssemblyContent.Assembly1Types
 );
     [Fact]
     public void SingleAssembly()
     => RunTest(
-        TypePackage.Get(DemoAssembly),
-        DemoAssemblyTypes
+        TypePackage.Get(DemoAssemblyContent.Assembly1), DemoAssemblyContent.Assembly1Types
 );
     [Fact]
     public void MultiAssemblyParams()
     => RunTest(
-        TypePackage.Get(DemoAssembly, DemoAssembly2),
-        DemoAssemblyTypes.Concat(DemoAssembly2Types)
+        TypePackage.Get(DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types)
 );
     [Fact]
     public void MultiAssemblyCollection()
     => RunTest(
         TypePackage.Get(new[]
             {
-                    DemoAssembly,
-                    DemoAssembly2
-            }.CastTo<IReadOnlyCollection<Assembly>>()),
-        DemoAssemblyTypes.Concat(DemoAssembly2Types)
+                DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2
+            }.CastTo<IReadOnlyCollection<Assembly>>()), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types)
 );
     #endregion
     #region explicit type
@@ -104,19 +52,19 @@ public class TypePackageTests
     public void SingleTypeAssembly()
     => RunTest(
         TypePackage.Get(typeof(DemoClassA)),
-        new[] { typeof(DemoClassA) }
-);
+        [typeof(DemoClassA)]
+    );
     [Fact]
     public void MultiTypeAssemblyParams()
     => RunTest(
-        TypePackage.Get(DemoTypes.ToArray()),
-        DemoTypes
+        TypePackage.Get(DemoTypes.Types.ToArray()),
+        DemoTypes.Types
 );
     [Fact]
     public void MultiTypeAssemblyCollection()
     => RunTest(
-        TypePackage.Get(DemoTypes),
-        DemoTypes
+        TypePackage.Get(DemoTypes.Types),
+        DemoTypes.Types
 );
     #endregion
     #region nested type
@@ -146,21 +94,19 @@ public class TypePackageTests
     [Fact]
     public void CombinedAssembliesOnly()
         => RunTest(
-            TypePackage.Get(new[] { DemoAssembly, DemoAssembly2 }, Enumerable.Empty<Type>()),
-            DemoAssemblyTypes.Concat(DemoAssembly2Types)
+            TypePackage.Get([DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2], []), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types)
         );
     [Fact]
     public void CombinedTypesOnly()
         => RunTest(
-                TypePackage.Get(Enumerable.Empty<Assembly>(), DemoTypes),
-                DemoTypes
+                TypePackage.Get([], DemoTypes.Types),
+                DemoTypes.Types
             );
 
     [Fact]
     public void CombinedSource()
         => RunTest(
-            TypePackage.Get(new[] { DemoAssembly, DemoAssembly2 }, DemoTypes),
-            DemoAssemblyTypes.Concat(DemoAssembly2Types).Concat(DemoTypes)
+            TypePackage.Get([DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2], DemoTypes.Types), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types).Concat(DemoTypes.Types)
         );
     #endregion
     [Fact]
@@ -170,23 +116,27 @@ public class TypePackageTests
                 TypePackage.Get(typeof(DemoClassA)),
                 TypePackage.Get(typeof(DemoClassB), typeof(DemoClassC))
             ),
-            DemoTypes);
+            DemoTypes.Types);
     [Fact]
     public void ByFileSystem()
     {
         RunTest(
-            TypePackage.Get(null, new[] { "JLib.Reflection.Tests.Demo" }),
-            DemoAssemblyTypes.Concat(DemoAssembly2Types));
+            TypePackage.Get(null, ["JLib.Reflection.Tests.Demo"]),
+            DemoAssemblyContent.AllAssemblyTypes);
     }
 
     private void RunTest(
          ITypePackage package, IEnumerable<Type> expectedTypes, [CallerMemberName] string name = "")
     {
+        toh.WriteLine("Type Package Content:");
+        package = package.ApplyFilter(x => x.Name.Contains("Demo"));
+        toh.WriteLine(package.ToJson());
         // .net 7 adds some attributes which are not included in any other .net version,
         // which means we have to remove them from the result to match all other versions
         package
             .GetContent()
-            .Should().OnlyContain(t => expectedTypes.Contains(t)
+            .Should()
+            .OnlyContain(t => expectedTypes.Contains(t)
 #if NET7_0
                 || new[] { "EmbeddedAttribute", "RefSafetyRulesAttribute" }.Contains(t.Name)
 #endif

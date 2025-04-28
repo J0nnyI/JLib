@@ -1,22 +1,22 @@
 ﻿{
-  "Description": "2 Packages",
+  "Description": "2 Packages Filtered",
   "Types": {},
   "Children": [
     {
-      "Description": "1 Types",
+      "Description": "1 Types Filtered",
       "Types": {
         "JLib.Reflection.Tests": [
-          "TypePackageTests.DemoClassA"
+          "DemoTypes.DemoClassA"
         ]
       },
       "Children": []
     },
     {
-      "Description": "2 Types",
+      "Description": "2 Types Filtered",
       "Types": {
         "JLib.Reflection.Tests": [
-          "TypePackageTests.DemoClassB",
-          "TypePackageTests.DemoClassC"
+          "DemoTypes.DemoClassB",
+          "DemoTypes.DemoClassC"
         ]
       },
       "Children": []

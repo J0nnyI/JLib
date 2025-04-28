@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
-
 using JLib.Helper;
 
 namespace JLib.Reflection;
@@ -8,13 +7,14 @@ namespace JLib.Reflection;
 /// <summary>
 /// Contains Content to be used by the <see cref="TypeCache"/>
 /// </summary>
+[Obsolete($"Use {nameof(TypePackageBuilder)} instead", false)]
 public sealed class TypePackage : ITypePackage
 {
     /// <summary>
     /// an empty <see cref="ITypePackage"/>
     /// </summary>
     public static ITypePackage Empty { get; } = new TypePackage(
-        Enumerable.Empty<Type>(), Enumerable.Empty<ITypePackage>(), "EMPTY");
+        [], [], "EMPTY");
     /// <param name="assembly"></param>
     /// <param name="name">the name of the type package, defaulting to <see cref="AssemblyName.Name"/></param>
     /// <returns>an <see cref="ITypePackage"/> containing all <see cref="Assembly.GetTypes"/> of the given <paramref name="assembly"/></returns>
@@ -55,8 +55,8 @@ public sealed class TypePackage : ITypePackage
         if (nested.Length == 0)
             return Empty;
         return new TypePackage(nested,
-                nested.Length == 0 
-                    ? null 
+                nested.Length == 0
+                    ? null
                     : new[] { GetNested(nested) },
                 "nested types of " +
                 string.Join(", ", types.Select(x => x.FullName())));
@@ -73,6 +73,7 @@ public sealed class TypePackage : ITypePackage
     /// </summary>
     /// <param name="assemblies">the <see cref="Assembly"/>s to be included in this <see cref="ITypePackage"/></param>
     /// <param name="types">the <see cref="Type"/>s to be included in this <see cref="ITypePackage"/></param>
+    /// <param name="name">The <see cref="ITypePackage.DescriptionTemplate"/></param>
     /// <returns>a new <see cref="ITypePackage"/> which contains all the given <paramref name="assemblies"/> and <paramref name="types"/></returns>
     public static ITypePackage Get(IEnumerable<Assembly> assemblies, IEnumerable<Type> types,
         string name = "{Children} Assemblies and {Types} types")
@@ -127,22 +128,35 @@ public sealed class TypePackage : ITypePackage
 
     private TypePackage(IEnumerable<Type>? types, IEnumerable<ITypePackage>? children, string nameTemplate)
     {
-        Types = types ?? Enumerable.Empty<Type>();
+        Types = types ?? [];
         Children = (children?.Except(Empty)) ?? Array.Empty<ITypePackage>();
         DescriptionTemplate = nameTemplate;
         _content = new(() => GetContent(this).ToImmutableHashSet());
     }
 
-
+    /// <summary>
+    /// <inheritdoc cref="ITypePackage.Children"/>
+    /// </summary>
     public IEnumerable<ITypePackage> Children { get; }
+    /// <summary>
+    /// <inheritdoc cref="ITypePackage.Types"/>
+    /// </summary>
     public IEnumerable<Type> Types { get; }
+
+    /// <summary>
+    /// <inheritdoc cref="ITypePackage.DescriptionTemplate"/>
+    /// </summary>
     public string DescriptionTemplate { get; }
     private readonly Lazy<ImmutableHashSet<Type>> _content;
-    public ImmutableHashSet<Type> GetContent() => _content.Value;
+    public ImmutableHashSet<Type> GetContent() => _content
+        .Value;
 
+    /// <summary>
+    /// <inheritdoc cref="ITypePackage.GetContent"/>
+    /// </summary>
     private static IEnumerable<Type> GetContent(ITypePackage package)
         => package.Children.SelectMany(GetContent).Concat(package.Types).Distinct();
 
-    public ITypePackage Combine(params ITypePackage[] packages)
+    ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
         => Get(packages.Append(this));
 }

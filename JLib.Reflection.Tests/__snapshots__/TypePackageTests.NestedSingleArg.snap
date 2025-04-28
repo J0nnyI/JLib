@@ -1,10 +1,10 @@
 ﻿{
-  "Description": "nested types of TypePackageTests.NestingDemoClass",
+  "Description": "nested types of DemoTypes.NestingDemoClass Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.NestingDemoClass.NestedDemoClassA",
-      "TypePackageTests.NestingDemoClass.NestedDemoClassB",
-      "TypePackageTests.NestingDemoClass.NestedDemoClassC"
+      "DemoTypes.NestingDemoClass.NestedDemoClassA",
+      "DemoTypes.NestingDemoClass.NestedDemoClassB",
+      "DemoTypes.NestingDemoClass.NestedDemoClassC"
     ]
   },
   "Children": []

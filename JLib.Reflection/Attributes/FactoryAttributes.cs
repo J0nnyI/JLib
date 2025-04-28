@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
-using JLib.Exceptions;
 using JLib.Helper;
 
 namespace JLib.Reflection;
+// todo: add summaries
 
 /// <summary>
 /// classes with this given attribute will not be ignored by the typeCache

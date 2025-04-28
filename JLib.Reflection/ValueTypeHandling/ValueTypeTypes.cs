@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using JLib.ValueTypes;
-
 using static JLib.Reflection.TvtFactoryAttribute;
 
 using ValueType = JLib.ValueTypes.ValueType;
