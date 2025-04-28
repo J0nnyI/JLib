@@ -16,7 +16,9 @@ public static class TypePackageExtensions
     /// applies the given <paramref name="filter"/> to the typePackage <paramref name="typePackage"/>
     /// </summary>
     public static ITypePackage ApplyFilter(this ITypePackage typePackage, Func<Type, bool> filter, string? filterDescription = null)
+#pragma warning disable CS0618 // Type or member is obsolete
         => TypePackage.Get(
+#pragma warning restore CS0618 // Type or member is obsolete
             typePackage.Types.Where(filter),
             typePackage.Children.Select(tp => tp.ApplyFilter(filter, filterDescription)),
             typePackage.DescriptionTemplate + " Filtered" + (filterDescription is null ? "" : $": {filterDescription}"));
@@ -40,7 +42,7 @@ public static class TypePackageExtensions
 
 
     private static readonly JsonSerializerOptions DefaultOptions =
-        new JsonSerializerOptions(JsonSerializerDefaults.General)
+        new(JsonSerializerDefaults.General)
         { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     /// <summary>
     /// returns a json representation of the given <paramref name="typePackage"/>

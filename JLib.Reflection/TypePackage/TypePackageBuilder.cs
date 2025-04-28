@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
@@ -8,94 +9,44 @@ using Microsoft.Extensions.Logging;
 
 namespace JLib.Reflection;
 
-/// <summary>
-/// This Attribute forces a reference to an Assembly, the types of which may not be referenced otherwise by this assembly.<br/>
-/// This is required, when the referencing assembly does use the types of the referenced assembly for reflection but does not reference them directly.
-/// </summary>
-[AttributeUsage(AttributeTargets.Assembly)]
-public sealed class EnforceReferenceToAttribute : Attribute
-{
-
-    /// <summary>
-    /// <inheritdoc cref="EnforceReferenceToAttribute"/>
-    /// </summary>
-    /// <param name="type">The Type, which is defined by the assembly </param>
-    // ReSharper disable once UnusedParameter.Local
-    public EnforceReferenceToAttribute(params Type[] type)
-    {
-    }
-}
-
-/// <summary>
-/// Options which control the <see cref="TypePackageBuilder"/>s behavior
-/// </summary>
-public class TypePackageBuilderOptions
-{
-    /// <summary>
-    /// The default instance of this class
-    /// </summary>
-    public static TypePackageBuilderOptions Default { get; } = new();
-    /// <summary>
-    /// Controls, how deep the <see cref="Assembly"/> peer dependency tree is allowed to get.<br/>
-    /// This setting exists to break out of an endless loop.<br/>
-    /// The default value of 1000 should be more than enough to not need an override.
-    /// </summary>
-    public int MaxDepth { get; init; } = 1000;
-
-}
-
-/// <summary>
-/// Controls, how the <see cref="TypePackageBuilder"/> loads the <see cref="Assembly"/>s.<br/>
-/// </summary>
-public enum AssemblyLoadMode
-{
-    /// <summary>
-    /// Only the given assembly will be added, peer dependencies will not be loaded
-    /// </summary>
-    TopLevelOnly,
-    /// <summary>
-    /// The given assembly and all its peer dependencies will be loaded
-    /// </summary>
-    Recursive
-}
 /**********************************************************************************************************
  * extensions for the type package builder:
  * - create a mode, which considers only assemblies which directly or indirectly reference JLib.Reflection
  *   or are explicitly marked via attribute
  * - add from fs path with wildcard filter
  * - add from local executing path with wildcard filter
- * - create a mode, where the dev works directly on the Enumerable of types and assemblies
- * - use a graph to make the assemblies more accessible
  **********************************************************************************************************/
+
+/*
+ Architecture Notes
+ Q & A
+- Q: Why can't we just load the Assemblies directly while adding them to the Builder?
+  A: Their peer dependencies, which we would have to load too, may be excluded later on.
+- Q: We may load assemblies twice when adding them not by name but by assembly object. Why don't we optimize that?
+  A: Because they use a cache and remain loaded. Loading them again returns the original reference
+
+Requirement Notes
+Q & A
+- Q: Why would you want to add types and assemblies manually?
+  A: For Testing purposes. You may want to be able to load one type, without including the entire assembly.
+     This is a common requirement when testing TypeValueTypes.
+- Q: Why do we need a blacklist?
+  A: Some assemblies in a directory may not be able to be loaded and/or not be needed for reflection.
+     Excluding those removes their loading exception from the builder, lets the initialization succeed and shortens the initialization period.
+- Q: Why do we need a type filter?
+  A: Some types may not be needed or wanted for reflection. 3rd party AutoMapper profiles which do not conform to the TypeValueType Validation are one example.
+- Q: Why would you not want to load the peer Dependencies?
+  A: Because you don't have to when you are loading the entire binary directory, or you don't want to because you are setting up a test environment
+- Q: Why would you want to load the peer dependencies?
+  A: Because you want to include a Package, like any JLib library, and they do need their peer dependencies in the TypeCache.
+ */
+
 /// <summary>
 /// Builds a new <see cref="ITypePackage"/> used to initialize a <see cref="ITypeCache"/>
 /// </summary>
 /// <seealso cref="TypePackageBuilderExtensions"/>
 public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, TypePackageBuilderOptions? options = null)
 {
-    /*
-     Architecture Notes
-     Q & A
-    - Q: Why can't we just load the Assemblies directly while adding them to the Builder?
-      A: Their peer dependencies, which we would have to load too, may be excluded later on.
-    - Q: We may load assemblies twice when adding them not by name but by assembly object. Why don't we optimize that?
-      A: Because they use a cache and remain loaded. Loading them again returns the original reference
-
-    Requirement Notes
-    Q & A
-    - Q: Why would you want to add types and assemblies manually?
-      A: For Testing purposes. You may want to be able to load one type, without including the entire assembly.
-         This is a common requirement when testing TypeValueTypes.
-    - Q: Why do we need a blacklist?
-      A: Some assemblies in a directory may not be able to be loaded and/or not be needed for reflection.
-         Excluding those removes their loading exception from the builder, lets the initialization succeed and shortens the initialization period.
-    - Q: Why do we need a type filter?
-      A: Some types may not be needed or wanted for reflection. 3rd party AutoMapper profiles which do not conform to the TypeValueType Validation are one example.
-    - Q: Why would you not want to load the peer Dependencies?
-      A: Because you don't have to when you are loading the entire binary directory, or you don't want to because you are setting up a test environment
-    - Q: Why would you want to load the peer dependencies?
-      A: Because you want to include a Package, like any JLib library, and they do need their peer dependencies in the TypeCache.
-     */
     private record AssemblyFullName(string? Value) : StringValueType(Value ?? "n/a");
 
     private sealed class AssemblyLoadInfo(AssemblyName assemblyName, AssemblyLoadMode mode)
@@ -213,7 +164,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     }
 
     #region setup methods
-    
+    #region add
     /// <summary>
     /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
@@ -248,6 +199,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         return this;
     }
 
+    #endregion
+    #region blacklist
     /// <summary>
     /// the given <paramref name="assemblies"/> will not be included in the resulting type package, whether they are peer or direct references.
     /// </summary>
@@ -281,7 +234,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _typeBlacklist.AddRange(types.WhereNotNull());
         return this;
     }
-
+    #endregion
+    #region filter
     /// <summary>
     /// Applies the given <paramref name="filters"/> to all types of the resulting <see cref="ITypePackage"/>.<br/>
     /// All types which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.
@@ -305,7 +259,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _assemblyFilters.AddRange(filters);
         return this;
     }
-
+    #endregion
     #endregion
 
     #region type package classes

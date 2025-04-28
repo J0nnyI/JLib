@@ -1,7 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
-using System.Diagnostics.SymbolStore;
-using System.Reflection;
+﻿using System.Reflection;
 
 using JLib.Exceptions;
 using JLib.Helper;
@@ -96,7 +93,7 @@ public interface ITypeCache
 
 /// <summary>
 /// provides an easy-to-use way to group types by kind, i.e. entities
-/// <br/>searches the Application for <see cref="TypeValueType"/> instances with <see cref="TvtFactoryAttribute.ITypeValueTypeFilterAttribute"/> attributes
+/// <br/>searches the Application for <see cref="TypeValueType"/> instances with <see cref="ITypeValueTypeFilter"/> attributes
 /// and populates them with the types provided via constructor.
 /// <br/> all reflection is done in the constructor
 /// <br/> should be used as singleton
@@ -159,7 +156,7 @@ public class TypeCache : ITypeCache
     public TypeCache(ITypePackage typePackage, ExceptionBuilder parentExceptionManager, ILoggerFactory loggerFactory)
     {
         TypePackage = typePackage;
-        _logger = loggerFactory.CreateLogger(typeof(ITypeCache)?.FullName ?? nameof(ITypeCache));
+        _logger = loggerFactory.CreateLogger(typeof(ITypeCache).FullName ?? nameof(ITypeCache));
         using var _ = _logger.BeginScope(this);
         KnownTypes = typePackage.GetContent().ToArray();
         const string exceptionMessage = "Cache setup failed";
@@ -396,7 +393,9 @@ public class TypeCache : ITypeCache
         _logger.LogInformation("Initialized TypeCache with a total of {typeCount} types", _typeValueTypes.Count);
         WriteDebug();
 
-        var missing = KnownTypeValueTypes.Except(_typeValueTypes.Select(x => x.GetType()).Distinct()).ToArray();
+        var missing = KnownTypeValueTypes
+            .Except(_typeValueTypes.Select(x => x.GetType()).Distinct())
+            .ToArray<object>();
         if (missing.Any())
             _logger.LogWarning("  No types found for: {TypeValueTypeName}", missing);
         return;
