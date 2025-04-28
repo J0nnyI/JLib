@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
@@ -8,56 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace JLib.Reflection;
 
-/// <summary>
-/// This Attribute forces a reference to an Assembly, the types of which may not be referenced otherwise by this assembly.<br/>
-/// This is required, when the referencing assembly does use the types of the referenced assembly for reflection but does not reference them directly.
-/// </summary>
-[AttributeUsage(AttributeTargets.Assembly)]
-public sealed class EnforceReferenceToAttribute : Attribute
-{
-
-    /// <summary>
-    /// <inheritdoc cref="EnforceReferenceToAttribute"/>
-    /// </summary>
-    /// <param name="type">The Type, which is defined by the assembly </param>
-    // ReSharper disable once UnusedParameter.Local
-    public EnforceReferenceToAttribute(params Type[] type)
-    {
-    }
-}
-
-/// <summary>
-/// Options which control the <see cref="TypePackageBuilder"/>s behavior
-/// </summary>
-public class TypePackageBuilderOptions
-{
-    /// <summary>
-    /// The default instance of this class
-    /// </summary>
-    public static TypePackageBuilderOptions Default { get; } = new();
-    /// <summary>
-    /// Controls, how deep the <see cref="Assembly"/> peer dependency tree is allowed to get.<br/>
-    /// This setting exists to break out of an endless loop.<br/>
-    /// The default value of 1000 should be more than enough to not need an override.
-    /// </summary>
-    public int MaxDepth { get; init; } = 1000;
-
-}
-
-/// <summary>
-/// Controls, how the <see cref="TypePackageBuilder"/> loads the <see cref="Assembly"/>s.<br/>
-/// </summary>
-public enum AssemblyLoadMode
-{
-    /// <summary>
-    /// Only the given assembly will be added, peer dependencies will not be loaded
-    /// </summary>
-    TopLevelOnly,
-    /// <summary>
-    /// The given assembly and all its peer dependencies will be loaded
-    /// </summary>
-    Recursive
-}
 /**********************************************************************************************************
  * extensions for the type package builder:
  * - create a mode, which considers only assemblies which directly or indirectly reference JLib.Reflection
@@ -213,7 +164,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     }
 
     #region setup methods
-    
+    #region add
     /// <summary>
     /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
@@ -247,7 +198,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _includedTypes.AddRange(types.WhereNotNull());
         return this;
     }
-
+    #endregion
+    #region blacklist
     /// <summary>
     /// the given <paramref name="assemblies"/> will not be included in the resulting type package, whether they are peer or direct references.
     /// </summary>
@@ -281,7 +233,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _typeBlacklist.AddRange(types.WhereNotNull());
         return this;
     }
-
+    #endregion
+    #region filter
     /// <summary>
     /// Applies the given <paramref name="filters"/> to all types of the resulting <see cref="ITypePackage"/>.<br/>
     /// All types which evaluate to <see langword="false"/> on at least one Filter will not be included, independent on whether they have been added manually or via an <see cref="Assembly"/>.
@@ -305,7 +258,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _assemblyFilters.AddRange(filters);
         return this;
     }
-
+    #endregion
     #endregion
 
     #region type package classes
