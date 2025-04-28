@@ -1,9 +1,9 @@
 ﻿{
-  "Description": "2 Assemblies",
+  "Description": "2 Assemblies Filtered",
   "Types": {},
   "Children": [
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly1",
+      "Description": "JLib.Reflection.Tests.DemoAssembly1 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly1": [
           "TestAssemblyDemoClassA",
@@ -11,10 +11,16 @@
           "TestAssemblyDemoClassC"
         ]
       },
-      "Children": []
+      "Children": [
+        {
+          "Description": "JLib.Reflection Filtered",
+          "Types": {},
+          "Children": []
+        }
+      ]
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly2",
+      "Description": "JLib.Reflection.Tests.DemoAssembly2 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly2": [
           "TestAssembly2DemoClassA",

@@ -1,5 +1,5 @@
 ﻿{
-  "Description": "0 Assemblies and 3 types",
+  "Description": "0 Assemblies and 3 types Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
       "DemoTypes.DemoClassA",

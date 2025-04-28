@@ -1,9 +1,9 @@
 ﻿{
-  "Description": "5 Assemblies",
+  "Description": "5 Assemblies Filtered",
   "Types": {},
   "Children": [
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly1",
+      "Description": "JLib.Reflection.Tests.DemoAssembly1 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly1": [
           "TestAssemblyDemoClassA",
@@ -11,10 +11,16 @@
           "TestAssemblyDemoClassC"
         ]
       },
-      "Children": []
+      "Children": [
+        {
+          "Description": "JLib.Reflection Filtered",
+          "Types": {},
+          "Children": []
+        }
+      ]
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly1A",
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly1A": [
           "TestAssembly1ADemoClassA",
@@ -25,7 +31,7 @@
       "Children": []
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly1A1",
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A1 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly1A1": [
           "TestAssembly1A1DemoClassA",
@@ -36,7 +42,7 @@
       "Children": []
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssembly2",
+      "Description": "JLib.Reflection.Tests.DemoAssembly2 Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssembly2": [
           "TestAssembly2DemoClassA",
@@ -47,7 +53,7 @@
       "Children": []
     },
     {
-      "Description": "JLib.Reflection.Tests.DemoAssemblyA",
+      "Description": "JLib.Reflection.Tests.DemoAssemblyA Filtered",
       "Types": {
         "JLib.Reflection.Tests.DemoAssemblyA": [
           "TestAssemblyADemoClassA",

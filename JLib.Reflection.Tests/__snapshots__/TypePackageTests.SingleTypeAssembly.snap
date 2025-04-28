@@ -1,5 +1,5 @@
 ﻿{
-  "Description": "1 Types",
+  "Description": "1 Types Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
       "DemoTypes.DemoClassA"

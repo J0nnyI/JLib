@@ -1,5 +1,5 @@
 ﻿{
-  "Description": "nested types of DemoTypes.NestingDemoClass, DemoTypes.NestingDemoClass2",
+  "Description": "nested types of DemoTypes.NestingDemoClass, DemoTypes.NestingDemoClass2 Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
       "DemoTypes.NestingDemoClass.NestedDemoClassA",

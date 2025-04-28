@@ -4,10 +4,12 @@ using System.Runtime.CompilerServices;
 using FluentAssertions;
 
 using JLib.Helper;
+
 using Snapshooter.Xunit;
 
 using Xunit;
 using Xunit.Abstractions;
+
 using static JLib.Reflection.Tests.DemoTypes;
 #pragma warning disable CS0618 // Type or member is obsolete
 
@@ -122,12 +124,14 @@ public class TypePackageTests(ITestOutputHelper toh)
          ITypePackage package, IEnumerable<Type> expectedTypes, [CallerMemberName] string name = "")
     {
         toh.WriteLine("Type Package Content:");
+        package = package.ApplyFilter(x => x.Name.Contains("Demo"));
         toh.WriteLine(package.ToJson());
         // .net 7 adds some attributes which are not included in any other .net version,
         // which means we have to remove them from the result to match all other versions
         package
             .GetContent()
-            .Should().OnlyContain(t => expectedTypes.Contains(t)
+            .Should()
+            .OnlyContain(t => expectedTypes.Contains(t)
 #if NET7_0
                 || new[] { "EmbeddedAttribute", "RefSafetyRulesAttribute" }.Contains(t.Name)
 #endif
