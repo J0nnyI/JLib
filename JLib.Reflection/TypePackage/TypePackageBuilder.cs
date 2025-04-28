@@ -15,38 +15,38 @@ namespace JLib.Reflection;
  *   or are explicitly marked via attribute
  * - add from fs path with wildcard filter
  * - add from local executing path with wildcard filter
- * - create a mode, where the dev works directly on the Enumerable of types and assemblies
- * - use a graph to make the assemblies more accessible
  **********************************************************************************************************/
+
+/*
+ Architecture Notes
+ Q & A
+- Q: Why can't we just load the Assemblies directly while adding them to the Builder?
+  A: Their peer dependencies, which we would have to load too, may be excluded later on.
+- Q: We may load assemblies twice when adding them not by name but by assembly object. Why don't we optimize that?
+  A: Because they use a cache and remain loaded. Loading them again returns the original reference
+
+Requirement Notes
+Q & A
+- Q: Why would you want to add types and assemblies manually?
+  A: For Testing purposes. You may want to be able to load one type, without including the entire assembly.
+     This is a common requirement when testing TypeValueTypes.
+- Q: Why do we need a blacklist?
+  A: Some assemblies in a directory may not be able to be loaded and/or not be needed for reflection.
+     Excluding those removes their loading exception from the builder, lets the initialization succeed and shortens the initialization period.
+- Q: Why do we need a type filter?
+  A: Some types may not be needed or wanted for reflection. 3rd party AutoMapper profiles which do not conform to the TypeValueType Validation are one example.
+- Q: Why would you not want to load the peer Dependencies?
+  A: Because you don't have to when you are loading the entire binary directory, or you don't want to because you are setting up a test environment
+- Q: Why would you want to load the peer dependencies?
+  A: Because you want to include a Package, like any JLib library, and they do need their peer dependencies in the TypeCache.
+ */
+
 /// <summary>
 /// Builds a new <see cref="ITypePackage"/> used to initialize a <see cref="ITypeCache"/>
 /// </summary>
 /// <seealso cref="TypePackageBuilderExtensions"/>
 public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, TypePackageBuilderOptions? options = null)
 {
-    /*
-     Architecture Notes
-     Q & A
-    - Q: Why can't we just load the Assemblies directly while adding them to the Builder?
-      A: Their peer dependencies, which we would have to load too, may be excluded later on.
-    - Q: We may load assemblies twice when adding them not by name but by assembly object. Why don't we optimize that?
-      A: Because they use a cache and remain loaded. Loading them again returns the original reference
-
-    Requirement Notes
-    Q & A
-    - Q: Why would you want to add types and assemblies manually?
-      A: For Testing purposes. You may want to be able to load one type, without including the entire assembly.
-         This is a common requirement when testing TypeValueTypes.
-    - Q: Why do we need a blacklist?
-      A: Some assemblies in a directory may not be able to be loaded and/or not be needed for reflection.
-         Excluding those removes their loading exception from the builder, lets the initialization succeed and shortens the initialization period.
-    - Q: Why do we need a type filter?
-      A: Some types may not be needed or wanted for reflection. 3rd party AutoMapper profiles which do not conform to the TypeValueType Validation are one example.
-    - Q: Why would you not want to load the peer Dependencies?
-      A: Because you don't have to when you are loading the entire binary directory, or you don't want to because you are setting up a test environment
-    - Q: Why would you want to load the peer dependencies?
-      A: Because you want to include a Package, like any JLib library, and they do need their peer dependencies in the TypeCache.
-     */
     private record AssemblyFullName(string? Value) : StringValueType(Value ?? "n/a");
 
     private sealed class AssemblyLoadInfo(AssemblyName assemblyName, AssemblyLoadMode mode)
@@ -198,6 +198,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _includedTypes.AddRange(types.WhereNotNull());
         return this;
     }
+
     #endregion
     #region blacklist
     /// <summary>

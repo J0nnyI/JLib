@@ -26,6 +26,10 @@ public static class TypePackageBuilderExtensions
         => builder.Add(typeof(TContainerType).GetNestedTypes());
 
 
+    /// <summary>
+    /// Adds <typeparamref name="TType"/> to the <see cref="ITypePackage"/>
+    /// </summary>
+    /// <returns><see langword="this"/> instance</returns>
     public static TypePackageBuilder Add<TType>(this TypePackageBuilder builder)
         => builder.Add(typeof(TType));
 
@@ -45,8 +49,12 @@ public static class TypePackageBuilderExtensions
     public static TypePackageBuilder Add(this TypePackageBuilder builder, params AssemblyName?[] assemblyNames)
         => builder.Add(AssemblyLoadMode.Recursive, assemblyNames);
 
+    /// <summary>
+    /// Adds all *.dll's which <see cref="string.StartsWith(string)"/> <paramref name="includedPrefixes"/> located inside the given <paramref name="directory"/> with the <paramref name="searchOption"/> to the <see cref="ITypePackage"/>.
+    /// </summary>
     public static TypePackageBuilder AddFromPath(this TypePackageBuilder builder, string? directory,
-        IReadOnlyCollection<string> includedPrefixes, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        IReadOnlyCollection<string> includedPrefixes, SearchOption searchOption = SearchOption.TopDirectoryOnly,
+        AssemblyLoadMode loadMode = AssemblyLoadMode.TopLevelOnly)
     {
         directory ??= AppDomain.CurrentDomain.BaseDirectory;
         var assemblyNames = Directory.EnumerateFiles(directory, "*.dll", searchOption)
@@ -56,7 +64,7 @@ public static class TypePackageBuilderExtensions
             return includedPrefixes.Any(p => filename.StartsWith(p));
         }).Select(AssemblyName.GetAssemblyName).ToArray();
 
-        return builder.Add(assemblyNames);
+        return builder.Add(loadMode, assemblyNames);
     }
 
     // this does not work properly, since only loaded assemblies are considered for references and would lead to an incomplete package.

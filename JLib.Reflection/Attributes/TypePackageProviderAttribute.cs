@@ -5,4 +5,5 @@
 /// must only be used once per assembly
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
+[Obsolete($"use the {nameof(TypePackageBuilder)} instead. it no longer need TypePackageProviders.")]
 public class TypePackageProviderAttribute : Attribute { }

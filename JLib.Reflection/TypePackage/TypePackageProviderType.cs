@@ -1,13 +1,22 @@
 ﻿using System.Reflection;
+
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
 
 namespace JLib.Reflection;
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="Value"></param>
 [TvtFactoryAttribute.HasAttribute(typeof(TypePackageProviderAttribute))]
+[Obsolete($"use the {nameof(TypePackageBuilder)} instead. it no longer need TypePackageProviders.")]
 public record TypePackageProviderType(Type Value) : TypeValueType(Value), IValidatedType
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public const string InstancePropertyName = "Instance";
 
     /// <summary>
@@ -33,13 +42,13 @@ public record TypePackageProviderType(Type Value) : TypeValueType(Value), IValid
     /// }
     /// </code></example>
     /// </summary>
-    public static IEnumerable<ITypePackage> GetInstances(Assembly assembly) 
+    public static IEnumerable<ITypePackage> GetInstances(Assembly assembly)
         => assembly.GetTypes()
             .Where(t => t.HasCustomAttribute<TypePackageProviderAttribute>())
             .Select(GetInstance)
             .WhereNotNull();
 
-    public void Validate(ITypeCache cache, IValidationContext<Type> value)
+    void IValidatedType.Validate(ITypeCache cache, IValidationContext<Type> value)
     {
         value.ShouldBeStatic()
             .ShouldHaveNameSuffix("Tp")
