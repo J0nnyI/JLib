@@ -302,19 +302,19 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                  => _assemblyFilters.Count == 0
                      // remove all types where at east one filter returned false
                      || _assemblyFilters.All(filter => filter(assembly)))
-             .Select(CreateContentTypePackage)
+             .Select(assembly => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter))
              .ToReadOnlyCollection()
          ?? []);
         content.Add(new TypePackageCollection($"{peerDependencies.Count} peer dependencies", peerDependencies));
 
         logger?.LogTrace("building the root type package");
-        return new TypePackageCollection($""""
+        return new TypePackageCollection($"""
                                            {nameof(TypePackageBuilder)} result
                                            {_includedTypes.Count} Manually added types"
                                            {loadGroups.TryGetValue(AssemblyLoadMode.TopLevelOnly)?.Count ?? 0} top level only assemblies,
                                            {loadGroups.TryGetValue(AssemblyLoadMode.Recursive)?.Count ?? 0} recursively loaded assemblies,
                                            {peerDependencies.Count} peer dependencies
-                                           """", content);
+                                           """, content);
 
         ImmutableHashSet<Type> ApplyTypeFilter(IEnumerable<Type> types)
             => types
@@ -326,9 +326,6 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                        || _typeFilters.All(f => f(t))
                 )
                 .ToImmutableHashSet();
-
-        ITypePackage CreateContentTypePackage(Assembly assembly)
-            => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter);
     }
 
     #region type package classes
