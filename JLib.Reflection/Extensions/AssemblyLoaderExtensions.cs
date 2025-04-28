@@ -2,6 +2,7 @@
 using System.Reflection;
 
 using JLib.Exceptions;
+using JLib.Exceptions.CommonExceptions;
 using JLib.Helper;
 
 namespace JLib.Reflection;
@@ -39,9 +40,10 @@ public static class AssemblyLoaderExtensions
     public static ImmutableHashSet<Assembly> LoadRecursivePeerDependencies(
         this IEnumerable<Assembly> assemblies,
         ExceptionBuilder exceptions,
+        Func<AssemblyName, bool> filter,
         int maxDependencyDepth = 1000
     )
-        => LoadRecursivePeerDependencies(assemblies.Select(x=>x.GetName()).ToReadOnlyCollection(), exceptions, maxDependencyDepth);
+    => LoadRecursivePeerDependencies(assemblies.Select(x => x.GetName()).ToReadOnlyCollection(), filter, exceptions, maxDependencyDepth);
     /// <summary>
     /// returns all recursive dependencies of the given <paramref name="assemblies"/>. This includes all assemblies that are referenced by the given assemblies and their dependencies but not <paramref name="assemblies"/>
     /// </summary>
@@ -71,8 +73,16 @@ public static class AssemblyLoaderExtensions
         var peerDependencies = new Dictionary<string, Assembly>();
         HashSet<AssemblyName>? nextLoadLevel = null;
 
-        for (var dependencyDepth = 0; dependencyDepth < maxDependencyDepth && (nextLoadLevel is null || nextLoadLevel.Count > 0); dependencyDepth++)
+        for (var dependencyDepth = 0;
+             nextLoadLevel is null || nextLoadLevel.Count > 0;
+             dependencyDepth++)
         {
+            if (dependencyDepth >= maxDependencyDepth)
+            {
+                exceptions.Add(new MaxIterationDepthReachedException(maxDependencyDepth));
+                break;
+            }
+
             var currentLoadLevel = nextLoadLevel?.ToImmutableHashSet() ?? assemblies.ToImmutableHashSet();
             nextLoadLevel = [];
 
@@ -92,8 +102,6 @@ public static class AssemblyLoaderExtensions
                 nextLoadLevel.AddRange(assembly.GetReferencedAssemblies());
             }
 
-            if (dependencyDepth >= maxDependencyDepth)
-                exceptions.Add(new Exception($"Max Dependency Depth of {maxDependencyDepth} reached."));
         }
 
 

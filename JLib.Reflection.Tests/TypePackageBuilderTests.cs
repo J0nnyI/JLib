@@ -2,6 +2,8 @@
 
 using FluentAssertions;
 using JLib.Exceptions;
+using JLib.Exceptions.CommonExceptions;
+using JLib.Helper;
 using JLib.Reflection.Tests.DemoAssembly2;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
@@ -12,99 +14,163 @@ namespace JLib.Reflection.Tests;
 public class TypePackageBuilderTests
 {
     private void RunTest(
-        IReadOnlyCollection<Assembly> assembliesIn,
-        IReadOnlyCollection<Type> typesIn,
-        IReadOnlyCollection<Type> expectedTypes,
-        Action<TypePackageBuilder>? otherHandlers = null,
-        Action<ITypePackage>? validate = null,
-        AssemblyLoadMode loadMode = AssemblyLoadMode.TopLevelOnly
+        IReadOnlyCollection<Assembly>? topOnlyAssembliesIn = null,
+        IReadOnlyCollection<Assembly>? recursiveAssemblies = null,
+        IReadOnlyCollection<Type>? types = null,
+        IReadOnlyCollection<Type>? expectedTypes = null,
+        Action<TypePackageBuilder>? additionalSetup = null,
+        Action<ITypePackage>? additionalValidation = null,
+        int maxIterationDepth = 100
         )
     {
+        topOnlyAssembliesIn ??= [];
+        recursiveAssemblies ??= [];
+        types ??= [];
+        expectedTypes ??= [];
+
+
         var exceptions = new ExceptionBuilder(nameof(RunTest));
-        var builder = new TypePackageBuilder()
-            .Add(loadMode, assembliesIn.ToArray())
-            .Add(typesIn.ToArray());
-        otherHandlers?.Invoke(builder);
+        var builder = new TypePackageBuilder(options: new()
+        {
+            MaxDepth = maxIterationDepth
+        })
+            .Add(AssemblyLoadMode.Recursive, recursiveAssemblies.ToArray())
+            .Add(AssemblyLoadMode.TopLevelOnly, topOnlyAssembliesIn.ToArray())
+            .Add(types.ToArray());
+        additionalSetup?.Invoke(builder);
         var package = builder
             .Build(exceptions);
 
         exceptions.ThrowIfNotEmpty();
         package.GetContent().Should().Contain(expectedTypes);
-        validate?.Invoke(package);
+        additionalValidation?.Invoke(package);
     }
 
     [Fact]
+    public void MixedDependencyTest()
+        => RunTest(
+            recursiveAssemblies: [Assembly1],
+            topOnlyAssembliesIn: [Assembly2],
+            expectedTypes: Assembly2Types
+                .Concat(Assembly1Recursive)
+                .ToReadOnlyCollection());
+    [Fact]
     public void NoPeerDependencies()
-        => RunTest([Assembly2], [], Assembly2Types);
+        => RunTest(
+            topOnlyAssembliesIn: [Assembly2],
+            expectedTypes: Assembly2Types);
     [Fact]
     public void PeerDependencies()
-        => RunTest([Assembly1], [], Assembly1Recursive, loadMode: AssemblyLoadMode.Recursive);
+        => RunTest(
+            recursiveAssemblies: [Assembly1],
+            expectedTypes: Assembly1Recursive
+            );
+
     [Fact]
     public void PeerDependencies2()
-        => RunTest([AssemblyA], [], AssemblyARecursive, loadMode: AssemblyLoadMode.Recursive);
+        => RunTest(
+            recursiveAssemblies: [AssemblyA],
+            expectedTypes: AssemblyARecursive
+            );
+
     [Fact]
     public void MultipleAssemblies()
-        => RunTest([Assembly1, Assembly2, AssemblyA], [], AllAssemblyTypes, loadMode: AssemblyLoadMode.Recursive);
+        => RunTest(
+            recursiveAssemblies: [Assembly1, Assembly2, AssemblyA],
+            expectedTypes: AllAssemblyTypes
+            );
+
     [Fact]
     public void ExplicitType()
-        => RunTest([], DemoTypes.Types, DemoTypes.Types);
+        => RunTest(
+            types: DemoTypes.Types,
+            expectedTypes: DemoTypes.Types
+            );
 
     [Fact]
     public void Nested()
-        => RunTest([], [], DemoTypes.NestedTypes,
-            b => b.AddNestedTypes<DemoTypes.NestingDemoClass>());
+        => RunTest(
+            additionalSetup: b => b.AddNestedTypes<DemoTypes.NestingDemoClass>(),
+            expectedTypes: DemoTypes.NestedTypes
+        );
 
     [Fact]
     public void AssemblyBlacklist()
-        => RunTest([Assembly1, AssemblyA], [],
-            Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
-            b => b.AddToBlacklist(Assembly1A),
-            tp => tp
+        => RunTest(
+            recursiveAssemblies: [Assembly1, AssemblyA],
+            additionalSetup: b => b.AddToBlacklist(Assembly1A),
+            expectedTypes: Assembly1Recursive
+                .Concat(AssemblyARecursive)
+                .Except(Assembly1ATypes)
+                .Except(Assembly1A1Types)
+                .ToHashSet(),
+            additionalValidation: tp => tp
                 .GetContent()
                 .Should()
                 .NotContain(Assembly1ATypes)
                 .And
                 .NotContain(Assembly1A1Types)
-        );
+            );
+
+    [Fact]
+    public void MaxDepthTest()
+        => ((Action)(() => RunTest(
+                recursiveAssemblies: [Assembly1],
+                maxIterationDepth: 1
+            )))
+            .Should()
+            .Throw<AggregateException>()
+            .Where(ex => ex
+                .FlattenAll()
+                .OfType<MaxIterationDepthReachedException>()
+                .Count() == 1);
 
     [Fact]
     public void AssemblyNameBlacklist()
-        => RunTest([Assembly1, AssemblyA], [],
-            Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
-            b => b.AddToBlacklist(Assembly1A.GetName()),
-            tp => tp.GetContent().Should().NotContain(Assembly1ATypes).And.NotContain(Assembly1A1Types)
+        => RunTest(
+            recursiveAssemblies: [Assembly1, AssemblyA],
+            additionalSetup: b => b.AddToBlacklist(Assembly1A.GetName()),
+            expectedTypes: Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(Assembly1ATypes).And.NotContain(Assembly1A1Types)
                 );
 
     [Fact]
     public void TypeBlacklistOnAssembly()
-        => RunTest([Assembly2], [],
-                Assembly2Types.Except([typeof(TestAssembly2DemoClassA)]).ToArray(),
-                b => b.AddToBlacklist(typeof(TestAssembly2DemoClassA)),
-                tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
+        => RunTest(
+            recursiveAssemblies: [Assembly2],
+            additionalSetup: b => b.AddToBlacklist(typeof(TestAssembly2DemoClassA)),
+            expectedTypes: Enumerable.Except(Assembly2Types, [typeof(TestAssembly2DemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
 
     [Fact]
     public void TypeBlacklistOnExplicitTypes()
-        => RunTest([], DemoTypes.Types,
-            DemoTypes.Types.Except([typeof(DemoTypes.DemoClassA)]).ToArray(),
-            b => b.AddToBlacklist(typeof(DemoTypes.DemoClassA)),
-            tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
+        => RunTest(
+            types: DemoTypes.Types,
+            additionalSetup: b => b.AddToBlacklist(typeof(DemoTypes.DemoClassA)),
+            expectedTypes: Enumerable.Except(DemoTypes.Types, [typeof(DemoTypes.DemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA))
+            );
 
     [Fact]
     public void TypeFilter()
-        => RunTest([], DemoTypes.Types,
-            DemoTypes.Types.Except([typeof(DemoTypes.DemoClassA)]).ToArray(),
-            b => b.AddTypeFilter(t => t != typeof(DemoTypes.DemoClassA)),
-            tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA)));
+        => RunTest([],
+            types: DemoTypes.Types,
+            additionalSetup: b => b.AddTypeFilter(t => t != typeof(DemoTypes.DemoClassA)),
+            expectedTypes: Enumerable.Except(DemoTypes.Types, [typeof(DemoTypes.DemoClassA)]).ToArray(),
+            additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly2DemoClassA))
+            );
 
     [Fact]
     public void MultipleNested()
-        => RunTest([], [],
-            DemoTypes.NestedTypes2.Concat(DemoTypes.NestedTypes2).ToArray(),
-            b => b.AddNestedTypes<DemoTypes.NestingDemoClass>().AddNestedTypes<DemoTypes.NestingDemoClass2>());
+        => RunTest(
+            additionalSetup: b => b.AddNestedTypes<DemoTypes.NestingDemoClass>().AddNestedTypes<DemoTypes.NestingDemoClass2>(),
+            expectedTypes: DemoTypes.NestedTypes2.Concat(DemoTypes.NestedTypes2).ToArray()
+            );
 
     [Fact]
     public void ByFileSystem()
-        => RunTest([], [],
-            AllAssemblyTypes,
-            b => b.AddFromPath(null, ["JLib"]));
+        => RunTest(
+            additionalSetup: b => b.AddFromPath(null, ["JLib"]),
+            expectedTypes: AllAssemblyTypes
+            );
 }

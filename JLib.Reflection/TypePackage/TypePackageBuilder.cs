@@ -107,6 +107,102 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     private readonly List<Func<Type, bool>> _typeFilters = [];
     private readonly List<Func<Assembly, bool>> _assemblyFilters = [];
 
+    private const string ExceptionBuilderName = $"{nameof(TypePackageBuilder)}.{nameof(Build)}";
+
+    /// <summary>
+    /// creates an immutable <see cref="ITypePackage"/> from this <see cref="TypePackageBuilder"/>.
+    /// </summary>
+    /// <param name="parentExceptions">the exceptionBuilder to add the exceptions too. The exceptions will be thrown as <see cref="JLibAggregateException"/> if this parameter is <see langword="null"/></param>
+    /// <returns>The <see cref="TypePackageBuilder"/> created according to the settings</returns>
+    /// <exception cref="JLibAggregateException"></exception>
+    public ITypePackage Build(ExceptionBuilder? parentExceptions = null)
+    {
+        var content = new List<ITypePackage>();
+        using var exceptions = parentExceptions?.CreateChild(ExceptionBuilderName)
+                     ?? new(ExceptionBuilderName);
+
+        var logger = loggerFactory?.CreateLogger<TypePackageBuilder>();
+
+        exceptions.CreateChild("Some Assemblies have been both explicitly included and added to the blacklist",
+            _includedAssemblyNames
+                .Where(includedAssembly => _assemblyBlacklist.Contains(includedAssembly.Key))
+                .Select(kv => kv.Key.Value));
+
+        content.Add(new ContentTypePackage($"{_includedTypes.Count} Manually added types", _includedTypes.ToImmutableHashSet()));
+
+        logger?.LogTrace("preparing direct dependencies");
+        var loadDependencyExceptions = Enum.GetValues<AssemblyLoadMode>()
+            .ToDictionary(value => value, value => exceptions.CreateChild(value.ToString()));
+
+        var loadGroups = _includedAssemblyNames
+            .Select(kv => kv.Value)
+            .GroupBy(
+                loadInfo => loadInfo.Mode,
+                loadInfo => new
+                {
+                    loadInfo,
+                    // this loads the direct dependencies
+                    assembly = loadInfo.Name.TryLoad(loadDependencyExceptions[loadInfo.Mode])
+                })
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToReadOnlyCollection());
+
+
+        logger?.LogTrace("adding direct dependencies");
+        content.AddRange(loadGroups
+            .Select(
+                // grouped by assembly load mode
+                kv => new TypePackageCollection($"{kv.Value.Count} {kv.Key.ToString()} Assemblies",
+                    kv.Value
+                        // convert the assembly to a type package
+                        .Select(assembly => new ContentTypePackage(assembly.loadInfo.FullName, assembly.assembly, ApplyTypeFilter))
+                        .ToReadOnlyCollection()
+                )
+            ));
+
+        logger?.LogTrace("adding peer dependencies");
+        var peerDependencies = (loadGroups
+             .TryGetValue(AssemblyLoadMode.Recursive)
+             ?.Select(assembly => assembly.assembly)
+             .WhereNotNull()
+             .LoadRecursivePeerDependencies(
+                 exceptions.CreateChild("peer dependencies"),
+                 name => _assemblyBlacklist.Count == 0 || _assemblyBlacklist.Contains(new(name.FullName)),
+                 _options.MaxDepth)
+             .WhereNotNull()
+             // remove blacklisted assemblies
+             .Where(assembly
+                 // take all if there are no filters
+                 => _assemblyFilters.Count == 0
+                     // remove all types where at east one filter returned false
+                     || _assemblyFilters.All(filter => filter(assembly)))
+             .Select(assembly => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter))
+             .ToReadOnlyCollection()
+         ?? []);
+        content.Add(new TypePackageCollection($"{peerDependencies.Count} peer dependencies", peerDependencies));
+
+        logger?.LogTrace("building the root type package");
+        return new TypePackageCollection($"""
+                                           {nameof(TypePackageBuilder)} result
+                                           {_includedTypes.Count} Manually added types"
+                                           {loadGroups.TryGetValue(AssemblyLoadMode.TopLevelOnly)?.Count ?? 0} top level only assemblies,
+                                           {loadGroups.TryGetValue(AssemblyLoadMode.Recursive)?.Count ?? 0} recursively loaded assemblies,
+                                           {peerDependencies.Count} peer dependencies
+                                           """, content);
+
+        ImmutableHashSet<Type> ApplyTypeFilter(IEnumerable<Type> types)
+            => types
+                .Except(_typeBlacklist)
+                .Where(t
+                    // take all if there are no filters
+                    => _typeFilters.Count == 0
+                       // remove all types where at east one filter returned false
+                       || _typeFilters.All(f => f(t))
+                )
+                .ToImmutableHashSet();
+    }
+
     #region setup methods
 
     /// <summary>
@@ -236,97 +332,6 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     }
 
     #endregion
-
-    private const string ExceptionBuilderName = $"{nameof(TypePackageBuilder)}.{nameof(Build)}";
-
-    /// <summary>
-    /// creates an immutable <see cref="ITypePackage"/> from this <see cref="TypePackageBuilder"/>.
-    /// </summary>
-    /// <param name="parentExceptions">the exceptionBuilder to add the exceptions too. The exceptions will be thrown as <see cref="JLibAggregateException"/> if this parameter is <see langword="null"/></param>
-    /// <returns>The <see cref="TypePackageBuilder"/> created according to the settings</returns>
-    /// <exception cref="JLibAggregateException"></exception>
-    public ITypePackage Build(ExceptionBuilder? parentExceptions = null)
-    {
-        var content = new List<ITypePackage>();
-        using var exceptions = parentExceptions?.CreateChild(ExceptionBuilderName)
-                     ?? new(ExceptionBuilderName);
-
-        var logger = loggerFactory?.CreateLogger<TypePackageBuilder>();
-
-        exceptions.CreateChild("Some Assemblies have been both explicitly included and added to the blacklist",
-            _includedAssemblyNames
-                .Where(includedAssembly => _assemblyBlacklist.Contains(includedAssembly.Key))
-                .Select(kv => kv.Key.Value));
-
-        content.Add(new ContentTypePackage($"{_includedTypes.Count} Manually added types", _includedTypes.ToImmutableHashSet()));
-
-        logger?.LogTrace("preparing direct dependencies");
-        var loadDependencyExceptions = Enum.GetValues<AssemblyLoadMode>()
-            .ToDictionary(value => value, value => exceptions.CreateChild(value.ToString()));
-
-        var loadGroups = _includedAssemblyNames
-            .Select(kv => kv.Value)
-            .GroupBy(
-                loadInfo => loadInfo.Mode,
-                loadInfo => new
-                {
-                    loadInfo,
-                    // this loads the direct dependencies
-                    assembly = loadInfo.Name.TryLoad(loadDependencyExceptions[loadInfo.Mode])
-                })
-            .ToDictionary(group => group.Key, group => group.ToReadOnlyCollection());
-
-
-        logger?.LogTrace("adding direct dependencies");
-        content.AddRange(loadGroups
-            .Select(
-                // grouped by assembly load mode
-                kv => new TypePackageCollection($"{kv.Value.Count} {kv.Key.ToString()} Assemblies",
-                    kv.Value
-                        // convert the assembly to a type package
-                        .Select(assembly => new ContentTypePackage(assembly.loadInfo.FullName, assembly.assembly, ApplyTypeFilter))
-                        .ToReadOnlyCollection()
-                )
-            ));
-
-        logger?.LogTrace("adding peer dependencies");
-        var peerDependencies = (loadGroups
-             .TryGetValue(AssemblyLoadMode.Recursive)
-             ?.Select(assembly => assembly.assembly)
-             .WhereNotNull()
-             .LoadRecursivePeerDependencies(exceptions.CreateChild("peer dependencies"), _options.MaxDepth)
-             .WhereNotNull()
-             // remove blacklisted assemblies
-             .Where(assembly
-                 // take all if there are no filters
-                 => _assemblyFilters.Count == 0
-                     // remove all types where at east one filter returned false
-                     || _assemblyFilters.All(filter => filter(assembly)))
-             .Select(assembly => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter))
-             .ToReadOnlyCollection()
-         ?? []);
-        content.Add(new TypePackageCollection($"{peerDependencies.Count} peer dependencies", peerDependencies));
-
-        logger?.LogTrace("building the root type package");
-        return new TypePackageCollection($"""
-                                           {nameof(TypePackageBuilder)} result
-                                           {_includedTypes.Count} Manually added types"
-                                           {loadGroups.TryGetValue(AssemblyLoadMode.TopLevelOnly)?.Count ?? 0} top level only assemblies,
-                                           {loadGroups.TryGetValue(AssemblyLoadMode.Recursive)?.Count ?? 0} recursively loaded assemblies,
-                                           {peerDependencies.Count} peer dependencies
-                                           """, content);
-
-        ImmutableHashSet<Type> ApplyTypeFilter(IEnumerable<Type> types)
-            => types
-                .Except(_typeBlacklist)
-                .Where(t
-                    // take all if there are no filters
-                    => _typeFilters.Count == 0
-                       // remove all types where at east one filter returned false
-                       || _typeFilters.All(f => f(t))
-                )
-                .ToImmutableHashSet();
-    }
 
     #region type package classes
 
