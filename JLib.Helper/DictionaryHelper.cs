@@ -50,4 +50,19 @@ public static class DictionaryHelper
             ? value
             : default;
     }
+
+    /// <summary>
+    /// removes all keys in <paramref name="keys"/> from the given <paramref name="dict"/>
+    /// </summary>
+    public static void RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dict, IEnumerable<TKey> keys)
+    {
+        foreach (var key in keys)
+            dict.Remove(key);
+    }
+
+    public static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dict, IEnumerable<TValue> items, Func<TValue, TKey> keySelector)
+    {
+        foreach (var item in items)
+            dict[keySelector(item)] = item;
+    }
 }

@@ -45,8 +45,8 @@ public class TypePackageTests
     public void SingleTypeAssembly()
     => RunTest(
         TypePackage.Get(typeof(DemoClassA)),
-        new[] { typeof(DemoClassA) }
-);
+        [typeof(DemoClassA)]
+    );
     [Fact]
     public void MultiTypeAssemblyParams()
     => RunTest(
@@ -87,19 +87,19 @@ public class TypePackageTests
     [Fact]
     public void CombinedAssembliesOnly()
         => RunTest(
-            TypePackage.Get(new[] { DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2 }, Enumerable.Empty<Type>()), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types)
+            TypePackage.Get([DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2], []), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types)
         );
     [Fact]
     public void CombinedTypesOnly()
         => RunTest(
-                TypePackage.Get(Enumerable.Empty<Assembly>(), DemoTypes.Types),
+                TypePackage.Get([], DemoTypes.Types),
                 DemoTypes.Types
             );
 
     [Fact]
     public void CombinedSource()
         => RunTest(
-            TypePackage.Get(new[] { DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2 }, DemoTypes.Types), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types).Concat(DemoTypes.Types)
+            TypePackage.Get([DemoAssemblyContent.Assembly1, DemoAssemblyContent.Assembly2], DemoTypes.Types), DemoAssemblyContent.Assembly1Types.Concat(DemoAssemblyContent.Assembly2Types).Concat(DemoTypes.Types)
         );
     #endregion
     [Fact]
@@ -114,7 +114,7 @@ public class TypePackageTests
     public void ByFileSystem()
     {
         RunTest(
-            TypePackage.Get(null, new[] { "JLib.Reflection.Tests.Demo" }),
+            TypePackage.Get(null, ["JLib.Reflection.Tests.Demo"]),
             DemoAssemblyContent.AllAssemblyTypes);
     }
 

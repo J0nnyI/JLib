@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 
 using FluentAssertions;
+using JLib.Exceptions;
 using JLib.Reflection.Tests.DemoAssembly2;
 
 using static JLib.Reflection.Tests.DemoAssemblyContent;
@@ -15,16 +16,19 @@ public class TypePackageBuilderTests
         IReadOnlyCollection<Type> typesIn,
         IReadOnlyCollection<Type> expectedTypes,
         Action<TypePackageBuilder>? otherHandlers = null,
-        Action<ITypePackage>? validate = null
+        Action<ITypePackage>? validate = null,
+        AssemblyLoadMode loadMode = AssemblyLoadMode.TopLevelOnly
         )
     {
+        var exceptions = new ExceptionBuilder(nameof(RunTest));
         var builder = new TypePackageBuilder()
-            .Add(assembliesIn.ToArray())
+            .Add(loadMode, assembliesIn.ToArray())
             .Add(typesIn.ToArray());
         otherHandlers?.Invoke(builder);
         var package = builder
-            .Build();
+            .Build(exceptions);
 
+        exceptions.ThrowIfNotEmpty();
         package.GetContent().Should().Contain(expectedTypes);
         validate?.Invoke(package);
     }
@@ -34,13 +38,13 @@ public class TypePackageBuilderTests
         => RunTest([Assembly2], [], Assembly2Types);
     [Fact]
     public void PeerDependencies()
-        => RunTest([Assembly1], [], Assembly1Recursive);
+        => RunTest([Assembly1], [], Assembly1Recursive, loadMode: AssemblyLoadMode.Recursive);
     [Fact]
     public void PeerDependencies2()
-        => RunTest([AssemblyA], [], AssemblyARecursive);
+        => RunTest([AssemblyA], [], AssemblyARecursive, loadMode: AssemblyLoadMode.Recursive);
     [Fact]
     public void MultipleAssemblies()
-        => RunTest([Assembly1, Assembly2, AssemblyA], [], AllAssemblyTypes);
+        => RunTest([Assembly1, Assembly2, AssemblyA], [], AllAssemblyTypes, loadMode: AssemblyLoadMode.Recursive);
     [Fact]
     public void ExplicitType()
         => RunTest([], DemoTypes.Types, DemoTypes.Types);
@@ -55,7 +59,12 @@ public class TypePackageBuilderTests
         => RunTest([Assembly1, AssemblyA], [],
             Assembly1Recursive.Concat(AssemblyARecursive).Except(Assembly1ATypes).Except(Assembly1A1Types).ToHashSet(),
             b => b.AddToBlacklist(Assembly1A),
-            tp => tp.GetContent().Should().NotContain(Assembly1ATypes).And.NotContain(Assembly1A1Types)
+            tp => tp
+                .GetContent()
+                .Should()
+                .NotContain(Assembly1ATypes)
+                .And
+                .NotContain(Assembly1A1Types)
         );
 
     [Fact]

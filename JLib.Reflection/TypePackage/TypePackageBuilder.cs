@@ -2,9 +2,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.Marshalling;
 
 using JLib.Exceptions;
 using JLib.Helper;
+using JLib.ValueTypes;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -43,6 +45,11 @@ public class TypePackageBuilderOptions
 
 }
 
+public enum AssemblyLoadMode
+{
+    TopLevelOnly,
+    Recursive
+}
 /**********************************************************************************************************
  * extensions for the type package builder:
  * - create a mode, which considers only assemblies which directly or indirectly reference JLib.Reflection
@@ -57,23 +64,76 @@ public class TypePackageBuilderOptions
 /// </summary>
 public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, TypePackageBuilderOptions? options = null)
 {
+    /*
+     Architecture Notes
+     Q & A
+    - Q: Why can't we just load the Assemblies directly while adding them to the Builder?
+      A: Their peer dependencies, which we would have to load too, may be excluded later on.
+    - Q: We may load assemblies twice when adding them not by name but by assembly object. Why don't we optimize that?
+      A: Because they use a cache and remain loaded. Loading them again returns the original reference
+
+    Requirement Notes
+    Q & A
+    - Q: Why would you want to add types and assemblies manually?
+      A: For Testing purposes. You may want to be able to load one type, without including the entire assembly.
+         This is a common requirement when testing TypeValueTypes.
+    - Q: Why do we need a blacklist?
+      A: Some assemblies in a directory may not be able to be loaded and/or not be needed for reflection.
+         Excluding those removes their loading exception from the builder, lets the initialization succeed and shortens the initialization period.
+    - Q: Why do we need a type filter?
+      A: Some types may not be needed or wanted for reflection. 3rd party AutoMapper profiles which do not conform to the TypeValueType Validation are one example.
+    - Q: Why would you not want to load the peer Dependencies?
+      A: Because you don't have to when you are loading the entire binary directory, or you don't want to because you are setting up a test environment
+    - Q: Why would you want to load the peer dependencies?
+      A: Because you want to include a Package, like any JLib library, and they do need their peer dependencies in the TypeCache.
+     */
+    private record AssemblyFullName(string? Value) : StringValueType(Value ?? "n/a");
+
+    private sealed class AssemblyLoadInfo(AssemblyName assemblyName, AssemblyLoadMode mode)
+    {
+
+        public AssemblyName Name { get; } = assemblyName;
+        public AssemblyFullName FullName => new(Name.FullName);
+        public AssemblyLoadMode Mode { get; } = mode;
+    }
+
     private readonly TypePackageBuilderOptions _options = options ?? TypePackageBuilderOptions.Default;
-    private readonly HashSet<Assembly> _includedAssemblies = [];
-    private readonly HashSet<AssemblyName> _includedAssemblyNames = [];
+
+    private readonly Dictionary<AssemblyFullName, AssemblyLoadInfo> _includedAssemblyNames = [];
+
     private readonly HashSet<Type> _includedTypes = [];
-    private readonly HashSet<AssemblyName> _assemblyBlacklist = [];
+    private readonly HashSet<AssemblyFullName> _assemblyBlacklist = [];
     private readonly HashSet<Type> _typeBlacklist = [];
     private readonly List<Func<Type, bool>> _typeFilters = [];
     private readonly List<Func<Assembly, bool>> _assemblyFilters = [];
+
+    #region setup methods
 
     /// <summary>
     /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
+    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
+    /// <seealso cref="Add(AssemblyName?[])"/>
+    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
+    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(params Assembly?[] assemblies)
+        => Add(AssemblyLoadMode.Recursive, assemblies);
+    /// <summary>
+    /// Adds the given <paramref name="assemblies"/> to the <see cref="ITypePackage"/>.<br/>
+    /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
+    /// </summary>
+    /// <returns><see langword="this"/> instance</returns>
+    /// <seealso cref="Add(Assembly?[])"/>
+    /// <seealso cref="Add(AssemblyName?[])"/>
+    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
+    /// <seealso cref="Add(Type?[])"/>
+    public TypePackageBuilder Add(AssemblyLoadMode loadMode, params Assembly?[] assemblies)
     {
-        _includedAssemblies.AddRange(assemblies.WhereNotNull());
+        _includedAssemblyNames.AddRange(
+            assemblies.WhereNotNull().Select(a => new AssemblyLoadInfo(a.GetName(), loadMode)),
+            x => x.FullName);
         return this;
     }
 
@@ -82,9 +142,24 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
+    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
+    /// <seealso cref="Add(Assembly?[])"/>
+    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
+    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(params AssemblyName?[] assemblyNames)
+        => Add(AssemblyLoadMode.Recursive, assemblyNames);
+    /// <summary>
+    /// Adds the given <paramref name="assemblyNames"/> to the <see cref="ITypePackage"/>.<br/>
+    /// This will also add all recursive peer dependencies of this <see cref="Assembly"/>
+    /// </summary>
+    /// <returns><see langword="this"/> instance</returns>
+    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
+    /// <seealso cref="Add(Assembly?[])"/>
+    /// <seealso cref="Add(AssemblyName?[])"/>
+    /// <seealso cref="Add(Type?[])"/>
+    public TypePackageBuilder Add(AssemblyLoadMode loadMode, params AssemblyName?[] assemblyNames)
     {
-        _includedAssemblyNames.AddRange(assemblyNames.WhereNotNull());
+        _includedAssemblyNames.AddRange(assemblyNames.WhereNotNull().Select(x => new AssemblyLoadInfo(x, loadMode)), x => x.FullName);
         return this;
     }
 
@@ -92,6 +167,11 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// Adds the given <paramref name="types"/> to the <see cref="ITypePackage"/>
     /// </summary>
     /// <returns><see langword="this"/> instance</returns>
+    /// <seealso cref="Add(AssemblyLoadMode,Assembly?[])"/>
+    /// <seealso cref="Add(Assembly?[])"/>
+    /// <seealso cref="Add(AssemblyName?[])"/>
+    /// <seealso cref="Add(AssemblyLoadMode,AssemblyName?[])"/>
+    /// <seealso cref="Add(Type?[])"/>
     public TypePackageBuilder Add(params Type?[] types)
     {
         _includedTypes.AddRange(types.WhereNotNull());
@@ -106,7 +186,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     {
         _assemblyBlacklist.AddRange(assemblies
             .WhereNotNull()
-            .Select(a => a.GetName())
+            .Select(a => new AssemblyFullName(a.FullName))
         );
         return this;
     }
@@ -118,7 +198,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// <returns><see langword="this"/> instance</returns>
     public TypePackageBuilder AddToBlacklist(params AssemblyName?[] assemblies)
     {
-        _assemblyBlacklist.AddRange(assemblies.WhereNotNull());
+        _assemblyBlacklist.AddRange(assemblies.WhereNotNull().Select(a => new AssemblyFullName(a.FullName)));
         return this;
     }
 
@@ -155,6 +235,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         return this;
     }
 
+    #endregion
+
     private const string ExceptionBuilderName = $"{nameof(TypePackageBuilder)}.{nameof(Build)}";
 
     /// <summary>
@@ -165,64 +247,74 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
     /// <exception cref="JLibAggregateException"></exception>
     public ITypePackage Build(ExceptionBuilder? parentExceptions = null)
     {
-
+        var content = new List<ITypePackage>();
         using var exceptions = parentExceptions?.CreateChild(ExceptionBuilderName)
                      ?? new(ExceptionBuilderName);
 
         var logger = loggerFactory?.CreateLogger<TypePackageBuilder>();
-        Dictionary<Assembly, ITypePackage> packagesToInclude = [];
-
-        var peerDependencies = _includedAssemblies
-            .Concat(LoadAssemblies(_includedAssemblyNames, exceptions.CreateChild("loading included assembly names")))
-            .ToHashSet();
 
         exceptions.CreateChild("Some Assemblies have been both explicitly included and added to the blacklist",
-            _includedAssemblies
-                .Where(includedAssembly => _assemblyBlacklist
-                    .Any(blacklistAssembly => AssemblyName.ReferenceMatchesDefinition(includedAssembly.GetName(), blacklistAssembly))
-                ).Select(name => name.FullName ?? "no name"));
+            _includedAssemblyNames
+                .Where(includedAssembly => _assemblyBlacklist.Contains(includedAssembly.Key))
+                .Select(kv => kv.Key.Value));
 
-        for (int i = 0; i < _options.MaxDepth && peerDependencies.Count > 0; i++)
-        {
-            var currentDependencies = peerDependencies.ToArray();
-            peerDependencies.Clear();
+        content.Add(new ContentTypePackage($"{_includedTypes.Count} Manually added types", _includedTypes.ToImmutableHashSet()));
 
-            foreach (var assembly in ApplyAssemblyFilter(currentDependencies))
-            {
-                try
+        logger?.LogTrace("preparing direct dependencies");
+        var loadDependencyExceptions = Enum.GetValues<AssemblyLoadMode>()
+            .ToDictionary(value => value, value => exceptions.CreateChild(value.ToString()));
+
+        var loadGroups = _includedAssemblyNames
+            .Select(kv => kv.Value)
+            .GroupBy(
+                loadInfo => loadInfo.Mode,
+                loadInfo => new
                 {
-                    var assemblyName = assembly.GetName();
-                    if (_assemblyBlacklist.Count != 0 && _assemblyBlacklist.Any(name => AssemblyName.ReferenceMatchesDefinition(name, assemblyName)))
-                        continue;
-
-                    if (packagesToInclude.Keys.Any(a => AssemblyName.ReferenceMatchesDefinition(a.GetName(), assemblyName)))
-                        continue;
-
-                    var typePackage = CreateContentTypePackage(assembly);
-
-                    packagesToInclude.Add(assembly, typePackage);
-
-                    var dependencyNames = LoadAssemblies(assembly
-                        .GetReferencedAssemblies(),
-                        // this uses loaded assemblies only, and only if the types are referenced directly. 
-                        exceptions.CreateChild($"referenced assemblies of {assembly.FullName}"));
+                    loadInfo,
+                    // this loads the direct dependencies
+                    assembly = loadInfo.Name.TryLoad(loadDependencyExceptions[loadInfo.Mode])
+                })
+            .ToDictionary(group => group.Key, group => group.ToReadOnlyCollection());
 
 
-                    peerDependencies.AddRange(dependencyNames);
-                }
-                catch (Exception e)
-                {
+        logger?.LogTrace("adding direct dependencies");
+        content.AddRange(loadGroups
+            .Select(
+                // grouped by assembly load mode
+                kv => new TypePackageCollection($"{kv.Value.Count} {kv.Key.ToString()} Assemblies",
+                    kv.Value
+                        // convert the assembly to a type package
+                        .Select(assembly => new ContentTypePackage(assembly.loadInfo.FullName, assembly.assembly, ApplyTypeFilter))
+                        .ToReadOnlyCollection()
+                )
+            ));
 
-                    logger?.LogError(e, "could not load assembly {assemblyName}", assembly.FullName);
-                    exceptions.Add(new Exception($"could not load assembly {assembly.FullName}", e));
-                }
-            }
+        logger?.LogTrace("adding peer dependencies");
+        var peerDependencies = (loadGroups
+             .TryGetValue(AssemblyLoadMode.Recursive)
+             ?.Select(assembly => assembly.assembly)
+             .WhereNotNull()
+             .LoadRecursivePeerDependencies(exceptions.CreateChild("peer dependencies"), _options.MaxDepth)
+             .WhereNotNull()
+             // remove blacklisted assemblies
+             .Where(assembly
+                 // take all if there are no filters
+                 => _assemblyFilters.Count == 0
+                     // remove all types where at east one filter returned false
+                     || _assemblyFilters.All(filter => filter(assembly)))
+             .Select(CreateContentTypePackage)
+             .ToReadOnlyCollection()
+         ?? []);
+        content.Add(new TypePackageCollection($"{peerDependencies.Count} peer dependencies", peerDependencies));
 
-            if (i == _options.MaxDepth - 1)
-                exceptions.Add(new InvalidOperationException("Max peer dependency depth exceeded"));
-        }
-
-        return new RootTypePackage(ApplyTypeFilter(_includedTypes), packagesToInclude.Values);
+        logger?.LogTrace("building the root type package");
+        return new TypePackageCollection($""""
+                                           {nameof(TypePackageBuilder)} result
+                                           {_includedTypes.Count} Manually added types"
+                                           {loadGroups.TryGetValue(AssemblyLoadMode.TopLevelOnly)?.Count ?? 0} top level only assemblies,
+                                           {loadGroups.TryGetValue(AssemblyLoadMode.Recursive)?.Count ?? 0} recursively loaded assemblies,
+                                           {peerDependencies.Count} peer dependencies
+                                           """", content);
 
         ImmutableHashSet<Type> ApplyTypeFilter(IEnumerable<Type> types)
             => types
@@ -230,89 +322,39 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
                 .Where(t
                     // take all if there are no filters
                     => _typeFilters.Count == 0
-                        // remove all types where at east one filter returned false
-                        || _typeFilters.All(f => f(t))
-                )
-                .ToImmutableHashSet();
-
-        ImmutableHashSet<Assembly> ApplyAssemblyFilter(IEnumerable<Assembly> assemblies)
-            => assemblies
-                .Where(a
-                    // take all if there are no filters
-                    => _assemblyFilters.Count == 0
-                        // remove all types where at east one filter returned false
-                        || _assemblyFilters.All(f => f(a))
+                       // remove all types where at east one filter returned false
+                       || _typeFilters.All(f => f(t))
                 )
                 .ToImmutableHashSet();
 
         ITypePackage CreateContentTypePackage(Assembly assembly)
-        {
-            // loading an assembly might fail, for example when nuget packages are incompatible with one another.
-            var allTypes = assembly.GetTypes();
-            var filteredTypes = ApplyTypeFilter(assembly.GetTypes());
-
-            var name = $"Assembly {assembly.FullName} with ";
-            if (allTypes.Length != filteredTypes.Count)
-                name += $"{filteredTypes.Count}/{allTypes.Length} types";
-            else
-                name += $"{filteredTypes.Count} types";
-
-            return new ContentTypePackage(name, filteredTypes);
-        }
+            => new ContentTypePackage(new(assembly.FullName), assembly, ApplyTypeFilter);
     }
 
-    private IReadOnlyCollection<Assembly> LoadAssemblies(IReadOnlyCollection<AssemblyName> assemblyNames, ExceptionBuilder parentExceptionBuilder)
-    {
-        var dependencyNames = assemblyNames
-            .Except(_assemblyBlacklist)
-            .Select(name =>
-            {
-                try
-                {
-                    return new
-                    {
-                        assembly = (Assembly?)Assembly.Load(name),
-                        exception = (Exception?)null,
-                        assemblyName = name
-                    };
-                }
-                catch (Exception e)
-                {
-                    return new
-                    {
-                        assembly = (Assembly?)null,
-                        exception = (Exception?)new TypePackageBuilderException.AssemblyLoadFailedBuilderException(name, e),
-                        assemblyName = name
-                    };
-                }
-            }).ToReadOnlyCollection();
+    #region type package classes
 
-        parentExceptionBuilder.CreateChild("Some assemblies could not be loaded", dependencyNames
-            .Select(x => x.exception)
-            .WhereNotNull());
-
-        return dependencyNames
-            .Select(x => x.assembly)
-            .WhereNotNull()
-            .ToReadOnlyCollection();
-    }
-
-    private sealed class RootTypePackage(ImmutableHashSet<Type> types, IReadOnlyCollection<ITypePackage> assemblies) : ITypePackage
+    private sealed class TypePackageCollection(string name, IReadOnlyCollection<ITypePackage> containedTypePackages)
+        : ITypePackage
     {
 
-        private readonly ImmutableHashSet<Type> _content = types.Concat(assemblies.SelectMany(a => a.GetContent())).ToImmutableHashSet();
-        public ImmutableHashSet<Type> GetContent() => _content;
-        public IEnumerable<ITypePackage> Children => assemblies;
-        IEnumerable<Type> ITypePackage.Types => types;
-        public string DescriptionTemplate => $"{types.Count} types and {assemblies.Count} assemblies";
+        private readonly Lazy<ImmutableHashSet<Type>> _content = new(() => containedTypePackages.SelectMany(c => c.GetContent()).ToImmutableHashSet());
+        ImmutableHashSet<Type> ITypePackage.GetContent() => _content.Value;
+        public IEnumerable<ITypePackage> Children => containedTypePackages;
+        IEnumerable<Type> ITypePackage.Types => [];
+        public string DescriptionTemplate => name;
         [Obsolete]
         ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
             => TypePackage.Get(packages.Prepend(this));
     }
 
-
+    /// <summary>
+    /// This package provides types as content without further nesting
+    /// </summary>
     private sealed class ContentTypePackage(string name, ImmutableHashSet<Type> content) : ITypePackage
     {
+        public ContentTypePackage(AssemblyFullName assemblyName, Assembly? assembly, Func<IEnumerable<Type>, ImmutableHashSet<Type>> applyTypeFilter) : this(assemblyName.Value, applyTypeFilter(assembly?.GetTypes() ?? []))
+        {
+        }
         public ImmutableHashSet<Type> GetContent() => content;
         IEnumerable<ITypePackage> ITypePackage.Children => [];
         IEnumerable<Type> ITypePackage.Types => content;
@@ -322,4 +364,5 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
             => TypePackage.Get(packages.Prepend(this));
     }
+    #endregion
 }
