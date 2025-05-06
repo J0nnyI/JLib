@@ -1,5 +1,12 @@
 # Current
-## Relevant Changes
+
+## Minor Breaking
+### JLib.DataProvider
+- Authorization Manager
+  - replaced the System.UnauthorizedAccessException with a new dedicated exception called DataProviderAuthorizationException.
+- DataProviderRBase
+  - replaced the DataObjectNotFoundException with a new dedicated exception called DataProviderAuthorizationException.
+
 ## Features
 ### JLib.Reflection;
 - Generic variant of EnforceReferenceToAttribute added

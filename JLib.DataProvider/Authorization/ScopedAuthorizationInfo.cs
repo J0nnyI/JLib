@@ -2,6 +2,7 @@
 using JLib.Exceptions;
 using JLib.Helper;
 using Microsoft.Extensions.DependencyInjection;
+using static JLib.DataProvider.DataProviderException.RuntimeException.DataObjectAccessFailedException;
 
 namespace JLib.DataProvider.Authorization;
 
@@ -35,20 +36,20 @@ public interface IAuthorizationInfo<TDataObject> : IAuthorizationInfo
     {
         if (DataObject(dataObject))
             return null;
-        return new UnauthorizedAccessException(
-            $"you are not allowed to access the DataObject {typeof(TDataObject).FullName()} {dataObject.Id}");
+        return new DataProviderException.RuntimeException.DataObjectAccessFailedException<TDataObject>(
+            null,dataObject.Id,FailureReason.AccessDenied);
     }
 }
 
 internal class AuthorizationInfo<TDataObject, TDependency1>(
-        Func<TDependency1, Expression<Func<TDataObject, bool>>> authorizeQueryable,
-        Func<TDependency1, TDataObject, bool> authorizeDataObject,
-        DataObjectType target,
+    Func<TDependency1, Expression<Func<TDataObject, bool>>> authorizeQueryable,
+    Func<TDependency1, TDataObject, bool> authorizeDataObject,
+    DataObjectType target,
     IServiceScope scope)
     : IAuthorizationInfo<TDataObject>
     where TDataObject : class, IDataObject
     where TDependency1 : notnull
-    {
+{
     public DataObjectType Target { get; } = target;
 
     public Expression<Func<TDataObject, bool>> Expression()
