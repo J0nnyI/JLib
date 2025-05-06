@@ -233,7 +233,7 @@ public class TypePackageBuilderTests(ITestOutputHelper toh)
     => RunTest(
         recursiveAssemblies: [Assembly1],
         additionalSetup: b => b.AddAssemblyFilter(assembly => assembly.FullName != Assembly1A.GetName().FullName),
-        expectedTypes: Assembly1Recursive.Except(Assembly1ATypes).ToArray(),
-        additionalValidation: tp => tp.GetContent().Should().NotContain(typeof(TestAssembly1ADemoClassA))
+        expectedTypes: Assembly1Types,
+        additionalValidation: tp => tp.GetContent().Should().NotContain(Assembly1ARecursive)
         );
 }

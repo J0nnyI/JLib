@@ -10,10 +10,27 @@ public static class DisposableHelper
     /// </summary>
     /// <returns>the <paramref name="disposable"/> argument</returns>
     public static T DisposeWith<T>(this T disposable, IList<IDisposable> disposables)
-        where T:IDisposable
+        where T : IDisposable
     {
         disposables.Add(disposable);
         return disposable;
+    }
+
+    /// <summary>
+    /// creates an <see cref="IDisposable"/> which calls the <paramref name="handler"/> when disposed and adds it to the <paramref name="disposables"/>
+    /// </summary>
+    public static IList<IDisposable> Add(this IList<IDisposable> disposables, Action handler)
+    {
+        disposables.Add(new MassActionDisposer(handler));
+        return disposables;
+    }
+
+    private class MassActionDisposer(Action handler) : IDisposable
+    {
+        public void Dispose()
+        {
+            handler?.Invoke();
+        }
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
 ﻿using JLib.Reflection;
+using JLib.Reflection.Tests.DemoAssembly1A;
 
-[assembly: EnforceReferenceTo(typeof(JLib.Reflection.Tests.DemoAssembly1A.TestAssembly1ADemoClassA))]
+[assembly: EnforceReferenceTo<TestAssembly1ADemoClassA>]

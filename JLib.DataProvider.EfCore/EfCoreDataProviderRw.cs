@@ -1,5 +1,7 @@
 ﻿using JLib.DataProvider.Authorization;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JLib.DataProvider.EfCore;
 
@@ -7,54 +9,72 @@ namespace JLib.DataProvider.EfCore;
 /// a data provider which connects to the natively provided <see cref="DbContext"/> pulling it via dependency injection.
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
-public class EfCoreDataProviderR<TEntity> : DataProviderRBase<TEntity>, ISourceDataProviderR<TEntity>
+/**
+ * Developers Note:
+ * The Authorization efficiency could be improved by evaluating the authorization without do materialization.
+ */
+public class EfCoreDataProviderR<TEntity>(DbContext dbContext, IAuthorizationInfo<TEntity> authorize)
+    : DataProviderRBase<TEntity>, ISourceDataProviderR<TEntity>
     where TEntity : class, IEntity
 {
-    private readonly DbContext _dbContext;
-    private readonly IAuthorizationInfo<TEntity> _authorize;
-
-    public EfCoreDataProviderR(DbContext dbContext, IAuthorizationInfo<TEntity> authorize)
-    {
-        _dbContext = dbContext;
-        _authorize = authorize;
-    }
-
-    public override IQueryable<TEntity> Get() => _dbContext.Set<TEntity>().Where(_authorize.Expression()).AsNoTracking();
+    public override IQueryable<TEntity> Get() => dbContext.Set<TEntity>().Where(authorize.Expression()).AsNoTracking();
 }
 
 /// <summary>
 /// <inheritdoc cref="EfCoreDataProviderR{TEntity}"/>
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
+/**
+* Developers Note:
+* The Authorization efficiency could be improved by evaluating the authorization without do materialization.
+ * This would require breaking changes in the AuthorizationInfo Interface.
+*/
 public class EfCoreDataProviderRw<TEntity> : DataProviderRBase<TEntity>, ISourceDataProviderRw<TEntity>
     where TEntity : class, IEntity
 {
     private readonly DbContext _dbContext;
-    private readonly IAuthorizationInfo<TEntity> _authorize;
+    private readonly IAuthorizationInfo<TEntity>? _authorize;
 
-    public EfCoreDataProviderRw(DbContext dbContext, IAuthorizationInfo<TEntity> authorize)
+    /// <summary>
+    /// <inheritdoc cref="EfCoreDataProviderR{TEntity}"/>
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /**
+* Developers Note:
+* The Authorization efficiency could be improved by evaluating the authorization without do materialization.
+ * This would require breaking changes in the AuthorizationInfo Interface.
+*/
+    public EfCoreDataProviderRw(DbContext dbContext, IServiceProvider provider)
     {
         _dbContext = dbContext;
-        _authorize = authorize;
+        _authorize = provider.GetService<IAuthorizationInfo<TEntity>>();
     }
 
     /// <summary>
     /// <inheritdoc cref="IDataProviderR{TEntity}.Get()"/>
     /// </summary>
     public override IQueryable<TEntity> Get()
-        => _dbContext.Set<TEntity>().Where(_authorize.Expression());
+        => _authorize is null
+            ? _dbContext.Set<TEntity>()
+            : _dbContext.Set<TEntity>().Where(_authorize.Expression());
 
     /// <summary>
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Add(TEntity)"/>
     /// </summary>
     public void Add(TEntity dataObject)
-        => _dbContext.Set<TEntity>().Add(_authorize.AndRaiseException(dataObject));
+    {
+        _authorize?.AndRaiseException(dataObject);
+        _dbContext.Set<TEntity>().Add(dataObject);
+    }
 
     /// <summary>
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Add(IReadOnlyCollection{TEntity})"/>
     /// </summary>
     public void Add(IReadOnlyCollection<TEntity> dataObject)
-        => _dbContext.Set<TEntity>().AddRange(_authorize.AndRaiseException(dataObject));
+    {
+        _authorize?.AndRaiseException(dataObject);
+        _dbContext.Set<TEntity>().AddRange(dataObject);
+    }
 
     /// <summary>
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Remove(Guid)"/>
@@ -63,7 +83,7 @@ public class EfCoreDataProviderRw<TEntity> : DataProviderRBase<TEntity>, ISource
     {
         var set = _dbContext.Set<TEntity>();
         var item = set.Single(x => x.Id == dataObjectId);
-        _authorize.AndRaiseException(item);
+        _authorize?.AndRaiseException(item);
         _dbContext.Set<TEntity>().Remove(item);
     }
 
@@ -71,7 +91,12 @@ public class EfCoreDataProviderRw<TEntity> : DataProviderRBase<TEntity>, ISource
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Remove(TEntity)"/>
     /// </summary>
     public void Remove(TEntity dataObject)
-        => _dbContext.Remove(dataObject);
+    {
+        var set = _dbContext.Set<TEntity>();
+        var item = set.Single(x => x.Id == dataObject.Id);
+        _authorize?.AndRaiseException(item);
+        _dbContext.Remove(dataObject);
+    }
 
     /// <summary>
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Remove(IReadOnlyCollection{Guid})"/>
@@ -80,7 +105,7 @@ public class EfCoreDataProviderRw<TEntity> : DataProviderRBase<TEntity>, ISource
     {
         var set = _dbContext.Set<TEntity>();
         var items = set.Where(x => dataObjectIds.Contains(x.Id)).ToArray();
-        _authorize.AndRaiseException(items);
+        _authorize?.AndRaiseException(items);
         _dbContext.Set<TEntity>().RemoveRange(items);
     }
 
@@ -88,5 +113,11 @@ public class EfCoreDataProviderRw<TEntity> : DataProviderRBase<TEntity>, ISource
     /// <inheritdoc cref="IDataProviderRw{TEntity}.Remove(IReadOnlyCollection{TEntity})"/>
     /// </summary>
     public void Remove(IReadOnlyCollection<TEntity> dataObjects)
-        => _dbContext.RemoveRange(dataObjects);
+    {
+        var set = _dbContext.Set<TEntity>();
+        var ids = dataObjects.Select(o => o.Id);
+        var items = set.Where(x => ids.Contains(x.Id)).ToArray();
+        _authorize?.AndRaiseException(items);
+        _dbContext.RemoveRange(dataObjects);
+    }
 }

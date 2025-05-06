@@ -1,6 +1,8 @@
 ﻿using JLib.Exceptions;
 using JLib.Helper;
 
+using static JLib.DataProvider.DataProviderException.RuntimeException;
+
 namespace JLib.DataProvider;
 
 /// <summary>
@@ -19,10 +21,10 @@ public abstract class DataProviderRBase<TDataObject> : IDataProviderR<TDataObjec
     /// <summary>
     /// <inheritdoc cref="IDataProviderR{TDataObject}.Get(Guid)"/>
     /// </summary>
-    /// <exception cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
+    /// <exception cref="DataObjectAccessFailedException{TDataObject}"/>
     public TDataObject Get(Guid id)
-        => Get().SingleOrDefault(x => x.Id == id)
-           ?? throw new DataProviderException.RuntimeException.DataObjectNotFoundException<TDataObject>(GetType(), id);
+        => Get().SingleOrDefault(x => x.Id == id)// as Get is assumed to filter for authorization, we cant know if the entity does not exist or if we are not authorized to access it
+           ?? throw new DataObjectAccessFailedException<TDataObject>(GetType(), id, DataObjectAccessFailedException.FailureReason.Unknown);
 
     /// <summary>
     /// raises a <see cref="KeyNotFoundException"/> when a key could not be found or the user is not authorized to access the given entity;
@@ -33,8 +35,8 @@ public abstract class DataProviderRBase<TDataObject> : IDataProviderR<TDataObjec
         var res = Get()
             .Where(x => ids.Contains(x.Id))
             .ToDictionary(x => x.Id);
-        ids.Except(res.Keys)
-            .Select(id => new DataProviderException.RuntimeException.DataObjectNotFoundException<TDataObject>(GetType(), id))
+        ids.Except(res.Keys)// as Get is assumed to filter for authorization, we cant know if the entity does not exist or if we are not authorized to access it
+            .Select(id => new DataObjectAccessFailedException<TDataObject>(GetType(), id, DataObjectAccessFailedException.FailureReason.Unknown))
             .ThrowExceptionIfNotEmpty("Some Keys could not be found");
         return res;
     }

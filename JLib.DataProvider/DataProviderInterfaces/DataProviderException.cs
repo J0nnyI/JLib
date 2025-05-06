@@ -11,14 +11,14 @@ public abstract class DataProviderException : JLibException
     /// <summary>
     /// The DataProvider Implementation which throws the exception
     /// </summary>
-    public Type DataProviderType { get; }
+    public Type? DataProviderType { get; }
     /// <summary>
     /// <inheritdoc cref="DataProviderException"/>
     /// </summary>
     /// <param name="dataProviderType">The DataProvider Implementation which throws the exception</param>
     /// <param name="message"></param>
     /// <param name="innerException"></param>
-    protected DataProviderException(Type dataProviderType, string message, Exception? innerException = null)
+    protected DataProviderException(Type? dataProviderType, string message, Exception? innerException = null)
         : base(message, innerException)
     {
         DataProviderType = dataProviderType;
@@ -41,7 +41,7 @@ public abstract class DataProviderException : JLibException
         /// <param name="dataObjectType">The TDataObject of the throwing DataProvider</param>
         /// <param name="message"></param>
         /// <param name="innerException"></param>
-        protected RuntimeException(Type dataProviderType,
+        protected RuntimeException(Type? dataProviderType,
             Type dataObjectType,
             string message,
             Exception? innerException = null) : base(dataProviderType, message, innerException)
@@ -51,11 +51,77 @@ public abstract class DataProviderException : JLibException
         }
 
 
+
+
+
         /// <summary>
         /// Thrown, when a data object could not be found
         /// </summary>
+        /// <seealso cref="DataProviderException.RuntimeException.DataObjectAccessFailedException{TDataObject}"/>
+        public abstract class DataObjectAccessFailedException : RuntimeException
+        {
+            /// <summary>
+            /// the reason, why the access to the entity failed
+            /// </summary>
+            public enum FailureReason
+            {
+                /// <summary>
+                /// the entity does not exist in the database
+                /// </summary>
+                NotFound,
+                /// <summary>
+                /// the entity is not accessible by the current user
+                /// </summary>
+                AccessDenied,
+                /// <summary>
+                /// it is not known why the entity could not be accessed, it could be either <see cref="NotFound"/> od <see cref="AccessDenied"/>.
+                /// </summary>
+                Unknown
+            }
+            /// <summary>
+            /// The <see cref="IDataObject.Id"/> of the data object
+            /// </summary>
+            public Guid Id { get; }
+
+            /// <summary>
+            /// The reason 
+            /// </summary>
+            public FailureReason Reason { get; }
+
+            /// <summary>
+            /// <inheritdoc cref="DataProviderException.RuntimeException.DataObjectAccessFailedException"/>
+            /// </summary>
+            /// <param name="dataProviderType">The DataProvider Implementation which throws the exception</param>
+            /// <param name="dataObjectType">The TDataObject of the throwing DataProvider</param>
+            /// <param name="id">The <see cref="IDataObject.Id"/> of the data object</param>
+            /// <param name="reason">the reason why the access failed</param>
+            protected DataObjectAccessFailedException(Type? dataProviderType, Type dataObjectType, Guid id, FailureReason reason)
+                : base(dataProviderType, dataObjectType,
+                $"{dataProviderType?.FullName()} could not access {dataObjectType.FullName()} with id {id}")
+            {
+                Id = id;
+                Data[nameof(Id)] = id;
+                Reason = reason;
+                Data[nameof(Reason)] = reason;
+            }
+        }
+        /// <summary>
+        /// <inheritdoc cref="DataProviderException.RuntimeException.DataObjectAccessFailedException"/>
+        /// </summary>
+        /// <typeparam name="TDataObject">The TDataObject of the throwing DataProvider</typeparam>
+        /// <param name="dataProviderType">The DataProvider Implementation which throws the exception</param>
+        /// <param name="id">The <see cref="IDataObject.Id"/> of the data object</param>
+        /// <param name="reason">the reason why the access failed</param>
+        /// <seealso cref="DataProviderException.RuntimeException.DataObjectAccessFailedException"/>
+        public sealed class DataObjectAccessFailedException<TDataObject>(Type? dataProviderType, Guid id, DataObjectAccessFailedException.FailureReason reason)
+            : DataObjectAccessFailedException(dataProviderType, typeof(TDataObject), id, reason);
+
+
+        /// <summary>
+        /// Thrown, when a data object could be found but the <see cref="Authorization.AuthorizationProfile"/> denied access to it
+        /// </summary>
         /// <seealso cref="DataProviderException.RuntimeException.DataObjectNotFoundException{TDataObject}"/>
-        public abstract class DataObjectNotFoundException : RuntimeException
+        public abstract class DataObjectAccessRejectedException : RuntimeException
         {
             /// <summary>
             /// The <see cref="IDataObject.Id"/> of the data object
@@ -67,7 +133,7 @@ public abstract class DataProviderException : JLibException
             /// <param name="dataProviderType">The DataProvider Implementation which throws the exception</param>
             /// <param name="dataObjectType">The TDataObject of the throwing DataProvider</param>
             /// <param name="id">The <see cref="IDataObject.Id"/> of the data object</param>
-            protected DataObjectNotFoundException(Type dataProviderType, Type dataObjectType, Guid id) : base(dataProviderType, dataObjectType,
+            protected DataObjectAccessRejectedException(Type dataProviderType, Type dataObjectType, Guid id) : base(dataProviderType, dataObjectType,
                 $"{dataProviderType.FullName()} could not find {dataObjectType.FullName()} with id {id}.")
             {
                 Id = id;
@@ -75,15 +141,6 @@ public abstract class DataProviderException : JLibException
             }
         }
 
-        /// <summary>
-        /// <inheritdoc cref="DataProviderException.RuntimeException.DataObjectNotFoundException"/>
-        /// </summary>
-        /// <typeparam name="TDataObject">The TDataObject of the throwing DataProvider</typeparam>
-        /// <param name="dataProviderType">The DataProvider Implementation which throws the exception</param>
-        /// <param name="id">The <see cref="IDataObject.Id"/> of the data object</param>
-        /// <seealso cref="DataProviderException.RuntimeException.DataObjectNotFoundException"/>
-        public sealed class DataObjectNotFoundException<TDataObject>(Type dataProviderType, Guid id)
-            : DataObjectNotFoundException(dataProviderType, typeof(TDataObject), id);
     }
 
     /// <summary>
