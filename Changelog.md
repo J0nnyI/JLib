@@ -1,5 +1,10 @@
 # Current
 ## Relevant Changes
+## Features
+### JLib.Reflection;
+- Generic variant of EnforceReferenceToAttribute added
+### JLib.Helper
+- DisposableHelper/ IList&lt;IDisposable>.Add(Action) added
 ### Jlib.Reflection
 #### Type Package Improvements
 - TypePackageBuilder added
@@ -9,8 +14,6 @@
 ### JLib.Configuration
 #### Environemnt
 - The Environment key can now be changed, to be able to not use it. The default value is set by vs per default.
-### JLib.Helper
-- DisposableHelper/ IList&lt;IDisposable>.Add(Action) added
 
 ## Bug Fixes
 ### JLib.DataProvider
