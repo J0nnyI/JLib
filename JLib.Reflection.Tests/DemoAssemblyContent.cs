@@ -73,6 +73,12 @@ public static class DemoAssemblyContent
             Assembly1ATypes,
             Assembly1A1Types,
         }.SelectMany(x => x).ToReadOnlyCollection();
+    public static readonly IReadOnlyCollection<Type> Assembly1ARecursive =
+        new[]
+        {
+            Assembly1ATypes,
+            Assembly1A1Types,
+        }.SelectMany(x => x).ToReadOnlyCollection();
     public static readonly IReadOnlyCollection<Type> AssemblyARecursive =
         new[]
         {
