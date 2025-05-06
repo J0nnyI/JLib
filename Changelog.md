@@ -8,6 +8,10 @@
   - replaced the DataObjectNotFoundException with a new dedicated exception called DataProviderAuthorizationException.
 
 ## Features
+### JLib.DataProvider.EfCore
+- EfCoreDataProviderRw
+  - Implemented Authorization
+  - AddedUnittests
 ### JLib.Reflection;
 - Generic variant of EnforceReferenceToAttribute added
 ### JLib.Helper

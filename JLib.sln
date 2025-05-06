@@ -140,6 +140,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JLib.Reflection.Tests.DemoA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoAssemblies", "DemoAssemblies", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JLib.DataProvider.EfCore.Tests", "JLib.DataProvider.EfCore.Tests\JLib.DataProvider.EfCore.Tests.csproj", "{663E3DB5-28E0-423E-AB0B-B00FD02F91A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -338,6 +340,10 @@ Global
 		{2165313D-8133-4E44-BC38-54B5A98CEFD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2165313D-8133-4E44-BC38-54B5A98CEFD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2165313D-8133-4E44-BC38-54B5A98CEFD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{663E3DB5-28E0-423E-AB0B-B00FD02F91A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663E3DB5-28E0-423E-AB0B-B00FD02F91A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663E3DB5-28E0-423E-AB0B-B00FD02F91A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663E3DB5-28E0-423E-AB0B-B00FD02F91A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -387,6 +393,7 @@ Global
 		{8C000BDF-48A0-4C1E-A680-D2E0C55D75E4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2165313D-8133-4E44-BC38-54B5A98CEFD2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {EFA2EA40-BBFA-474F-894E-655FDF9A0EE4}
+		{663E3DB5-28E0-423E-AB0B-B00FD02F91A3} = {0D921AA7-8601-4FFE-9F37-ADF3735AA21C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9007D83B-9D61-4FD9-927F-EEAC8281BF90}

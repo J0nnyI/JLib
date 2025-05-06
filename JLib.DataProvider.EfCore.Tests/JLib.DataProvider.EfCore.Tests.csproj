@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JLib.Cqrs\JLib.Cqrs.csproj" />
+    <ProjectReference Include="..\JLib.DataProvider.EfCore\JLib.DataProvider.EfCore.csproj" />
+    <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
+    <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
+    <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
+  </ItemGroup>
+</Project>
