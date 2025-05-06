@@ -40,34 +40,23 @@ public interface IAuthorizationInfo<TDataObject> : IAuthorizationInfo
     }
 }
 
-internal class AuthorizationInfo<TDataObject, TDependency1> : IAuthorizationInfo<TDataObject>
-    where TDataObject : class, IDataObject
-    where TDependency1 : notnull
-{
-    private readonly Func<TDependency1, Expression<Func<TDataObject, bool>>> _authorizeQueryable;
-    private readonly Func<TDependency1, TDataObject, bool> _authorizeDataObject;
-    private readonly IServiceScope _scope;
-    public DataObjectType Target { get; }
-
-    public AuthorizationInfo(
+internal class AuthorizationInfo<TDataObject, TDependency1>(
         Func<TDependency1, Expression<Func<TDataObject, bool>>> authorizeQueryable,
         Func<TDependency1, TDataObject, bool> authorizeDataObject,
         DataObjectType target,
-        IServiceScope scope
-    )
+    IServiceScope scope)
+    : IAuthorizationInfo<TDataObject>
+    where TDataObject : class, IDataObject
+    where TDependency1 : notnull
     {
-        _authorizeQueryable = authorizeQueryable;
-        _authorizeDataObject = authorizeDataObject;
-        _scope = scope;
-        Target = target;
-    }
+    public DataObjectType Target { get; } = target;
 
     public Expression<Func<TDataObject, bool>> Expression()
-        => _authorizeQueryable(_scope.ServiceProvider.GetRequiredService<TDependency1>());
+        => authorizeQueryable(scope.ServiceProvider.GetRequiredService<TDependency1>());
 
     /// <summary>
     /// returns true if the user is authorized to access the given entity
     /// </summary>
     public bool DataObject(TDataObject dataObject)
-        => _authorizeDataObject(_scope.ServiceProvider.GetRequiredService<TDependency1>(), dataObject);
+        => authorizeDataObject(scope.ServiceProvider.GetRequiredService<TDependency1>(), dataObject);
 }

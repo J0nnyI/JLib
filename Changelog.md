@@ -17,6 +17,9 @@
 ### JLib.DependencyInjection
 - AddScopeProvider now handles multiplle calls gracefully
 
+## Formatting
+### JLib.DataProvider.Authorization
+- switched to default ctor
 
 ## Documentation
 ### Changelog.md
