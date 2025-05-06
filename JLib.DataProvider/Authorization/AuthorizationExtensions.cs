@@ -1,4 +1,5 @@
-﻿using JLib.Reflection;
+﻿using JLib.DependencyInjection;
+using JLib.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JLib.DataProvider.Authorization;
@@ -17,6 +18,7 @@ public static class AuthorizationExtensions
     public static IServiceCollection AddDataAuthorization(this IServiceCollection services, ITypeCache typeCache)
     {
         services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
+        services.AddScopeProvider();
         foreach (var dataObjectType in typeCache.All<DataObjectType>())
         {
             var t = typeof(IAuthorizationInfo<>).MakeGenericType(dataObjectType.Value);
