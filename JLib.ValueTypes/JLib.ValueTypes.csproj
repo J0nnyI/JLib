@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\JLib.Exceptions\JLib.Exceptions.csproj" />
     <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
   </ItemGroup>

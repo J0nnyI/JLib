@@ -13,7 +13,7 @@ public static class CharValidationContextExtensions
     public static ValidationContext<char> BeDigit(this ValidationContext<char> context)
     {
         if (!char.IsDigit(context.Value))
-            context.AddError("must be a digit");
+            context.Fail("must be a digit");
         return context;
     }
 
@@ -25,7 +25,7 @@ public static class CharValidationContextExtensions
     public static ValidationContext<char> BeLetter(this ValidationContext<char> context)
     {
         if (!char.IsLetter(context.Value))
-            context.AddError("must be a letter");
+            context.Fail("must be a letter");
         return context;
     }
     /// <summary>
@@ -36,7 +36,7 @@ public static class CharValidationContextExtensions
     public static ValidationContext<char> BeAscii(this ValidationContext<char> context)
     {
         if (!char.IsAscii(context.Value))
-            context.AddError("must be ascii");
+            context.Fail("must be ascii");
         return context;
     }
     /// <summary>

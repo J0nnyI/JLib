@@ -22,7 +22,7 @@ public interface ICommandEntity : IEntity
 /// <summary>
 /// An entity which uses ValueTypes to ensure data validity
 /// </summary>
-[Implements(typeof(ICommandEntity)), IsClass, NotAbstract, Priority(EntityType.NextPriority)]
+[Implements(typeof(ICommandEntity)), IsClass, NotAbstract]
 public record CommandEntityType(Type Value) : EntityType(Value)
 {
     public new const int NextPriority = EntityType.NextPriority - 1_000;

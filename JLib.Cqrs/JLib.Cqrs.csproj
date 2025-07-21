@@ -1,12 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-      <IsPackable>true</IsPackable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
-    <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\JLib.DataProvider.AutoMapper\JLib.DataProvider.AutoMapper.csproj" />
+        <ProjectReference Include="..\JLib.DataProvider.EfCore\JLib.DataProvider.EfCore.csproj" />
+        <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
+        <ProjectReference Include="..\JLib.HotChocolate\JLib.HotChocolate.csproj" />
+        <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
+    </ItemGroup>
 
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
+    </ItemGroup>
 </Project>

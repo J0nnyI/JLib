@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+
 using JLib.Helper;
 
 namespace JLib.Reflection;
@@ -7,39 +8,15 @@ namespace JLib.Reflection;
 /// <summary>
 /// classes with this given attribute will not be ignored by the typeCache
 /// </summary>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Enum | AttributeTargets.Delegate | AttributeTargets.Struct)]
 public sealed class IgnoreInCache : Attribute
 {
 }
 
-/// <summary>
-/// used by the <seealso cref="TvtFactoryAttribute.FactoryAttribute"/> to apply a custom factory to this value type
-/// </summary>
-public interface ITypeValueTypeFilter
-{
-    bool Filter(Type type);
-}
 public abstract class TvtFactoryAttribute : Attribute
 {
     public abstract bool Filter(Type type);
-
-    /// <summary>
-    /// lowest wins
-    /// <br/>default is 10_000
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public sealed class PriorityAttribute : Attribute
-    {
-        public int Value { get; }
-
-        public PriorityAttribute(int value)
-        {
-            Value = value;
-        }
-
-        public const int DefaultPriority = 10_000;
-    }
-
+    
     [AttributeUsage(AttributeTargets.Class)]
     public class IsInterfaceAttribute : TvtFactoryAttribute
     {
@@ -80,6 +57,8 @@ public abstract class TvtFactoryAttribute : Attribute
         public override bool Filter(Type type)
             => type.HasCustomAttribute(AttributeType);
     }
+    [AttributeUsage(AttributeTargets.Class)]
+    public class HasAttributeAttribute<TAttribute>() : HasAttributeAttribute(typeof(TAttribute)) { }
 
     [AttributeUsage(AttributeTargets.Class)]
     public class NotAbstractAttribute : TvtFactoryAttribute

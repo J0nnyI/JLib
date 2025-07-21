@@ -1,15 +1,17 @@
 ﻿using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+
 using ITypeCache = JLib.Reflection.ITypeCache;
 
 namespace JLib.DataProvider.AutoMapper;
 
 public static class DataProviderAutomapperExtensions
 {
-    #region AddMapDataprovider
 
     /// <summary>
     /// adds map data providers for each <see cref="IMappedDataObjectType"/>.
@@ -47,11 +49,11 @@ public static class DataProviderAutomapperExtensions
                             }
 
                             var implementation = typeof(MapDataProviderR<,>).MakeGenericType(sourceType, destinationType);
-                            services.AddScoped(implementation);
-                            services.AddScoped(typeof(ISourceDataProviderR<>).MakeGenericType(destinationType),
+                            services.TryAddScoped(implementation);
+                            services.TryAddScoped(typeof(ISourceDataProviderR<>).MakeGenericType(destinationType),
                                 implementation);
                             if (repo is null)
-                                services.AddScoped(typeof(IDataProviderR<>).MakeGenericType(destinationType),
+                                services.TryAddScoped(typeof(IDataProviderR<>).MakeGenericType(destinationType),
                                     implementation);
                         }
                         break;
@@ -108,5 +110,4 @@ public static class DataProviderAutomapperExtensions
         return services;
     }
 
-    #endregion
 }

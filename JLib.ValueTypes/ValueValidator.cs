@@ -29,7 +29,7 @@ public interface IValidationContext<out TValue> : IExceptionProvider
     /// </summary>
     /// <param name="message">the message to be added</param>
     /// <param name="hint"></param>
-    void AddError(string message, string? hint = null);
+    void Fail(string message, string? hint = null);
     /// <summary>
     /// Adds the given <paramref name="subProvider"/> as a validator to this one.<br/>
     /// This might be used to validate complex types (like <see cref="Type"/>)
@@ -71,7 +71,7 @@ public class ValidationContext<TValue> : IValidationContext<TValue>
     /// </summary>
     /// <param name="message">the <see cref="Exception.Message"/></param>
     /// <param name="hint">a hint appended to the <see cref="Exception.Message"/> which might help the user to resolve this issue</param>
-    public void AddError(string message, string? hint = null)
+    public void Fail(string message, string? hint = null)
     {
         if (hint != null)
             message += $" this might be resolved by {hint}";

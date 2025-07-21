@@ -18,7 +18,7 @@ public record RelativeDirectoryPath(string Value) : StringValueType(Value)
     private static void Validate(ValidationContext<string> context)
     {
         if (Path.IsPathRooted(context.Value))
-            context.AddError("The path must not be rooted");
+            context.Fail("The path must not be rooted");
         context.NotContain(Path.GetInvalidPathChars());
     }
     /// <returns>the directory which contains this directory</returns>

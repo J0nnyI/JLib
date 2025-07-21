@@ -29,7 +29,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldBeGeneric(this IValidationContext<Type> context, string? hint = null)
     {
         if (!context.Value.IsGenericType)
-            context.AddError(string.Join(Environment.NewLine, "Must be Generic", hint));
+            context.Fail(string.Join(Environment.NewLine, "Must be Generic", hint));
         return context;
     }
 
@@ -39,7 +39,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldBeStatic(this IValidationContext<Type> context, string? hint = null)
     {
         if (!context.Value.IsStatic())
-            context.AddError(string.Join(Environment.NewLine, "Must be Static", hint));
+            context.Fail(string.Join(Environment.NewLine, "Must be Static", hint));
         return context;
     }
 
@@ -49,7 +49,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldBeSealed(this IValidationContext<Type> context, string? hint = null)
     {
         if (!context.Value.IsSealed)
-            context.AddError(string.Join(Environment.NewLine, "Must be Sealed", hint));
+            context.Fail(string.Join(Environment.NewLine, "Must be Sealed", hint));
         return context;
     }
 
@@ -59,7 +59,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldNotBeGeneric(this IValidationContext<Type> context, string? hint = null)
     {
         if (context.Value.IsGenericType)
-            context.AddError(string.Join(Environment.NewLine, "Must not be Generic", hint));
+            context.Fail(string.Join(Environment.NewLine, "Must not be Generic", hint));
         return context;
     }
 
@@ -71,7 +71,7 @@ public static class TypeValidationContextExtensions
         context.ShouldBeGeneric();
 
         if (context.Value.GenericTypeArguments.Length != argumentCount)
-            context.AddError(
+            context.Fail(
                 $"It must have exactly {argumentCount} type arguments but got {context.Value.GenericTypeArguments.Length}");
         return context;
     }
@@ -88,7 +88,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldImplementAny(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
         if (!context.Value.ImplementsAny(tInterface))
-            context.AddError($"Should implement any {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
+            context.Fail($"Should implement any {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
                 hint);
         return context;
     }
@@ -105,7 +105,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldImplement(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
         if (!context.Value.ImplementsAny(tInterface))
-            context.AddError($"Should implement {tInterface.FullName(true)}", hint);
+            context.Fail($"Should implement {tInterface.FullName(true)}", hint);
         return context;
     }
 
@@ -121,7 +121,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldNotImplementAny(this IValidationContext<Type> context, Type tInterface, string? hint = null)
     {
         if (context.Value.ImplementsAny(tInterface))
-            context.AddError($"Should not implement {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
+            context.Fail($"Should not implement {tInterface.TryGetGenericTypeDefinition().FullName(true)}",
                 hint);
         return context;
     }
@@ -139,7 +139,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldHaveAttribute(this IValidationContext<Type> context, Type tAttribute, string? hint = null)
     {
         if (!context.Value.HasCustomAttribute(tAttribute))
-            context.AddError($"Should have {tAttribute.FullName(true)}", hint);
+            context.Fail($"Should have {tAttribute.FullName(true)}", hint);
         return context;
     }
 
@@ -149,7 +149,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldHaveName(this IValidationContext<Type> context, string name, StringComparison comparisonType = StringComparison.Ordinal)
     {
         if (context.Value.Name.Equals(name, comparisonType))
-            context.AddError($"must have the name '{name}'");
+            context.Fail($"must have the name '{name}'");
         return context;
     }
 
@@ -159,7 +159,7 @@ public static class TypeValidationContextExtensions
     public static IValidationContext<Type> ShouldHaveNameSuffix(this IValidationContext<Type> context, string nameSuffix)
     {
         if (!context.Value.Name.EndsWith(nameSuffix))
-            context.AddError($"must have the nameSuffix '{nameSuffix}'");
+            context.Fail($"must have the nameSuffix '{nameSuffix}'");
         return context;
     }
 }

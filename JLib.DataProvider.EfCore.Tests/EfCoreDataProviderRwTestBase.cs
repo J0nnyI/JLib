@@ -18,7 +18,7 @@ namespace JLib.DataProvider.EfCore.Tests;
 
 public abstract class EfCoreDataProviderRwTestBase : IDisposable
 {
-    [IsClass, Implements<ICommandEntity>, NotAbstract, Priority(NextPriority)]
+    [IsClass, Implements<ICommandEntity>, NotAbstract]
     public record MockEntityType(Type Value) : CommandEntityType(Value), IEfCoreEntityType
     {
         public new const int NextPriority = CommandEntityType.NextPriority - 1_000;

@@ -44,7 +44,7 @@ public record JsonConverterType : TypeValueType, IValidatedType
     void IValidatedType.Validate(ITypeCache cache, IValidationContext<Type> value)
     {
         if (_constructor is null)
-            value.AddError($"Constructor could not be found. It has to have either no arguments or a single {typeof(ITypeCache).FullName()} argument.",
+            value.Fail($"Constructor could not be found. It has to have either no arguments or a single {typeof(ITypeCache).FullName()} argument.",
                 $"If you do not want to create them automatically, decorating them with the '{typeof(IgnoreInCache).FullName(true)}' or removing the types from the type package using a filter will achieve this goal. Note, that this will works by removing them completely from the TypeCache.");
     }
 

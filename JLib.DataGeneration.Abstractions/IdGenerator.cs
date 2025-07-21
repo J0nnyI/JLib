@@ -1,27 +1,26 @@
 ﻿using JLib.ValueTypes;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.DataGeneration.Abstractions;
 
 /// <summary>
-/// Represents an interface for generating <see cref="Guid"/>s.
-/// <remarks><br/>
-/// Use <see cref="IdGeneratorServiceCollectionExtensions.AddIdGenerator"/> to provide ID's in a testing environment<br/>
-/// Use `DataPackageExtensions.AddTestingIdGenerator` of the `JLib.DataGeneration` package instead while testing.<br/>
-/// </remarks>
+/// Runtime implementation of the <see cref="IIdGenerator"/> interface.<br/>
+/// Requires <see cref="IMapper"/>
 /// </summary>
-public interface IIdGenerator
+public sealed class IdGenerator : IIdGenerator
 {
     /// <summary>
     /// Creates a new <see cref="Guid"/>.
     /// </summary>
     /// <returns>A new <see cref="Guid"/>.</returns>
-    Guid CreateGuid();
+    public Guid CreateGuid()
+        => Guid.NewGuid();
 
     /// <summary>
     /// Creates a new <see cref="Guid"/> of type <typeparamref name="TVt"/>.
     /// </summary>
     /// <typeparam name="TVt">The type of the <see cref="GuidValueType"/> to create.</typeparam>
     /// <returns>A new <see cref="Guid"/> of type <typeparamref name="TVt"/>.</returns>
-    TVt CreateGuid<TVt>()
-        where TVt : GuidValueType;
+    public TVt CreateGuid<TVt>() where TVt : GuidValueType
+        => ValueType.Create<TVt, Guid>(Guid.NewGuid());
 }

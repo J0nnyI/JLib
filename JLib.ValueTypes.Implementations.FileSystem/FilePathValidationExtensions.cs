@@ -11,7 +11,7 @@ public static class FilePathValidationExtensions
     public static IValidationContext<string?> BeRootPath(this IValidationContext<string?> context)
     {
         if (Path.IsPathRooted(context.Value) is false)
-            context.AddError("Must be rooted");
+            context.Fail("Must be rooted");
         return context;
     }
     /// <summary>
@@ -20,7 +20,7 @@ public static class FilePathValidationExtensions
     public static IValidationContext<string?> BeRelativePath(this IValidationContext<string?> context)
     {
         if (Path.IsPathRooted(context.Value))
-            context.AddError("Must not be rooted");
+            context.Fail("Must not be rooted");
         return context;
     }
 
@@ -46,7 +46,7 @@ public static class FilePathValidationExtensions
     public static IValidationContext<string?> HaveAnExtension(this IValidationContext<string?> context)
     {
         if (Path.HasExtension(context.Value) is false)
-            context.AddError("Must have an extension");
+            context.Fail("Must have an extension");
         return context;
     }
     /// <summary>
@@ -55,7 +55,7 @@ public static class FilePathValidationExtensions
     public static IValidationContext<string?> HaveExtension(this IValidationContext<string?> context, FileExtension extension)
     {
         if (Path.GetExtension(context.Value) != extension.Value)
-            context.AddError($"Must have the '{extension.Value}' extension but has '{extension.Value}'");
+            context.Fail($"Must have the '{extension.Value}' extension but has '{extension.Value}'");
         return context;
     }
     /// <summary>
@@ -64,13 +64,13 @@ public static class FilePathValidationExtensions
     public static IValidationContext<string?> HaveNoExtension(this IValidationContext<string?> context)
     {
         if (Path.HasExtension(context.Value))
-            context.AddError("Must have no extension");
+            context.Fail("Must have no extension");
         return context;
     }
     public static IValidationContext<string?> HaveAnDirectory(this IValidationContext<string?> context)
     {
         if (Path.GetDirectoryName(context.Value) is null)
-            context.AddError($"Must have an directory");
+            context.Fail($"Must have an directory");
         return context;
     }
 }

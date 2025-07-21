@@ -17,7 +17,7 @@ public class TvtNavigationFailedException : InvalidSetupException
     public Type NavigationPropertyType { get; }
 
     internal TvtNavigationFailedException(NavigatingTypeValueType type, Type navigationPropertyType, string propertyName, Exception innerException)
-        : base($"{navigationPropertyType.FullName} {type.Value.Name}.{propertyName}: The navigation failed due to an unhandled error: {innerException.Message}", innerException)
+        : base($"{navigationPropertyType.FullName()} {type.GetType().FullName()}.{propertyName} = {type.Value.FullName()}: The navigation failed due to an unhandled error: {innerException.Message}", innerException)
     {
         Type = type;
         Data[nameof(Type)] = type;

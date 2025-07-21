@@ -126,6 +126,35 @@ public class TypeCache : ITypeCache
         }
     }
 
+    private class TvtInheritanceAnalyzer()
+    {
+        public IReadOnlyCollection<ValueTypeForTypeValueTypes> HighestPriorityTvts => _highestPriorityTvts;
+        private readonly List<ValueTypeForTypeValueTypes> _highestPriorityTvts = [];
+        public TvtInheritanceAnalyzer Push(ValueTypeForTypeValueTypes newElement)
+        {
+            // compares two lists of types for equality
+            for (int i = 0; i < _highestPriorityTvts.Count; i++)
+            {
+                var knownElement = _highestPriorityTvts[i];
+
+                // if this type derives from the known type, replace it as it has the higher priority
+                if (newElement.Value.IsAssignableTo(knownElement.Value))
+                {
+                    _highestPriorityTvts[i] = newElement;
+                    return this;
+                }
+                // if a known type derives from this type, we have found our match and can ignore this type
+                if (knownElement.Value.IsAssignableTo(newElement.Value))
+                    return this;
+
+            }
+            // this is a new type if no match has been found, so add it to the list
+            _highestPriorityTvts.Add(newElement);
+
+            return this;
+        }
+    }
+
     private readonly object _cacheAddLock = new();
     private readonly List<TypeValueType> _typeValueTypes;
     private readonly Dictionary<Type, TypeValueType> _typeMappings;
@@ -188,27 +217,26 @@ public class TypeCache : ITypeCache
                     {
                         var validTvtGroups = availableTypeValueTypes
                             .Where(availableTvtt => availableTvtt.Filter(type))
-                            .ToLookup(t =>
-                                t.Value.GetCustomAttribute<TvtFactoryAttribute.PriorityAttribute>()?.Value
-                                ?? TvtFactoryAttribute.PriorityAttribute.DefaultPriority);
-                        var validTvts = validTvtGroups.MinBy(x => x.Key)?
-                            .ToArray() ?? Array.Empty<ValueTypeForTypeValueTypes>();
-                        switch (validTvts.Length)
+                            .ToArray();
+
+                        var analyzer = validTvtGroups
+                            .Aggregate(new TvtInheritanceAnalyzer(), (inheritanceAnalyzer, tvtt) => inheritanceAnalyzer.Push(tvtt));// use the inheritance depth as priority
+
+                        switch (analyzer.HighestPriorityTvts.Count)
                         {
                             case > 1:
                                 discoveryExceptions.Add(new InvalidSetupException(
-                                    $"multiple tvt candidates found for type {type.Name} : " +
-                                    $@"[ {string.Join(", ", validTvts.Select(tvt =>
+                                    $"multiple tvt candidates with deviating base types found for type {type.Name} : " +
+                                    $@"[ {string.Join(", ", analyzer.HighestPriorityTvts.Select(tvt =>
                                     {
-                                        var priority = tvt.Value.GetCustomAttribute<TvtFactoryAttribute.PriorityAttribute>()?.Value
-                                                       ?? TvtFactoryAttribute.PriorityAttribute.DefaultPriority;
-                                        return $"{tvt.Value.Name}(priority {priority})";
-                                    }).OrderBy(d => d))} ]"));
+                                        return $"{tvt.Value.FullName()}: [{string.Join(", ", tvt.Value.GetBaseTypeTree().Select(x => x.FullName))}]";
+                                    }).OrderBy(d => d))} ]."+
+                                    " The JLib.Reflection Readme contains more information about this error."));
                                 return null;
                             case 0:
                                 return null;
                             default:
-                                return validTvts.Single().Create(type);
+                                return analyzer.HighestPriorityTvts.Single().Create(type);
                         }
                     }
                     catch (Exception e)

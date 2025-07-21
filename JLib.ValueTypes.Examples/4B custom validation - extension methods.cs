@@ -20,7 +20,7 @@ namespace Examples
         {
             var testString = "@";
             if (validator.Value?.Contains(testString) != true)
-                validator.AddError($"'{validator.Value}' must contain '{testString}'");
+                validator.Fail($"'{validator.Value}' must contain '{testString}'");
             return validator;
         }
 
@@ -31,7 +31,7 @@ namespace Examples
         {
             var testString = ".";
             if (validator.Value?.Contains(testString) != true)
-                validator.AddError($"'{validator.Value}' must contain with '{testString}'");
+                validator.Fail($"'{validator.Value}' must contain with '{testString}'");
             return validator;
         }
 
@@ -39,7 +39,7 @@ namespace Examples
         {
             var testString = ".";
             if (validator.Value?.EndsWith(testString) != false)
-                validator.AddError($"'{validator.Value}' must not end with '{testString}'");
+                validator.Fail($"'{validator.Value}' must not end with '{testString}'");
             return validator;
         }
     }

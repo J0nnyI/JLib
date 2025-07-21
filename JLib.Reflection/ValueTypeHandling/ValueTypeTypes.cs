@@ -36,13 +36,13 @@ public record ValueTypeType(Type Value) : TypeValueType(Value), IValidatedType
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (NativeType is null)
-            value.AddError("the NativeType could not be found");
+            value.Fail("the NativeType could not be found");
 
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (DefaultConstructor is null)
-            value.AddError("the Constructor could not be found");
+            value.Fail("the Constructor could not be found");
 
         if(Value is { IsGenericType: true, IsAbstract: false })// this is necessary for the ctor call and the factories to work
-            value.AddError("the ValueTypeType must be abstract if it is generic");
+            value.Fail("the ValueTypeType must be abstract if it is generic");
     }
 }

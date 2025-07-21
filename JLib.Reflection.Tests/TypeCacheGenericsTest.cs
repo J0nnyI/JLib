@@ -57,7 +57,7 @@ public class TypeCacheGenericsTest : IDisposable
             public void Validate(ITypeCache cache, IValidationContext<Type> value)
             {
                 if (value.Value is { IsGenericTypeDefinition: false, IsGenericType: true })
-                    value.AddError("error");
+                    value.Fail("error");
             }
         }
 
