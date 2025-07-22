@@ -14,27 +14,33 @@ public enum AccessModifier
     /// <see langword="private"/>
     /// </summary>
     Private,
+
     /// <summary>
     /// <see langword="protected"/>
     /// </summary>
     Protected,
+
     /// <summary>
     /// <see langword="internal"/>
     /// </summary>
     Internal,
+
     /// <summary>
     /// <see langword="protected internal"/>
     /// </summary>
     ProtectedInternal,
+
     /// <summary>
     /// <see langword="private protected"/>
     /// </summary>
     PrivateProtected,
+
     /// <summary>
     /// <see langword="public"/>
     /// </summary>
     Public
 }
+
 /// <summary>
 /// Extension methods for reflection
 /// </summary>
@@ -58,6 +64,7 @@ public static class ReflectionHelper
             return AccessModifier.Public;
         throw new ArgumentException("Did not find access modifier", nameof(methodInfo));
     }
+
     /// <returns>the <see cref="AccessModifier"/> of the given <paramref name="fieldInfo"/></returns>
     /// <exception cref="ArgumentException"></exception>
     public static AccessModifier GetAccessModifier(this FieldInfo fieldInfo)
@@ -100,6 +107,7 @@ public static class ReflectionHelper
         // Init-only properties are marked with the IsExternalInit type.
         return setMethodReturnParameterModifiers?.Contains(typeof(IsExternalInit)) ?? false;
     }
+
     /// <summary>
     /// Checks, whether the given <paramref name="type"/> is decorated with the given <paramref name="attributeType"/>
     /// </summary>
@@ -133,15 +141,18 @@ public static class ReflectionHelper
                 if (methodInfo.IsGenericMethod)
                 {
                     sb.Append('<');
-                    sb.AppendJoin(", ", methodInfo.GetGenericArguments().Select(arg => $"{arg.FullName(includeNamespace)}"));
+                    sb.AppendJoin(", ",
+                        methodInfo.GetGenericArguments().Select(arg => $"{arg.FullName(includeNamespace)}"));
                     sb.Append('>');
                 }
+
                 if (methodInfo.IsGenericMethodDefinition)
                 {
                     sb.Append('<');
                     sb.AppendJoin(", ", methodInfo.GetGenericArguments().Select(arg => $"{arg.Name}"));
                     sb.Append('>');
                 }
+
                 sb.Append('(');
                 sb.AppendJoin(", ", methodInfo.GetParameters().Select(p => p.ParameterType.FullName(includeNamespace)));
                 sb.Append(')');
@@ -157,6 +168,7 @@ public static class ReflectionHelper
                             .AppendJoin(", ", constraints.Select(c => c.FullName(includeNamespace)));
                     }
                 }
+
                 break;
             case PropertyInfo propertyInfo:
                 sb.Append(propertyInfo.Name)
@@ -166,11 +178,13 @@ public static class ReflectionHelper
                     sb.Append(propertyInfo.GetMethod?.GetAccessModifier().ToString().ToLower());
                     sb.Append(" get; ");
                 }
+
                 if (propertyInfo.CanWrite)
                 {
                     sb.Append(propertyInfo.SetMethod?.GetAccessModifier().ToString().ToLower());
                     sb.Append(propertyInfo.IsInit() ? "init; " : "set; ");
                 }
+
                 sb.Append('}');
                 break;
             case FieldInfo fieldInfo:
@@ -186,7 +200,8 @@ public static class ReflectionHelper
             case ConstructorInfo constructorInfo:
                 sb.Append(constructorInfo.Name);
                 sb.Append('(');
-                sb.AppendJoin(", ", constructorInfo.GetParameters().Select(p => p.ParameterType.FullName(includeNamespace)));
+                sb.AppendJoin(", ",
+                    constructorInfo.GetParameters().Select(p => p.ParameterType.FullName(includeNamespace)));
                 sb.Append(')');
                 break;
             case EventInfo eventInfo:
@@ -226,12 +241,15 @@ public static class ReflectionHelper
     /// </summary>
     public static Type TryGetGenericTypeDefinition(this Type type)
         => type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+
     /// <summary>
     /// Executes <see cref="MethodInfo.GetGenericArguments"/> if the method is <see cref="MethodBase.IsGenericMethod"/> or <see cref="MethodBase.IsGenericMethodDefinition"/>, otherwise returns <see cref="Array.Empty{T}"/><br/>
     /// <inheritdoc cref="MethodInfo.GetGenericArguments"/>
     /// </summary>
     public static Type[] TryGetGenericArguments(this MethodInfo method)
-        => (method.IsGenericMethodDefinition || method.IsGenericMethod) ? method.GetGenericArguments() : Array.Empty<Type>();
+        => (method.IsGenericMethodDefinition || method.IsGenericMethod)
+            ? method.GetGenericArguments()
+            : Array.Empty<Type>();
 
     /// <summary>
     /// filters the given <paramref name="src"/> for <see cref="Type"/>s decorated with the given <typeparamref name="TAttribute"/>
@@ -266,6 +284,7 @@ public static class ReflectionHelper
                 sb.Append(typeArg.FullName(includeNamespace));
             sb.Append('>');
         }
+
         sb.Append('(');
         sb.AppendJoin(", ", methodInfo.GetParameters().Select(p =>
             $"{p.GetType().FullName(includeNamespace)} {p.Name} {(p.HasDefaultValue ? $" = {p.DefaultValue}" : "")}"));

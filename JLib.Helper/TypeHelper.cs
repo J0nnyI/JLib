@@ -52,6 +52,33 @@ public static class TypeHelper
     }
 
     /// <summary>
+    /// checks whether the given <paramref name="type"/> is defined in the given <paramref name="namespace"/><br/>
+    /// </summary>
+    public static bool IsDefinedInNamespace(this Type type, string @namespace, bool includeSubNamespaces = true)
+    {
+        return type.Namespace is not null
+               && (
+                   type.Namespace.StartsWith(@namespace + ".", StringComparison.Ordinal) && includeSubNamespaces
+                   || type.Namespace.Equals(@namespace, StringComparison.Ordinal)
+               );
+    }
+
+    /// <summary>
+    /// Note: this method ignores generic type parameters.
+    /// </summary>
+    public static bool IsDefinedInType(this Type type, Type parentType, bool includeSubTypes = true)
+    {
+        parentType = parentType.TryGetGenericTypeDefinition();
+        if (includeSubTypes is false)
+            return type.DeclaringType?.TryGetGenericTypeDefinition() == parentType;
+
+        for (Type? currentParent = type.TryGetGenericTypeDefinition(); currentParent != null; currentParent = currentParent.DeclaringType)
+            if (currentParent == parentType)
+                return true;
+
+        return false;
+    }
+    /// <summary>
     /// returns true if the <paramref name="type"/> is a <see cref="Nullable{T}"/> <see cref="char"/>, <see cref="SByte"/>, <see cref="Byte"/>, <see cref="Int16"/>, <see cref="UInt16"/>, <see cref="Int32"/>, <see cref="UInt32"/>, <see cref="Int64"/>, <see cref="UInt64"/>, <see cref="Single"/>, <see cref="Double"/> or <see cref="Decimal"/>,
     /// </summary>
     /// <param name="type"></param>
@@ -59,22 +86,6 @@ public static class TypeHelper
     public static bool IsNullableNumber(this Type type)
         => Nullable.GetUnderlyingType(type)?.IsNumber() is true;
 
-    /// <summary>
-    /// returns a list containing the types the given <paramref name="type"/> is nested in, starting with the root and ending with the give <paramref name="type"/>
-    /// </summary>
-    public static IReadOnlyCollection<Type> GetDeclaringTypeTree(this Type type)
-    {
-        var cur = type;
-        List<Type> res = new();
-        do
-        {
-            res.Add(cur);
-            cur = cur.DeclaringType;
-        } while (cur is not null);
-
-        res.Reverse();
-        return res.ToReadOnlyCollection();
-    }
     /// <summary>
     /// returns a list containing the given <paramref name="type"/> followed by all its base types in inheritance order
     /// </summary>
@@ -318,11 +329,21 @@ public static class TypeHelper
     /// <summary>
     /// if the given <paramref name="type"/> is nested in another <see cref="Type"/>, all nesting parents including <paramref name="type"/> are returned. otherwise an empty array is returned.
     /// </summary>
-    public static IReadOnlyCollection<Type> GetNestingParents(this Type type)
+    public static IReadOnlyCollection<Type> GetDeclaringTypeTree(this Type type)
     {
+        var args = type.GetGenericArguments();
+        type = type.TryGetGenericTypeDefinition();
         var items = new List<Type>();
         for (Type? current = type; current != null; current = current.DeclaringType)
+        {
+            if (current.IsGenericType)
+            {
+                // replace the generic type parameters with the actual type arguments
+                var genericArgs = current.GetGenericArguments();
+                current = current.MakeGenericType(args.Take(genericArgs.Length).ToArray());
+            }
             items.Add(current);
+        }
         items.Reverse();
         return items;
     }
@@ -356,7 +377,7 @@ public static class TypeHelper
 
             var typeParams = type.GetGenericArguments();
 
-            foreach (var currentNestedType in type.GetNestingParents())
+            foreach (var currentNestedType in type.GetDeclaringTypeTree())
             {
                 if (includeNamespace && currentNestedType.DeclaringType is null)
                     result.Append(currentNestedType.Namespace).Append('.');
