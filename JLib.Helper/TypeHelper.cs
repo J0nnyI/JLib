@@ -66,6 +66,11 @@ public static class TypeHelper
     /// <summary>
     /// Note: this method ignores generic type parameters.
     /// </summary>
+    public static bool IsDefinedInType<TParentType>(this Type type, bool includeSubTypes = true)
+        => type.IsDefinedInType(typeof(TParentType), includeSubTypes);
+    /// <summary>
+    /// Note: this method ignores generic type parameters.
+    /// </summary>
     public static bool IsDefinedInType(this Type type, Type parentType, bool includeSubTypes = true)
     {
         parentType = parentType.TryGetGenericTypeDefinition();

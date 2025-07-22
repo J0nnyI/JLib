@@ -37,15 +37,27 @@ public class TypeHelperTests
         });
     }
 
-
     [Fact]
-    public void GetDeclaringTypeTree()
+    public void GetDeclaringTypeTree3()
     {
-        typeof(SubA.SubAa).GetDeclaringTypeTree().Should().ContainInOrder(new[]
+        typeof(SubA<string>.SubAa<int>).GetDeclaringTypeTree().Should().ContainInOrder(new[]
         {
-            typeof(TypeHelperTests), typeof(SubA), typeof(SubA.SubAa)
+            typeof(TypeHelperTests), typeof(SubA<string>), typeof(SubA<string>.SubAa<int>)
         });
     }
+
+    [Fact]
+    public void IsDefinedInType()
+    {
+        typeof(SubA<string>.SubAa<int>).IsDefinedInType<SubA<string>>().Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsDefinedInType2()
+    {
+        typeof(SubA<string>.SubAa<int>).IsDefinedInType<SubA<bool>>().Should().BeTrue();
+    }
+
     [Fact]
     public void DefinedInNamespace()
     {
