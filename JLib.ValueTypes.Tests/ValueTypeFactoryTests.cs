@@ -49,7 +49,7 @@ public class ValueTypeFactoryTests
     [Fact]
     public void ClassC()
     {
-        ((Action)(() => ValueType.Create<NumericString, string>(null).Should()))
+        ((Action)(() => ValueType.Create<NumericString, string>(null!).Should()))
             .Should().Throw<Exception>();
     }
     [Fact]

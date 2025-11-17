@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\JLib.Reflection.Tests.DemoAssembly1A\JLib.Reflection.Tests.DemoAssembly1A.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,10 +1,10 @@
 ﻿{
-  "Description": "3 Types",
+  "Description": "3 Types Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.DemoClassA",
-      "TypePackageTests.DemoClassB",
-      "TypePackageTests.DemoClassC"
+      "DemoTypes.DemoClassA",
+      "DemoTypes.DemoClassB",
+      "DemoTypes.DemoClassC"
     ]
   },
   "Children": []

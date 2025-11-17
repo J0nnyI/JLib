@@ -1,8 +1,8 @@
 ﻿{
-  "Description": "1 Types",
+  "Description": "1 Types Filtered",
   "Types": {
     "JLib.Reflection.Tests": [
-      "TypePackageTests.DemoClassA"
+      "DemoTypes.DemoClassA"
     ]
   },
   "Children": []
