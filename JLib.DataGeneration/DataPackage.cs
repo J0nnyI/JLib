@@ -21,7 +21,7 @@ public record DataPackageType : TypeValueType, IValidatedType
 {
     internal IReadOnlyCollection<PropertyInfo> IdProperties { get; }
 
-    internal const BindingFlags PropertyDiscoveryBindingFlags = BindingFlags.Instance | BindingFlags.Public;
+    private const BindingFlags PropertyDiscoveryBindingFlags = BindingFlags.Instance | BindingFlags.Public;
     /// <summary>
     /// <inheritdoc cref="DataPackageType"/>
     /// </summary>
@@ -69,7 +69,11 @@ public class SkipIdAssignmentAttribute : Attribute { }
 /// </summary>
 public abstract class DataPackage
 {
-    private readonly IServiceProvider _serviceProvider;
+    // ReSharper disable once MemberCanBePrivate.Global
+    /// <summary>
+    ///  The <see cref="IServiceProvider"/> passed ton the constructor of this <see langword="classxc"/>
+    /// </summary>
+    protected IServiceProvider ServiceProvider { get; }
     private readonly DataPackageManager _packageManager;
 
     internal DataPackageValues.IdIdentifier IdentifierOfIdProperty(PropertyInfo prop)
@@ -85,7 +89,7 @@ public abstract class DataPackage
     /// <exception cref="IndexOutOfRangeException"></exception>
     protected DataPackage(IServiceProvider serviceProvider)
     {
-        _serviceProvider = serviceProvider;
+        ServiceProvider = serviceProvider;
         _packageManager = serviceProvider.GetRequiredService<DataPackageManager>();
         switch (_packageManager.InitState)
         {
@@ -112,7 +116,7 @@ public abstract class DataPackage
     /// loads the given <see cref="DataPackage"/>. should only be called inside the <see cref="DataPackage"/> ctor.
     /// </summary>
     protected void IncludeDataPackages(params Type[] dataPackages)
-        => _serviceProvider.GetRequiredServices(dataPackages);
+        => ServiceProvider.GetRequiredServices(dataPackages);
 
     //The following methods have been generated using this code:
     //var sb = new StringBuilder();
@@ -134,7 +138,7 @@ public abstract class DataPackage
     /// </summary>
     public void IncludeDataPackages<TDp1>()
         where TDp1 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1)
         );
     /// <summary>
@@ -143,7 +147,7 @@ public abstract class DataPackage
     public void IncludeDataPackages<TDp1, TDp2>()
         where TDp1 : DataPackage
         where TDp2 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2)
         );
@@ -154,7 +158,7 @@ public abstract class DataPackage
         where TDp1 : DataPackage
         where TDp2 : DataPackage
         where TDp3 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3)
@@ -167,7 +171,7 @@ public abstract class DataPackage
         where TDp2 : DataPackage
         where TDp3 : DataPackage
         where TDp4 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -182,7 +186,7 @@ public abstract class DataPackage
         where TDp3 : DataPackage
         where TDp4 : DataPackage
         where TDp5 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -199,7 +203,7 @@ public abstract class DataPackage
         where TDp4 : DataPackage
         where TDp5 : DataPackage
         where TDp6 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -218,7 +222,7 @@ public abstract class DataPackage
         where TDp5 : DataPackage
         where TDp6 : DataPackage
         where TDp7 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -239,7 +243,7 @@ public abstract class DataPackage
         where TDp6 : DataPackage
         where TDp7 : DataPackage
         where TDp8 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -262,7 +266,7 @@ public abstract class DataPackage
         where TDp7 : DataPackage
         where TDp8 : DataPackage
         where TDp9 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -287,7 +291,7 @@ public abstract class DataPackage
         where TDp8 : DataPackage
         where TDp9 : DataPackage
         where TDp10 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -314,7 +318,7 @@ public abstract class DataPackage
         where TDp9 : DataPackage
         where TDp10 : DataPackage
         where TDp11 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -343,7 +347,7 @@ public abstract class DataPackage
         where TDp10 : DataPackage
         where TDp11 : DataPackage
         where TDp12 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -374,7 +378,7 @@ public abstract class DataPackage
         where TDp11 : DataPackage
         where TDp12 : DataPackage
         where TDp13 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -407,7 +411,7 @@ public abstract class DataPackage
         where TDp12 : DataPackage
         where TDp13 : DataPackage
         where TDp14 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -442,7 +446,7 @@ public abstract class DataPackage
         where TDp13 : DataPackage
         where TDp14 : DataPackage
         where TDp15 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -479,7 +483,7 @@ public abstract class DataPackage
         where TDp14 : DataPackage
         where TDp15 : DataPackage
         where TDp16 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -518,7 +522,7 @@ public abstract class DataPackage
         where TDp15 : DataPackage
         where TDp16 : DataPackage
         where TDp17 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -559,7 +563,7 @@ public abstract class DataPackage
         where TDp16 : DataPackage
         where TDp17 : DataPackage
         where TDp18 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -602,7 +606,7 @@ public abstract class DataPackage
         where TDp17 : DataPackage
         where TDp18 : DataPackage
         where TDp19 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),
@@ -647,7 +651,7 @@ public abstract class DataPackage
         where TDp18 : DataPackage
         where TDp19 : DataPackage
         where TDp20 : DataPackage
-        => _serviceProvider.IncludeDataPackages(
+        => ServiceProvider.IncludeDataPackages(
             typeof(TDp1),
             typeof(TDp2),
             typeof(TDp3),

@@ -33,8 +33,7 @@ public static class DataPackageExtensions
     {
         idRegistryConfiguration ??= new();
         return services.AddSingleton(idRegistryConfiguration)
-            .AddSingleton<IIdRegistry, IdRegistry>(provider =>
-                new(provider.GetRequiredLazyService<IMapper>(), idRegistryConfiguration));
+            .AddSingleton<IIdRegistry>(new IdRegistry(idRegistryConfiguration));
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using JLib.ValueTypes;
+﻿using JLib.ValueTypes;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.DataGeneration.Abstractions;
 
@@ -33,16 +33,11 @@ public interface IIdGenerator
 /// </summary>
 public sealed class IdGenerator : IIdGenerator
 {
-    private readonly IMapper _mapper;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IdGenerator"/> class.
     /// </summary>
     /// <param name="mapper">The <see cref="IMapper"/> instance used for mapping.</param>
-    public IdGenerator(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
+
     /// <summary>
     /// Creates a new <see cref="Guid"/>.
     /// </summary>
@@ -56,5 +51,5 @@ public sealed class IdGenerator : IIdGenerator
     /// <typeparam name="TVt">The type of the <see cref="GuidValueType"/> to create.</typeparam>
     /// <returns>A new <see cref="Guid"/> of type <typeparamref name="TVt"/>.</returns>
     public TVt CreateGuid<TVt>() where TVt : GuidValueType
-        => _mapper.Map<TVt>(CreateGuid());
+        => ValueType.Create<TVt,Guid>(CreateGuid());
 }
