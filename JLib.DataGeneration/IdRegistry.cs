@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using AutoMapper;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
@@ -12,6 +11,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using SaveFileType =
     System.Collections.Generic.Dictionary<string,
         System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>>;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.DataGeneration;
 
@@ -54,7 +54,6 @@ internal class IdRegistry : IIdRegistry, IDisposable
 {
     private static readonly IdIdentifier IncrementIdentifier = new("__registry__", "IdIncrement");
 
-    private readonly Lazy<IMapper> _mapper;
     private readonly string _fileLocation;
     private readonly ConcurrentDictionary<IdIdentifier, object> _dictionary;
     private bool _isDirty;
@@ -64,14 +63,13 @@ internal class IdRegistry : IIdRegistry, IDisposable
     private static IdIdentifier NullValueErrorIdentifier { get; } = new("invalid", "value is null");
     private static IdIdentifier NotFoundErrorIdentifier { get; } = new("invalid", "value not found");
 
-    public IdRegistry(Lazy<IMapper> mapper, IdRegistryConfiguration configuration)
+    public IdRegistry( IdRegistryConfiguration configuration)
     {
         _fileLocation = GetFileName();
         _dictionary = LoadFromFile().ToConcurrentDictionary();
         _idIncrement = _dictionary.GetValueOrDefault(IncrementIdentifier) as int? ?? 0;
         _dictionary.Remove(IncrementIdentifier, out _);
         _config = configuration;
-        _mapper = mapper;
         IdExtensions.Register(this);
     }
 
@@ -179,7 +177,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
         if (idType.IsAssignableTo(typeof(IntValueType)))
         {
             var nativeId = GetIntId(identifier);
-            return _mapper.Value.Map(nativeId, nativeId.GetType(), idType);
+            return ValueType.Create(idType, nativeId);
         }
 
         if (idType == typeof(Guid))
@@ -187,7 +185,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
         if (idType.IsAssignableTo(typeof(GuidValueType)))
         {
             var nativeId = GetGuidId(identifier);
-            return _mapper.Value.Map(nativeId, nativeId.GetType(), idType);
+            return ValueType.Create(idType, nativeId);
         }
 
         if (idType == typeof(string))
@@ -195,7 +193,7 @@ internal class IdRegistry : IIdRegistry, IDisposable
         if (idType.IsAssignableTo(typeof(StringValueType)))
         {
             var nativeId = GetStringId(identifier);
-            return _mapper.Value.Map(nativeId, nativeId.GetType(), idType);
+            return ValueType.Create(idType, nativeId);
         }
 
         throw new ArgumentOutOfRangeException(nameof(idType), "unknown type: " + idType.FullName());

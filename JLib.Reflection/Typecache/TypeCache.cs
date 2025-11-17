@@ -1,9 +1,7 @@
 ﻿using System.Reflection;
-
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.ValueTypes;
-
 using Microsoft.Extensions.Logging;
 
 namespace JLib.Reflection;
@@ -82,6 +80,7 @@ public interface ITypeCache
     /// <returns>The <typeparamref name="TTvt"/> instance of the given <typeparamref name="TType"/></returns>
     public TTvt? TryGet<TTvt, TType>() where TTvt : class, ITypeValueType
         => TryGet<TTvt>(typeof(TType).TryGetGenericTypeDefinition());
+
     /// <returns>All <see cref="TypeValueType"/>s assignable to <typeparamref name="TTvt"/></returns>
     public IEnumerable<TTvt> All<TTvt>() where TTvt : class, ITypeValueType;
 
@@ -147,6 +146,7 @@ public class TypeCache : ITypeCache
     public ITypePackage TypePackage { get; }
 
     #region constructor
+
     /// <summary>
     /// creates an instance of <see cref="TypeCache"/> and initializes all <see cref="TypeValueType"/>s
     /// </summary>
@@ -243,17 +243,18 @@ public class TypeCache : ITypeCache
 
         foreach (var typeValueType in _typeValueTypes.OfType<NavigatingTypeValueType>())
         {
+            using var subExceptions = exceptions.CreateChild(typeValueType.Value.FullName());
             try
             {
                 typeValueType.MaterializeNavigation();
             }
             catch (TargetInvocationException e) when (e.InnerException is not null)
             {
-                exceptions.Add(e.InnerException);
+                subExceptions.Add(e.InnerException);
             }
             catch (Exception e)
             {
-                exceptions.Add(e);
+                subExceptions.Add(e);
             }
         }
 
@@ -321,6 +322,7 @@ public class TypeCache : ITypeCache
                     exceptions.Add(e);
                 }
             }
+
             if (strongType is IPostNavigationInitializedType postInit)
                 postInit.Initialize(this, exceptions);
             if (strongType is IValidatedType validatedType)
@@ -329,6 +331,7 @@ public class TypeCache : ITypeCache
                 exceptions.AddChild(validationContext);
                 validatedType.Validate(this, validationContext);
             }
+
             exceptions.ThrowIfNotEmpty();
             if (strongType is null)
                 throw new();
@@ -345,7 +348,6 @@ public class TypeCache : ITypeCache
     public T Get<T>(Type weakType)
         where T : class, ITypeValueType
     {
-
         var strongType = _typeMappings.GetValueOrDefault(weakType);
 
         // generic types can only be resolved at runtime and therefore must be created when they are requested but not cached yet
@@ -363,7 +365,6 @@ public class TypeCache : ITypeCache
         if (KnownTypeValueTypes.Contains(typeof(T)) is false)
             throw new UnknownTypeValueTypeException<T>(weakType);
         throw new UnknownTypeException<T>(weakType);
-
     }
 
     /// <summary>
