@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace JLib.AutoMapper.Tests;
@@ -17,7 +18,7 @@ public class TypeToDictionaryProfileTest
     public void Test()
     {
 
-        var mapper = new MapperConfiguration(x => x.AddProfile<TypeToDictionaryProfile<Demo>>()).CreateMapper();
+        var mapper = new MapperConfiguration(x => x.AddProfile<TypeToDictionaryProfile<Demo>>(), NullLoggerFactory.Instance).CreateMapper();
         var res = mapper.Map<Dictionary<string, string?>>(new Demo() { });
         res.Should().HaveCount(3)
             .And.Equal(new Dictionary<string, string?>()

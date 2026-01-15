@@ -99,7 +99,7 @@ public sealed class DataDerivationViaGenerics : IDisposable
         }
     }
 
-    #region
+    #region  setup
     /*************************************************************\
     |                           Setup                             |
     \*************************************************************/
@@ -118,6 +118,7 @@ public sealed class DataDerivationViaGenerics : IDisposable
                 TypePackage.GetNested<DataDerivationViaGenerics>())
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
+            .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
             .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Data_Derivations")} });
 

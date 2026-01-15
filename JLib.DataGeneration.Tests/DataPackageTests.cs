@@ -40,6 +40,7 @@ public class DataPackageTests : IDisposable
         var provider = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, logger, typePackage)
             .AddAutoMapper(c => c.AddProfiles(typeCache, logger))
+            .AddLogging(b=>b.AddXunit(toh))
             .AddDataPackages(typeCache, new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } })
             .BuildServiceProvider()
             .DisposeWith(_disposables);
