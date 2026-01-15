@@ -68,6 +68,7 @@ public sealed class DataDerivationViaInheritance : IDisposable
                 TypePackage.GetNested<DataDerivationViaInheritance>())
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
+            .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
             .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Data_Derivations")} });
 

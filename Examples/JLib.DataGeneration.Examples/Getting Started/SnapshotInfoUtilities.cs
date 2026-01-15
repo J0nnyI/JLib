@@ -66,6 +66,7 @@ public sealed class SnapshotInfoUtilities : IDisposable
         var loggerFactory = new LoggerFactory().AddXunit(testOutputHelper);
 
         var serviceCollection = new ServiceCollection()
+            .AddLogging(b=>b.AddXunit(testOutputHelper))
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
                 JLibDataGenerationTp.Instance,
                 TypePackage.GetNested<SnapshotInfoUtilities>())

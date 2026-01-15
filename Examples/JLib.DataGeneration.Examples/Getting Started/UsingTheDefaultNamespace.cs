@@ -52,6 +52,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
                 JLibDataGenerationTp.Instance,
                 TypePackage.GetNested<UsingTheDefaultNamespace>())
+            .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
