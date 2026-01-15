@@ -27,9 +27,4 @@ public interface ITypePackage
     /// </summary>
     public string DescriptionTemplate { get; }
 
-    /// <summary>
-    /// returns a type package which is a combination of the given packages
-    /// </summary>
-    [Obsolete]
-    public ITypePackage Combine(params ITypePackage[] packages);
 }
