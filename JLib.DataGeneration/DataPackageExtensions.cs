@@ -57,7 +57,7 @@ public static class DataPackageExtensions
 
         if (typeCache.KnownTypeValueTypes.Contains(typeof(DataPackageType)) is false)
             throw new InvalidSetupException(
-                $"The TypeCache is not aware of the {typeof(DataPackageType).FullName(true)}. To solve this issue, include the {typeof(JLibDataGenerationTp)} Type package.");
+                $"The TypeCache is not aware of the {typeof(DataPackageType).FullName(true)}. To solve this issue, include the {nameof(DataGeneration)} Assembly in the {nameof(ITypePackage)}.");
 
 
         

@@ -39,7 +39,10 @@ public class DataPackageGuardrailTests
             var logger = LoggerFactory.Create(x => x.AddXunit(_toh));
             var services = new ServiceCollection()
                 .AddTypeCache(out var typeCache, exceptions, logger,
-                    additionalTypes.Append(JLibDataGenerationTp.Instance).ToArray())
+                    new TypePackageBuilder(logger)
+                        .Add(typeof(DataPackage).Assembly)
+                        .Build()
+                        .MergeWith(null, additionalTypes))
                 .AddAutoMapper(x => x.AddProfiles(typeCache, logger))
                 .AddLogging(x => x.AddXunit(_toh))
                 .AddDataPackages(typeCache, new() { NamespaceAliases = new[] { new NamespaceAlias("JLib.DataGeneration.Tests") } });
@@ -56,6 +59,6 @@ public class DataPackageGuardrailTests
 
         RunTest<AggregateException>(
             p=>p.IncludeDataPackages<DuplicatePropertyDp>(),
-            TypePackage.Get(typeof(DuplicatePropertyDp)));
+            new TypePackageBuilder().Add(typeof(DuplicatePropertyDp)).Build());
     }
 }

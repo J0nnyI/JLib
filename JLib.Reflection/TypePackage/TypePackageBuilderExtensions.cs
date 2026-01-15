@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using JLib.Exceptions;
+using JLib.Helper;
 
 namespace JLib.Reflection;
 
@@ -9,13 +11,28 @@ namespace JLib.Reflection;
 public static class TypePackageBuilderExtensions
 {
     /// <summary>
-    /// adds all <see cref="Type.GetNestedTypes()"/> of the given <paramref name="containerTypes"/> but not the <paramref name="containerTypes"/> themselves to the <see cref="ITypePackage"/>.
+    /// adds all recursive <see cref="Type.GetNestedTypes()"/> of the given <paramref name="containerTypes"/> but not the <paramref name="containerTypes"/> themselves to the <see cref="ITypePackage"/>.
     /// </summary>
     /// <param name="builder">the <see cref="TypePackageBuilder"/> to be used</param>
     /// <param name="containerTypes">the <see cref="Type"/>s, the <see cref="Type.GetNestedTypes()"/> of which will be added to the <see cref="ITypePackage"/></param>
     /// <returns>the <paramref name="builder"/></returns>
     public static TypePackageBuilder AddNestedTypes(this TypePackageBuilder builder, params Type[] containerTypes)
-        => builder.Add(containerTypes.SelectMany(t => t.GetNestedTypes()).ToArray());
+    {
+        int maxIterations = 100;// this number is arbitrary and should be high enough to cover most use cases
+        var types = containerTypes.SelectMany(t => t.GetNestedTypes()).ToArray();
+         builder.Add(types);
+        for(int i=0;i<maxIterations;i++) // basically while(types.Length > 0) but with an emergency break
+        {
+            types = types.SelectMany(t => t.GetNestedTypes()).ToArray();
+            if (types.None())
+                return builder;
+            builder.Add(types);
+        }
+
+        throw new InvalidSetupException(
+            $"could not add nested types to package. the type is either recursive or has too many ( > {maxIterations}) levels of nesting."
+        );
+    }
 
     /// <summary>
     /// adds all <see cref="Type.GetNestedTypes()"/> of the given <typeparamref name="TContainerType"/> but not the <typeparamref name="TContainerType"/> themselves to the <see cref="ITypePackage"/>.
@@ -23,7 +40,7 @@ public static class TypePackageBuilderExtensions
     /// <param name="builder">the <see cref="TypePackageBuilder"/> to be used</param>
     /// <typeparam name="TContainerType">the <see cref="Type"/>s, the <see cref="Type.GetNestedTypes()"/> of which will be added to the <see cref="ITypePackage"/></typeparam> <returns>the <paramref name="builder"/></returns>
     public static TypePackageBuilder AddNestedTypes<TContainerType>(this TypePackageBuilder builder)
-        => builder.Add(typeof(TContainerType).GetNestedTypes());
+        => builder.AddNestedTypes(typeof(TContainerType));
 
 
     /// <summary>

@@ -21,7 +21,7 @@ public class TypeCacheGenericsTest : IDisposable
     {
         var loggerFactory = new LoggerFactory().AddXunit(testOutputHelper);
 
-        var package = TypePackage.GetNested(typeof(Common));
+        var package = new TypePackageBuilder().AddNestedTypes(typeof(Common)).Build();
         var exceptions = new ExceptionBuilder(nameof(GetGenericTypeDefinition));
         _cache = new(package, exceptions, loggerFactory);
         _disposables.Add(loggerFactory);

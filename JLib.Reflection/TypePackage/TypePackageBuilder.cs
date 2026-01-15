@@ -227,6 +227,15 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _includedTypes.AddRange(types.WhereNotNull());
         return this;
     }
+    /// <summary>
+    /// Adds the given <paramref name="types"/> to the <see cref="ITypePackage"/>
+    /// </summary>
+    /// <returns><see langword="this"/> instance</returns>
+    public TypePackageBuilder AddAssemblyOf<T>(AssemblyLoadMode loadMode = AssemblyLoadMode.Recursive)
+    {
+        Add(loadMode,typeof(T).Assembly);
+        return this;
+    }
 
     #endregion
     #region blacklist
@@ -297,7 +306,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
 
     #region type package classes
 
-    private sealed class TypePackageCollection(string name, IReadOnlyCollection<ITypePackage> containedTypePackages)
+    internal sealed class TypePackageCollection(string name, IReadOnlyCollection<ITypePackage> containedTypePackages)
         : ITypePackage
     {
 
@@ -305,10 +314,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         ImmutableHashSet<Type> ITypePackage.GetContent() => _content.Value;
         public IEnumerable<ITypePackage> Children => containedTypePackages;
         IEnumerable<Type> ITypePackage.Types => [];
-        public string DescriptionTemplate => name;
-        [Obsolete]
-        ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
-            => TypePackage.Get(packages.Prepend(this));
+        public string Name => name;
     }
 
     /// <summary>
@@ -322,11 +328,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         public ImmutableHashSet<Type> GetContent() => content;
         IEnumerable<ITypePackage> ITypePackage.Children => [];
         IEnumerable<Type> ITypePackage.Types => content;
-        public string DescriptionTemplate { get; } = name;
+        public string Name { get; } = name;
 
-        [Obsolete]
-        ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
-            => TypePackage.Get(packages.Prepend(this));
     }
     #endregion
 }

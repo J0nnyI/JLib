@@ -64,8 +64,8 @@ public sealed class DataDerivationViaInheritance : IDisposable
 
         var serviceCollection = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<DataDerivationViaInheritance>())
+                new TypePackageBuilder().AddNestedTypes<DataDerivationViaInheritance>().AddAssemblyOf<DataPackage>().Build(
+                ))
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddLogging(t=>t.AddXunit(testOutputHelper))

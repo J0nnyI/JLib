@@ -31,7 +31,7 @@ public class AttributeServicesTest : IDisposable
     private IServiceProvider CreateSetup<T>(out IExceptionProvider exceptionProvider, out IServiceCollection services)
     {
         var exceptions = new ExceptionBuilder("test");
-        var typePackage = TypePackage.GetNested<T>();
+        var typePackage = new TypePackageBuilder().AddNestedTypes<T>().Build();
         _output.WriteLine(typePackage.ToJson());
         services = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, _loggerFactory, typePackage)

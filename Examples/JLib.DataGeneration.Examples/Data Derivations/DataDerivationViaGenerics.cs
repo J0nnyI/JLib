@@ -114,8 +114,8 @@ public sealed class DataDerivationViaGenerics : IDisposable
 
         var serviceCollection = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<DataDerivationViaGenerics>())
+                new TypePackageBuilder().AddNestedTypes<DataDerivationViaGenerics>().AddAssemblyOf<DataPackage>().Build()
+                )
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddLogging(t=>t.AddXunit(testOutputHelper))

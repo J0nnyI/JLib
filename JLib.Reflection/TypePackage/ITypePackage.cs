@@ -25,6 +25,6 @@ public interface ITypePackage
     /// <summary>
     /// a short description of the contents of the type package.<br/>
     /// </summary>
-    public string DescriptionTemplate { get; }
+    public string Name { get; }
 
 }

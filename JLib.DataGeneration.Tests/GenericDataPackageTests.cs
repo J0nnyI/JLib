@@ -53,7 +53,8 @@ public class GenericDataPackageTests : DataPackageTestBase
 {
 
 
-    public GenericDataPackageTests(ITestOutputHelper toh) : base(toh, TypePackage.GetNested<ValidDataPackages>())
+    public GenericDataPackageTests(ITestOutputHelper toh)
+        : base(toh, new TypePackageBuilder().AddNestedTypes<ValidDataPackages>().Build())
     {
     }
 
