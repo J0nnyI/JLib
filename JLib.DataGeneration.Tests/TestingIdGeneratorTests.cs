@@ -8,8 +8,9 @@ using JLib.DependencyInjection;
 using JLib.Helper;
 
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace JLib.DataGeneration.Tests;
 
@@ -50,9 +51,10 @@ public abstract class TestingIdGeneratorTests : IDisposable
     private readonly IServiceProvider _provider;
 
 
-    protected TestingIdGeneratorTests()
+    protected TestingIdGeneratorTests(ITestOutputHelper toh)
     {
         var provider = new ServiceCollection()
+            .AddLogging(x=>x.AddXunit(toh))
             .AddAutoMapper(cfg => { })
             .AddTestingIdGenerator()
             .AddIdRegistry(new() { NamespaceAliases = [new("JLib.DataGeneration.Tests")] })
@@ -67,6 +69,8 @@ public abstract class TestingIdGeneratorTests : IDisposable
 
     public class CreateGuidTests : TestingIdGeneratorTests
     {
+        public CreateGuidTests(ITestOutputHelper toh) : base(toh) { }
+
         [Fact]
         public void CreateGuid_AnonymousMethod()
         {
@@ -136,6 +140,7 @@ public abstract class TestingIdGeneratorTests : IDisposable
 
     public class GetIdInfoTests : TestingIdGeneratorTests
     {
+        public GetIdInfoTests(ITestOutputHelper toh) : base(toh) { }
 
         [Fact]
         public void ReverseLookupForStartTimeIntIdAsString()

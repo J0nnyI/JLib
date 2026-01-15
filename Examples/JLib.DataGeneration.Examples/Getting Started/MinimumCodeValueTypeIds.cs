@@ -49,6 +49,7 @@ public sealed class MinimumCodeValueTypeIds : IDisposable
                 TypePackage.GetNested<MinimumCodeValueTypeIds>())
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
+            .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
             .AddDataPackages(typeCache);
 

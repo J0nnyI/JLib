@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
-        <PackageReference Include="Snapshooter.Xunit" Version="1.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Snapshooter.Xunit" />
     </ItemGroup>
 
     <ItemGroup>
@@ -10,3 +10,4 @@
     </ItemGroup>
 
 </Project>
+
