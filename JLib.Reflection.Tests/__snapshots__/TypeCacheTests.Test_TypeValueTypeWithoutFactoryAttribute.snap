@@ -5,15 +5,16 @@
       "InvalidTypeValueType": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
-          "NullableContextAttribute",
-          "UnmappedAttribute"
+          "NullableContextAttribute"
         ],
         "ImplementedInterfaces": [
           "IEquatable<TypeCacheTests.TypeValueTypeWithoutFactoryAttribute.InvalidTypeValueType>",
           "IEquatable<TypeValueType>",
           "IEquatable<ValueType<Type>>",
-          "ITypeValueType"
+          "ITypeValueType",
+          "IValueType"
         ]
       }
     }
@@ -37,7 +38,7 @@
             ],
             "InnerExceptions": [
               {
-                "Type": "JLib.Reflection.Exceptions.InvalidTypeException",
+                "Type": "JLib.Reflection.InvalidTypeException",
                 "MessageLines": [
                   "JLib.Reflection.Tests.TypeCacheTests.TypeValueTypeWithoutFactoryAttribute.InvalidTypeValueType"
                 ],

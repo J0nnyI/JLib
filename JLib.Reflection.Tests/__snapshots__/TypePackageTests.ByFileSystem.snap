@@ -1,13 +1,67 @@
-﻿┐2 Assemblies
-├ Types:0
-├ Children:
-  ┐JLib.Reflection.Tests.DemoAssembly1
-  ├ Types:3
-  │   TestAssemblyDemoClassA
-  │   TestAssemblyDemoClassB
-  │   TestAssemblyDemoClassC
-  ┐JLib.Reflection.Tests.DemoAssembly2
-  ├ Types:3
-  │   TestAssembly2DemoClassA
-  │   TestAssembly2DemoClassB
-  │   TestAssembly2DemoClassC
+﻿{
+  "Description": "5 Assemblies Filtered",
+  "Types": {},
+  "Children": [
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssembly1 Filtered",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly1": [
+          "TestAssemblyDemoClassA",
+          "TestAssemblyDemoClassB",
+          "TestAssemblyDemoClassC"
+        ]
+      },
+      "Children": [
+        {
+          "Description": "JLib.Reflection Filtered",
+          "Types": {},
+          "Children": []
+        }
+      ]
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A Filtered",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly1A": [
+          "TestAssembly1ADemoClassA",
+          "TestAssembly1ADemoClassB",
+          "TestAssembly1ADemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssembly1A1 Filtered",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly1A1": [
+          "TestAssembly1A1DemoClassA",
+          "TestAssembly1A1DemoClassB",
+          "TestAssembly1A1DemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssembly2 Filtered",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssembly2": [
+          "TestAssembly2DemoClassA",
+          "TestAssembly2DemoClassB",
+          "TestAssembly2DemoClassC"
+        ]
+      },
+      "Children": []
+    },
+    {
+      "Description": "JLib.Reflection.Tests.DemoAssemblyA Filtered",
+      "Types": {
+        "JLib.Reflection.Tests.DemoAssemblyA": [
+          "TestAssemblyADemoClassA",
+          "TestAssemblyADemoClassB",
+          "TestAssemblyADemoClassC"
+        ]
+      },
+      "Children": []
+    }
+  ]
+}

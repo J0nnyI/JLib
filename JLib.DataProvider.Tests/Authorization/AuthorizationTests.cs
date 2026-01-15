@@ -5,6 +5,7 @@ using JLib.DataProvider.Authorization;
 using JLib.DependencyInjection;
 using JLib.Exceptions;
 using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
 using JLib.ValueTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,14 +14,90 @@ using Xunit.Abstractions;
 
 namespace JLib.DataProvider.Tests.Authorization;
 
-public class AuthorizationTests
+public abstract class AuthorizationTestsBaseTypes
+{
+
+    #region test classes
+    public class TestDataObject : ICommandEntity
+    {
+        public Guid Id { get; init; }
+        public bool IsAuthorized { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    public record TestDataObjectId(Guid Value) : GuidValueType(Value)
+    {
+        public static implicit operator TestDataObjectId(Guid id) => new(id);
+        public static implicit operator Guid(TestDataObjectId id) => id.Value;
+    }
+    public class TestObjectDataPackage : DataPackage
+    {
+        public TestDataObjectId FirstAuthorizedId { get; init; } = null!;
+        public TestDataObjectId SecondAuthorizedId { get; init; } = null!;
+        public TestDataObjectId ThirdAuthorizedId { get; init; } = null!;
+        public TestDataObjectId FirstUnauthorizedId { get; init; } = null!;
+        public TestDataObjectId SecondUnAuthorizedId { get; init; } = null!;
+        public TestDataObjectId ThirdUnAuthorizedId { get; init; } = null!;
+        public TestObjectDataPackage(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            serviceProvider.GetRequiredServices(out IDataProviderRw<TestDataObject> dataProvider);
+            dataProvider.Add(new TestDataObject[]
+            {
+                new()
+                {
+                    Id= FirstAuthorizedId,
+                    IsAuthorized = true,
+                    Name = this.GetInfoText(x => x.FirstAuthorizedId)
+                },
+                new()
+                {
+                    Id= SecondAuthorizedId,
+                    IsAuthorized = true,
+                    Name = this.GetInfoText(x => x.SecondAuthorizedId)
+                },
+                new()
+                {
+                    Id= ThirdAuthorizedId,
+                    IsAuthorized = true,
+                    Name = this.GetInfoText(x => x.ThirdAuthorizedId)
+                },
+                new()
+                {
+                    Id= FirstUnauthorizedId,
+                    IsAuthorized = false,
+                    Name = this.GetInfoText(x => x.FirstUnauthorizedId)
+                },
+                new()
+                {
+                    Id= SecondUnAuthorizedId,
+                    IsAuthorized = false,
+                    Name = this.GetInfoText(x => x.SecondUnAuthorizedId)
+                },
+                new()
+                {
+                    Id= ThirdUnAuthorizedId,
+                    IsAuthorized = false,
+                    Name = this.GetInfoText(x => x.ThirdUnAuthorizedId)
+                },
+            });
+        }
+    }
+
+    public class TestAuthorizationCondition
+    {
+        public bool AuthorizationEnabled;
+    }
+    #endregion
+}
+public abstract class AuthorizationTestsBase<TProfile> : AuthorizationTestsBaseTypes
+    where TProfile : AuthorizationProfile
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IDataProviderRw<TestDataObject> _dataProvider;
     private readonly TestAuthorizationCondition _authEnabler;
     private readonly TestObjectDataPackage _dataPackage;
 
-    public AuthorizationTests(ITestOutputHelper testOutputHelper)
+    protected AuthorizationTestsBase(ITestOutputHelper testOutputHelper)
     {
 
         using var loggerFactory = new LoggerFactory().AddXunit(testOutputHelper);
@@ -33,8 +110,9 @@ public class AuthorizationTests
                 JLibDataProviderTp.Instance,
                 JLibDataGenerationTp.Instance,
                 JLibCqrsTp.Instance,
-                TypePackage.GetNested<AuthorizationTests>()
-                )
+                TypePackage.GetNested<AuthorizationTestsBaseTypes>(),
+                TypePackage.GetNested(GetType())
+                    )
             .AddSingleton<TestAuthorizationCondition>()
             .AddDataPackages(typeCache)
             .AddScopeProvider()
@@ -50,7 +128,7 @@ public class AuthorizationTests
         _authEnabler.AuthorizationEnabled = true;
         _dataPackage = _serviceProvider.GetRequiredService<TestObjectDataPackage>();
     }
-
+    #region tests
     [Fact]
     public void SetupWorks()
     {
@@ -83,7 +161,8 @@ public class AuthorizationTests
                 .Should()
                 .Be(_dataPackage.FirstUnauthorizedId);
         };
-        f.Should().Throw<InvalidOperationException>();
+        f.Should().Throw<DataProviderException.RuntimeException.DataObjectNotFoundException<TestDataObject>>()
+            .Which.Id.Should().Be(_dataPackage.FirstUnauthorizedId);
     }
 
     [Fact]
@@ -110,75 +189,13 @@ public class AuthorizationTests
         var id = _dataPackage.FirstAuthorizedId.Value;
         _dataProvider.Contains(id).Should().BeTrue();
     }
-    #region test classes
-    public class TestDataObject : ICommandEntity
-    {
-        public Guid Id { get; init; }
-        public bool IsAuthorized { get; set; }
-        public string Name { get; set; } = "";
-    }
+    #endregion
+}
 
-    public record TestDataObjectId(Guid Value) : GuidValueType(Value)
+public class AuthorizationTests : AuthorizationTestsBase<AuthorizationTests.TestAuthProfile>
+{
+    public AuthorizationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public static implicit operator TestDataObjectId(Guid id) => new(id);
-        public static implicit operator Guid(TestDataObjectId id) => id.Value;
-    }
-    public class TestObjectDataPackage : DataPackage
-    {
-        public TestDataObjectId FirstAuthorizedId { get; init; } = null!;
-        public TestDataObjectId SecondAuthorizedId { get; init; } = null!;
-        public TestDataObjectId ThirdAuthorizedId { get; init; } = null!;
-        public TestDataObjectId FirstUnauthorizedId { get; init; } = null!;
-        public TestDataObjectId SecondUnAuthorizedId { get; init; } = null!;
-        public TestDataObjectId ThirdUnAuthorizedId { get; init; } = null!;
-        public TestObjectDataPackage(IDataPackageManager packageManager, IDataProviderRw<TestDataObject> dataProvider) : base(packageManager)
-        {
-
-            dataProvider.Add(new TestDataObject[]
-            {
-                new()
-                {
-                    Id= FirstAuthorizedId,
-                    IsAuthorized = true,
-                    Name = GetInfoText(nameof(FirstAuthorizedId))
-                },
-                new()
-                {
-                    Id= SecondAuthorizedId,
-                    IsAuthorized = true,
-                    Name = GetInfoText(nameof(SecondAuthorizedId))
-                },
-                new()
-                {
-                    Id= ThirdAuthorizedId,
-                    IsAuthorized = true,
-                    Name = GetInfoText(nameof(ThirdAuthorizedId))
-                },
-                new()
-                {
-                    Id= FirstUnauthorizedId,
-                    IsAuthorized = false,
-                    Name = GetInfoText(nameof(FirstUnauthorizedId))
-                },
-                new()
-                {
-                    Id= SecondUnAuthorizedId,
-                    IsAuthorized = false,
-                    Name = GetInfoText(nameof(SecondUnAuthorizedId))
-                },
-                new()
-                {
-                    Id= ThirdUnAuthorizedId,
-                    IsAuthorized = false,
-                    Name = GetInfoText(nameof(ThirdUnAuthorizedId))
-                },
-            });
-        }
-    }
-
-    public class TestAuthorizationCondition
-    {
-        public bool AuthorizationEnabled;
     }
     public class TestAuthProfile : AuthorizationProfile
     {
@@ -189,5 +206,19 @@ public class AuthorizationTests
                 (srv, e) => !srv.AuthorizationEnabled || e.IsAuthorized);
         }
     }
-    #endregion
+}
+public class OtherAuthorizationTests : AuthorizationTestsBase<AuthorizationTests.TestAuthProfile>
+{
+    public OtherAuthorizationTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
+    {
+    }
+    public class TestAuthProfile : AuthorizationProfile
+    {
+        public TestAuthProfile(ITypeCache typeCache) : base(typeCache)
+        {
+            AddGenericAuthorization<TestDataObject>(
+                (srv, e) => !srv.GetRequiredService<TestAuthorizationCondition>().AuthorizationEnabled || e.IsAuthorized,
+                typeof(TestDataObject));
+        }
+    }
 }

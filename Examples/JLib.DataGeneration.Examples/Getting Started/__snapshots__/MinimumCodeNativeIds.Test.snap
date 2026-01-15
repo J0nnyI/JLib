@@ -1,8 +1,8 @@
 ﻿{
-  "CustomerId { Value = 8fc4d93a-aa6c-4fb1-9550-017d64c7dbd9 }": {
+  "CustomerId { Value = 9bf1f13d-73cd-484e-b01a-0e2489dac5af }": {
     "Id": {
-      "Value": "8fc4d93a-aa6c-4fb1-9550-017d64c7dbd9"
+      "Value": "9bf1f13d-73cd-484e-b01a-0e2489dac5af"
     },
-    "UserName": "JLib.DataGeneration.Examples.Getting_Started.MinimumCodeNativeIds.CustomerDp.CustomerId"
+    "UserName": "[JLib.DataGeneration.Examples.Getting_Started.MinimumCodeNativeIds.CustomerDp].[CustomerId]"
   }
 }

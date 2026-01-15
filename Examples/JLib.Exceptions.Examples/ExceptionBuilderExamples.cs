@@ -106,3 +106,15 @@ public class ExceptionBuilderExamples
         exception.Should().BeNull();
     }
 }
+
+
+public class MyCustomException : Exception
+{
+    public int InvalidValue { get; }
+
+    public MyCustomException(int invalidValue) : base($"value {invalidValue} is invalid")
+    {
+        InvalidValue = invalidValue;
+        Data[nameof(InvalidValue)] = invalidValue;
+    }
+}

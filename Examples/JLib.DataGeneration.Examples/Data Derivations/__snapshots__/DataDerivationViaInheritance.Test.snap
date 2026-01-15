@@ -1,11 +1,11 @@
 ﻿[
   {
     "Id": {
-      "IdGroupName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaInheritance.CustomerDp",
+      "IdGroupName": "~.DataDerivationViaInheritance.CustomerDp",
       "IdName": "CustomerId",
-      "Value": "580bdb08-cce0-405b-85f5-ed58d48f0399",
+      "Value": null,
       "IdType": "CustomerId"
     },
-    "UserName": "JLib.DataGeneration.Examples.Data_Derivations.DataDerivationViaInheritance.CustomerDp.CustomerId"
+    "UserName": "[~.DataDerivationViaInheritance.CustomerDp].[CustomerId]"
   }
 ]

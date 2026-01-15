@@ -1,8 +1,14 @@
-﻿┐nested types of TypePackageTests.NestingDemoClass, TypePackageTests.NestingDemoClass2
-├ Types:6
-│   TypePackageTests.NestingDemoClass.NestedDemoClassA
-│   TypePackageTests.NestingDemoClass.NestedDemoClassB
-│   TypePackageTests.NestingDemoClass.NestedDemoClassC
-│   TypePackageTests.NestingDemoClass2.NestedDemoClass2A
-│   TypePackageTests.NestingDemoClass2.NestedDemoClass2B
-│   TypePackageTests.NestingDemoClass2.NestedDemoClass2C
+﻿{
+  "Description": "nested types of DemoTypes.NestingDemoClass, DemoTypes.NestingDemoClass2 Filtered",
+  "Types": {
+    "JLib.Reflection.Tests": [
+      "DemoTypes.NestingDemoClass.NestedDemoClassA",
+      "DemoTypes.NestingDemoClass.NestedDemoClassB",
+      "DemoTypes.NestingDemoClass.NestedDemoClassC",
+      "DemoTypes.NestingDemoClass2.NestedDemoClass2A",
+      "DemoTypes.NestingDemoClass2.NestedDemoClass2B",
+      "DemoTypes.NestingDemoClass2.NestedDemoClass2C"
+    ]
+  },
+  "Children": []
+}

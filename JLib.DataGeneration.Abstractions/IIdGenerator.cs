@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
-using JLib.ValueTypes;
+﻿using JLib.ValueTypes;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.DataGeneration.Abstractions;
 
 /// <summary>
-/// Represents an interface for generating unique identifiers.
+/// Represents an interface for generating <see cref="Guid"/>s.
+/// <remarks><br/>
+/// Use <see cref="IdGeneratorServiceCollectionExtensions.AddIdGenerator"/> to provide ID's in a testing environment<br/>
+/// Use `DataPackageExtensions.AddTestingIdGenerator` of the `JLib.DataGeneration` package instead while testing.<br/>
+/// </remarks>
 /// </summary>
 public interface IIdGenerator
 {
@@ -30,20 +28,16 @@ public interface IIdGenerator
 }
 
 /// <summary>
-/// Represents an implementation of the <see cref="IIdGenerator"/> interface.
+/// Runtime implementation of the <see cref="IIdGenerator"/> interface.<br/>
+/// Requires <see cref="IMapper"/>
 /// </summary>
 public sealed class IdGenerator : IIdGenerator
 {
-    private readonly IMapper _mapper;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IdGenerator"/> class.
     /// </summary>
     /// <param name="mapper">The <see cref="IMapper"/> instance used for mapping.</param>
-    public IdGenerator(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
+
     /// <summary>
     /// Creates a new <see cref="Guid"/>.
     /// </summary>
@@ -57,5 +51,5 @@ public sealed class IdGenerator : IIdGenerator
     /// <typeparam name="TVt">The type of the <see cref="GuidValueType"/> to create.</typeparam>
     /// <returns>A new <see cref="Guid"/> of type <typeparamref name="TVt"/>.</returns>
     public TVt CreateGuid<TVt>() where TVt : GuidValueType
-        => _mapper.Map<TVt>(CreateGuid());
+        => ValueType.Create<TVt,Guid>(CreateGuid());
 }

@@ -1,7 +1,12 @@
-﻿using JLib.DataGeneration.Abstractions;
+﻿using System.Linq.Expressions;
+using AutoMapper;
+using JLib.DataGeneration.Abstractions;
 using JLib.DependencyInjection;
+using JLib.Exceptions;
+using JLib.Helper;
 using JLib.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace JLib.DataGeneration;
 
@@ -11,33 +16,24 @@ namespace JLib.DataGeneration;
 public static class DataPackageExtensions
 {
     /// <summary>
+    /// serializes the <see cref="DataPackageValues.IdIdentifier"/> for the given <paramref name="propertySelector"/> and returns it as string, to be uses as human optimized identification in a generated entity
+    /// </summary>
+    public static string GetInfoText<TDataPackage>(this TDataPackage dataPackage,
+        Expression<Func<TDataPackage, object>> propertySelector)
+        where TDataPackage : DataPackage
+        => dataPackage.IdentifierOfIdProperty(propertySelector.GetPropertyInfo()).ToString();
+
+    /// <summary>
     /// Adds the ID registry to the service collection. Should be omitted when calling <see cref="AddDataPackages"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="defaultNamespace">The default namespace for ID group names. It will be removed from all <see cref="DataPackageValues.IdIdentifier"/>s</param>
+    /// <param name="idRegistryConfiguration">The configuration which will be used for the <see cref="IIdRegistry"/></param>
     /// <returns>The modified service collection.</returns>
-    public static IServiceCollection AddIdRegistry(this IServiceCollection services, string? defaultNamespace = null)
+    public static IServiceCollection AddIdRegistry(this IServiceCollection services, IdRegistryConfiguration? idRegistryConfiguration)
     {
-        return services.AddSingleton<IIdRegistry, IdRegistry>(provider =>
-        {
-            var replaceNamespace = defaultNamespace is null 
-                ? null 
-                : defaultNamespace.EndsWith(".")
-                    ? defaultNamespace
-                    : defaultNamespace + ".";
-
-            return new(provider, PostProcessor);
-
-            DataPackageValues.IdIdentifier PostProcessor(DataPackageValues.IdIdentifier id)
-            {
-                if (replaceNamespace is null)
-                    return id;
-                return new(
-                    new(id.IdGroupName.Value.Replace(replaceNamespace, "")),
-                    new(id.IdName.Value.Replace(replaceNamespace, ""))
-                );
-            }
-        });
+        idRegistryConfiguration ??= new();
+        return services.AddSingleton(idRegistryConfiguration)
+            .AddSingleton<IIdRegistry>(new IdRegistry(idRegistryConfiguration));
     }
 
     /// <summary>
@@ -45,7 +41,7 @@ public static class DataPackageExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The modified service collection.</returns>
-    public static IServiceCollection AddTestingIdGenerator(this IServiceCollection services) 
+    public static IServiceCollection AddTestingIdGenerator(this IServiceCollection services)
         => services.AddSingleton<TestingIdGenerator>()
             .AddSingletonAlias<IIdGenerator, TestingIdGenerator>();
 
@@ -56,14 +52,22 @@ public static class DataPackageExtensions
     /// <param name="typeCache">The type cache.</param>
     /// <param name="configuration">The data package configuration.</param>
     /// <returns>The modified service collection.</returns>
-    public static IServiceCollection AddDataPackages(this IServiceCollection services, ITypeCache typeCache, DataPackageConfiguration? configuration = null)
+    public static IServiceCollection AddDataPackages(this IServiceCollection services, ITypeCache typeCache, IdRegistryConfiguration? configuration = null)
     {
-        services.AddIdRegistry(configuration?.DefaultNamespace)
+
+        if (typeCache.KnownTypeValueTypes.Contains(typeof(DataPackageType)) is false)
+            throw new InvalidSetupException(
+                $"The TypeCache is not aware of the {typeof(DataPackageType).FullName(true)}. To solve this issue, include the {typeof(JLibDataGenerationTp)} Type package.");
+
+
+        
+
+        services.AddIdRegistry(configuration)
             .AddTestingIdGenerator();
 
-        services.AddSingleton(configuration ?? new DataPackageConfiguration());
+        services.TryAddSingleton(configuration ?? new IdRegistryConfiguration());
 
-        services.AddSingleton<IDataPackageManager, DataPackageManager>();
+        services.AddSingleton<DataPackageManager>();
 
         foreach (var package in typeCache.All<DataPackageType>())
             services.AddSingleton(package.Value);
@@ -91,7 +95,7 @@ public static class DataPackageExtensions
     /// <returns>The modified service provider.</returns>
     public static IServiceProvider IncludeDataPackages(this IServiceProvider provider, params Type[] packages)
     {
-        provider.GetRequiredService<IDataPackageManager>().IncludeDataPackages(packages);
+        provider.GetRequiredService<DataPackageManager>().IncludeDataPackages(packages);
         return provider;
     }
 

@@ -1,12 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.*" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JLib.AutoMapper\JLib.AutoMapper.csproj" />
+    <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
     <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
   </ItemGroup>
 
 </Project>
+

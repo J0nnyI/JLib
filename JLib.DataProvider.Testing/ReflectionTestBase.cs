@@ -1,10 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
 using FluentAssertions;
 using JLib.Cqrs;
-using JLib.DependencyInjection;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
 using JLib.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,7 +18,9 @@ public interface ITestEntity : ICommandEntity
 
 }
 
-
+/// <summary>
+/// tests data by creating a comparison snapshot containing the data of all data providers
+/// </summary>
 public abstract class ReflectionTestBase
 {
     private readonly ITestOutputHelper _testOutput;
@@ -70,6 +72,9 @@ public abstract class ReflectionTestBase
         AddServices(services, cache, _exceptions.CreateChild(nameof(AddServices)));
         serviceFactory(services, cache, _loggerFactory, _exceptions.CreateChild("Service Factory"));
 
+        if (expectException is false && _exceptions.HasErrors())
+            _exceptions.GetException()?.ToHumanOptimizedJsonObject().Should().BeNull();
+
         object serviceValidator;
         try
         {
@@ -79,7 +84,7 @@ public abstract class ReflectionTestBase
         {
             serviceValidator = e.PrepareSnapshot() as object ?? "evaluation failed";
         }
-
+        
         var maxDescriptionLength = expectedBehavior.Max(x => x.Length);
         new Dictionary<string, object?>
         {

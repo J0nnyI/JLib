@@ -1,7 +1,5 @@
-﻿using System.Reflection;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper;
 using JLib.Exceptions;
 using JLib.Helper;
 
@@ -10,13 +8,7 @@ internal class ValueTypeDictionaryJsonConverter<TKey, TKeyNative, TValue> : Json
 where TKey : ValueType<TKeyNative>
 where TKeyNative : notnull
 {
-    private readonly IMapper _mapper;
-    private static readonly Type VtDictType = typeof(Dictionary<TKey, TValue>);
     private static readonly Type NativeDictType = typeof(Dictionary<TKeyNative, TValue>);
-    public ValueTypeDictionaryJsonConverter(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
     public override Dictionary<TKey, TValue>? Read(ref Utf8JsonReader reader, Type typeToConvert,
         JsonSerializerOptions options)
     {
@@ -27,7 +19,7 @@ where TKeyNative : notnull
 
         var dict = converter.Read(ref reader, NativeDictType, options);
         return dict?.ToDictionary(
-            x => _mapper.Map<TKey>(x.Key),
+            x => ValueType.CreateNullable<TKey,TKeyNative>(x.Key),
             x => x.Value
         );
     }
@@ -43,6 +35,6 @@ where TKeyNative : notnull
             ?? throw new InvalidSetupException(
                 $"Write method not found on converter {converter.GetType().FullName()}");
 
-        writeMi.Invoke(converter, new object[] { writer, mapped, options });
+        writeMi.Invoke(converter, [writer, mapped, options]);
     }
 }

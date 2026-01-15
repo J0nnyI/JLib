@@ -2,10 +2,15 @@
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace JLib.DataProvider;
+
+/// <summary>
+/// Utility methods which enable automated <see cref="IDataProviderR{TDataObject}"/> (and others) registration with the <see cref="IServiceCollection"/>
+/// </summary>
 public static class DataProviderServiceCollectionExtensions
 {
     #region AddRepositories
@@ -62,34 +67,35 @@ public static class DataProviderServiceCollectionExtensions
     /// <br/>ㅤAlways - <typeparamref name="TImplementation"/> as using <paramref name="implementationTypeArgumentResolver"/> to resolve the type arguments
     /// <br/>Alias for <typeparamref name="TImplementation"/>
     /// <br/>ㅤAlways - <see cref="ISourceDataProviderR{TData}"/> as Alias 
-    /// <br/>ㅤ<typeparamref name="TImplementation"/> implements <see cref="ISourceDataProviderRw{TData}"/> - <see cref="ISourceDataProviderRw{TData}"/>
+    /// <br/>ㅤ<typeparamref name="TImplementation"/> implements <see cref="ISourceDataProviderRw{TData}"/>
     /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> - <see cref="IDataProviderR{TData}"/>
-    /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> and <typeparamref name="TImplementation"/> implements <see cref="IDataProviderRw{TData}"/> - <see cref="IDataProviderRw{TData}"/>
+    /// <br/>ㅤno <see cref="RepositoryType"/> for the given <typeparamref name="TTvt"/> and <typeparamref name="TImplementation"/> implements <see cref="IDataProviderRw{TDataObject}"/> - <see cref="IDataProviderRw{TDataObject}"/>
     /// </summary>
     /// <typeparam name="TTvt">the <see cref="Reflection.TypeValueType"/> which instances will be added as <see cref="IDataProviderR{TDataObject}"/></typeparam>
     /// <typeparam name="TImplementation">the implementation of the <see cref="IDataProviderR{TDataObject}"/> to be used. Generics will be ignored.</typeparam>
     /// <typeparam name="TIgnoredDataObject">the ignored type argument of <see cref="IDataProviderR{TDataObject}"/> implemented by <typeparamref name="TImplementation"/></typeparam>
     /// <param name="services"></param>
-    /// <param name="typeCache"><see cref="AddTypeCache(IServiceCollection,out ITypeCache, ExceptionBuilder, ITypePackage[])"/></param>
+    /// <param name="typeCache">the <see cref="ITypeCache"/> that will be used to find the relevant <see cref="IDataObjectType"/>, <see cref="RepositoryType"/>, <see cref="DataProviderType"/> and <see cref="SourceDataProviderType"/>s</param>
     /// <param name="filter">if the filter is provided and returns false, no <see cref="IDataProviderR{TDataObject}"/> will be created for the given <see cref="Reflection.TypeValueType"/><br/>
-    /// null defaults to '_=>true'</param>
-    /// <param name="forceReadOnly">if provided and true, only <see cref="IDataProviderR{TDataObject}"/> and <see cref="ISourceDataProviderR{TData}"/> will be provided but not <see cref="IDataProviderRw{TData}"/> or <see cref="ISourceDataProviderRw{TData}"/><br/>
-    /// null defaults to '_=>false'</param>
+    ///     null defaults to '_=>true'</param>
+    /// <param name="forceReadOnly">if provided and true, only <see cref="IDataProviderR{TDataObject}"/> and <see cref="ISourceDataProviderR{TData}"/> will be provided but not <see cref="IDataProviderRw{TDataObject}"/> or <see cref="ISourceDataProviderRw{TData}"/><br/>
+    ///     null defaults to '_=>false'</param>
     /// <param name="implementationTypeArgumentResolver">
-    /// resolves the type arguments for the implementation in order.<br/>
-    /// null defaults to 'new[]{ tvt => tvt }'<br/>
-    /// <p>Example</p>
-    /// <code>
-    /// DataProvider: ComplexDataProvider&lt;TEntity,TEntityInterface&gt; : IDataProviderR&lt;TEntity&gt;
-    /// TypeValueType: ComplexEntity { Interface : TypeValueType }
-    /// value of <paramref name="implementationTypeArgumentResolver"/>: new[]
-    /// {
-    ///     tvt=>tvt,
-    ///     (ComplexEntity tvt) => tvt.Interface
-    /// }
-    /// </code>
+    ///     resolves the type arguments for the implementation in order.<br/>
+    ///     null defaults to 'new[]{ tvt => tvt }'<br/>
+    ///     <p>Example</p>
+    ///     <code>
+    ///         DataProvider: ComplexDataProvider&lt;TEntity,TEntityInterface&gt; : IDataProviderR&lt;TEntity&gt;
+    ///         TypeValueType: ComplexEntity { Interface : TypeValueType }
+    ///         value of <paramref name="implementationTypeArgumentResolver"/>: new[]
+    ///         {
+    ///             tvt=>tvt,
+    ///             (ComplexEntity tvt) => tvt.Interface
+    ///         }
+    ///     </code>
     /// </param>
     /// <param name="exceptions"></param>
+    /// <param name="loggerFactory"></param>
     /// <param name="lifetime">the lifetime of the services to be added</param>
     public static IServiceCollection AddDataProvider<TTvt, TImplementation, TIgnoredDataObject>(
         this IServiceCollection services,
@@ -118,20 +124,20 @@ public static class DataProviderServiceCollectionExtensions
 
         #region read/write mode mismatch check
 
-        var repos = typeCache.All<RepositoryType>(repo => repo.ProvidedDataObject is TTvt).ToArray();
+        var repositories = typeCache.All<RepositoryType>().Where(repo => repo.ProvidedDataObject is TTvt).ToArray();
         var implementationCanWrite = implementation.ImplementsAny<IDataProviderRw<IEntity>>();
-        foreach (var repo in repos)
+        foreach (var repository in repositories)
         {
-            var repoIsReadOnly = repo.Value.ImplementsAny<IDataProviderRw<IEntity>>() is false;
-            if (repo.ProvidedDataObject is not TTvt tvt || !filter(tvt))
+            var repoIsReadOnly = repository.Value.ImplementsAny<IDataProviderRw<IEntity>>() is false;
+            if (repository.ProvidedDataObject is not TTvt tvt || !filter(tvt))
                 continue;
             var readOnlyForced = forceReadOnly(tvt);
             var dataProviderIsReadOnly = !implementationCanWrite || readOnlyForced;
             var args = implementationTypeArgumentResolver?.Select(x => x(tvt)).ToArray() ?? new[] { tvt };
-            Type impl;
+            Type tGenericImplementation;
             try
             {
-                impl = implementation.MakeGenericType(args);
+                tGenericImplementation = implementation.MakeGenericType(args);
             }
             // thrown, when the typeConstraints are violated. Doing this manually is not really a good idea
             catch (Exception e) when (e.InnerException is ArgumentException { HResult: -2147024809 })
@@ -142,16 +148,16 @@ public static class DataProviderServiceCollectionExtensions
             if (dataProviderIsReadOnly == repoIsReadOnly)
                 continue;
 
-            string errorText =
+            exceptions.Add(
                 dataProviderIsReadOnly
                     ? readOnlyForced
-                        ? $"The data provider Implementation {impl.FullName(true)} is forced read only but the Repository {repo.Value.FullName(true)} can write data. {Environment.NewLine}" +
-                          $"Not forcing the DataProvider to be read only or implementing {nameof(IDataProviderRw<IEntity>)} will solve this issue"
-                        : $"The data provider Implementation {impl.FullName(true)} is read only but the Repository {repo.Value.FullName(true)} can write data. {Environment.NewLine}" +
-                          $"You can resolve this issue by not implementing {nameof(IDataProviderRw<IEntity>)} with the Repository or using a data provider which implements {nameof(ISourceDataProviderRw<IEntity>)}"
-                    : $"The data provider Implementation {impl.FullName(true)} can write data but the Repository {repo.Value.FullName(true)} can not. {Environment.NewLine}" +
-                      $"Force the dataProvider to be ReadOnly or Implement {nameof(IDataProviderRw<IEntity>)} with the repository.";
-            exceptions.Add(new InvalidSetupException(errorText));
+                        ? new DataProviderException.InvalidSetupException.RepositoryDataAccessMismatchException
+                            .ImplementationForcedReadOnlyButWritableRepositoryException(tGenericImplementation, repository)
+                        : new DataProviderException.InvalidSetupException.RepositoryDataAccessMismatchException
+                            .ImplementationReadOnlyButWritableRepositoryException(tGenericImplementation, repository)
+                    : new DataProviderException.InvalidSetupException.RepositoryDataAccessMismatchException
+                        .ImplementationWritableButReadOnlyRepository(tGenericImplementation, repository)
+                );
         }
 
         #endregion
@@ -162,7 +168,7 @@ public static class DataProviderServiceCollectionExtensions
                      typeof(ISourceDataProviderRw<>)
                  })
             services.AddGenericAlias(typeCache, serviceType, implementation,
-                lifetime, exceptions, loggerFactory, FilterIt(implementation, serviceType, repos),
+                lifetime, exceptions, loggerFactory, FilterIt(implementation, serviceType, repositories),
                 null, implementationTypeArgumentResolver);
 
         return services;

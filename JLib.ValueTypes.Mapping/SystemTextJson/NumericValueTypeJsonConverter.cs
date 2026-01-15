@@ -1,6 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Numerics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper;
+
 using JLib.Helper;
 
 namespace JLib.ValueTypes.Mapping.SystemTextJson;
@@ -23,35 +24,30 @@ namespace JLib.ValueTypes.Mapping.SystemTextJson;
 /// </summary>
 internal class NumericValueTypeJsonConverter<TVt, TValue> : JsonConverter<TVt>
     where TVt : ValueType<TValue>
+    where TValue:INumber<TValue>
 {
-    private readonly IMapper _mapper;
-
-    public NumericValueTypeJsonConverter(IMapper mapper)
+    public override TVt Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        _mapper = mapper;
-    }
-    public override TVt? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        object value = typeof(TVt)
+        TValue value = typeof(TVt)
                 .GetAnyBaseType<ValueType<Ignored>>()
                 ?.GenericTypeArguments.First()
             switch
         {
-            { } type when type == typeof(byte) => reader.GetByte(),
-            { } type when type == typeof(sbyte) => reader.GetSByte(),
-            { } type when type == typeof(short) => reader.GetUInt16(),
-            { } type when type == typeof(ushort) => reader.GetInt16(),
-            { } type when type == typeof(int) => reader.GetInt32(),
-            { } type when type == typeof(uint) => reader.GetUInt32(),
-            { } type when type == typeof(long) => reader.GetInt64(),
-            { } type when type == typeof(ulong) => reader.GetUInt64(),
-            { } type when type == typeof(decimal) => reader.GetDecimal(),
-            { } type when type == typeof(double) => reader.GetDouble(),
-            { } type when type == typeof(float) => reader.GetSingle(),
+            { } type when type == typeof(byte) => reader.GetByte().CastTo<TValue>(),
+            { } type when type == typeof(sbyte) => reader.GetSByte().CastTo<TValue>(),
+            { } type when type == typeof(short) => reader.GetUInt16().CastTo<TValue>(),
+            { } type when type == typeof(ushort) => reader.GetInt16().CastTo<TValue>(),
+            { } type when type == typeof(int) => reader.GetInt32().CastTo<TValue>(),
+            { } type when type == typeof(uint) => reader.GetUInt32().CastTo<TValue>(),
+            { } type when type == typeof(long) => reader.GetInt64().CastTo<TValue>(),
+            { } type when type == typeof(ulong) => reader.GetUInt64().CastTo<TValue>(),
+            { } type when type == typeof(decimal) => reader.GetDecimal().CastTo<TValue>(),
+            { } type when type == typeof(double) => reader.GetDouble().CastTo<TValue>(),
+            { } type when type == typeof(float) => reader.GetSingle().CastTo<TValue>(),
             _ => throw new NotSupportedException(
                 $"Type {typeof(TVt).FullName} is not supported. Only Numbers are supported")
         };
-        return _mapper.Map<TVt>(value);
+        return ValueType.CreateNullable<TVt, TValue>(value);
     }
 
     public override void Write(Utf8JsonWriter writer, TVt? value, JsonSerializerOptions options)

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.*" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -10,3 +10,4 @@
   </ItemGroup>
 
 </Project>
+

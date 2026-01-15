@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper;
 
 namespace JLib.ValueTypes.Mapping.SystemTextJson;
 
@@ -13,19 +12,16 @@ namespace JLib.ValueTypes.Mapping.SystemTextJson;
 internal class GuidValueTypeJsonConverter<T> : JsonConverter<T>
     where T : ValueType<Guid>?
 {
-    private readonly IMapper _mapper;
-
-    public GuidValueTypeJsonConverter(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
     public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var value = reader.GetString();
         if (value is null)
             return null;
         var guid = Guid.Parse(value);
-        return (T)_mapper.Map(guid, guid.GetType(), typeToConvert);
+        // the nullability error is irrelevant, since it does not change the type argument the return nullability matches the result.
+#pragma warning disable CS8631 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.
+        return ValueType.CreateNullable<T,Guid>(guid);
+#pragma warning restore CS8631 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.
     }
 
     public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)

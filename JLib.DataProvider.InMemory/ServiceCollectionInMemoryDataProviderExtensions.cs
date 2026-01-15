@@ -11,7 +11,7 @@ public static class ServiceCollectionInMemoryDataProviderExtensions
 
 
     /// <summary>
-    /// adds a <see cref="IDataProviderR{TData}"/> and <see cref="IDataProviderRw{TData}"/> with the <see cref="InMemoryDataProvider{TEntity}"/> as implementation for each <typeparamref name="TTvt"/> as scoped
+    /// adds a <see cref="IDataProviderR{TData}"/> and <see cref="IDataProviderRw{TDataObject}"/> with the <see cref="InMemoryDataProvider{TEntity}"/> as implementation for each <typeparamref name="TTvt"/> as scoped
     /// </summary>
     public static IServiceCollection AddInMemoryDataProvider<TTvt>(
         this IServiceCollection services,

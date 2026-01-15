@@ -10,7 +10,7 @@
     ],
     "includedTypes": [
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity",
-      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<>",
+      "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<T>",
       "JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryRw"
     ]
   },
@@ -39,7 +39,7 @@
                 ],
                 "InnerExceptions": [
                   {
-                    "Type": "JLib.Exceptions.InvalidSetupException",
+                    "Type": "JLib.DataProvider.DataProviderException.InvalidSetupException.RepositoryDataAccessMismatchException.ImplementationForcedReadOnlyButWritableRepositoryException",
                     "MessageLines": [
                       "The data provider Implementation JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestDataProviderRw<JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestCommandEntity> is forced read only but the Repository JLib.DataProvider.Tests.AddDataProvider.AddDataProviderTests.TestRepositoryRw can write data. ",
                       "Not forcing the DataProvider to be read only or implementing IDataProviderRw will solve this issue"

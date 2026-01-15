@@ -5,12 +5,14 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HotChocolate.Data" Version="13.*" />
-    <PackageReference Include="HotChocolate.Execution" Version="13.*" />
-    <PackageReference Include="HotChocolate.Execution.Abstractions" Version="13.*" />
-    <PackageReference Include="HotChocolate.Types" Version="13.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.*" />
+    <PackageReference Include="HotChocolate.Data" />
+    <PackageReference Include="HotChocolate.Execution" />
+    <PackageReference Include="HotChocolate.Execution.Abstractions" />
+    <PackageReference Include="HotChocolate.Types" />
+      <!--used for GetOneDataObjectAsync-->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!--<PackageReference Include="Microsoft.EntityFrameworkCore" />-->
   </ItemGroup>
 
   <ItemGroup>
@@ -18,3 +20,4 @@
   </ItemGroup>
 
 </Project>
+

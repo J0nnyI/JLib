@@ -1,21 +1,21 @@
-﻿// Third party packages
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Snapshooter.Xunit;
-using Xunit;
-using Xunit.Abstractions;
+﻿using FluentAssertions;
 
-// required JLib packages
 using JLib.AutoMapper;
+using JLib.DataGeneration.Examples.Setup.Models;
+using JLib.DataGeneration.Examples.Setup.SystemUnderTest;
 using JLib.DependencyInjection;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
 
-// referenced setup
-using JLib.DataGeneration.Examples.Setup.Models;
-using JLib.DataGeneration.Examples.Setup.SystemUnderTest;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Snapshooter.Xunit;
+
+using Xunit;
+using Xunit.Abstractions;
 
 namespace JLib.DataGeneration.Examples.Getting_Started;
 public sealed class UsingTheDefaultNamespace : IDisposable
@@ -25,10 +25,11 @@ public sealed class UsingTheDefaultNamespace : IDisposable
     \*************************************************************/
     public sealed class CustomerDp : DataPackage
     {
-        public CustomerId CustomerId { get; set; } = null!;
-        public CustomerDp(ShoppingServiceMock shoppingService, IDataPackageManager packageManager) : base(packageManager)
+        public CustomerId CustomerId { get; init; } = null!;
+        public CustomerDp(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            shoppingService.AddCustomer(new(GetInfoText(nameof(CustomerId)))
+            serviceProvider.GetRequiredServices(out ShoppingServiceMock shoppingService);
+            shoppingService.AddCustomer(new(this.GetInfoText(x => x.CustomerId))
             {
                 Id = CustomerId
             });
@@ -51,13 +52,11 @@ public sealed class UsingTheDefaultNamespace : IDisposable
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
                 JLibDataGenerationTp.Instance,
                 TypePackage.GetNested<UsingTheDefaultNamespace>())
+            .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))
-            .AddDataPackages(typeCache, new()
-            {
-                DefaultNamespace = $"{typeof(UsingTheDefaultNamespace).Namespace}.{nameof(UsingTheDefaultNamespace)}"
-            });
+            .AddDataPackages(typeCache, new() { NamespaceAliases = new []{new NamespaceAlias("JLib.DataGeneration.Examples.Getting_Started") } });
 
         var serviceProvider = serviceCollection
             .BuildServiceProvider()
@@ -76,7 +75,7 @@ public sealed class UsingTheDefaultNamespace : IDisposable
     public void Test()
     {
         var id = _shoppingService.Customers.Single().Key;
-        id.IdInfo().Should().Be($"CustomerId [CustomerDp].[CustomerId] = {id.Value}");
+        id.IdInfo().Should().Be($"CustomerId [~.UsingTheDefaultNamespace.CustomerDp].[CustomerId] = {id.Value}");
         _shoppingService.Customers.MatchSnapshot();
     }
 

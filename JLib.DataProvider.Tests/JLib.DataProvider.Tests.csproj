@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.*" />
+    <PackageReference Include="AutoMapper" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,4 +15,9 @@
     <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="AddDataProvider\__snapshots__\__mismatch__\" />
+  </ItemGroup>
+
 </Project>
+

@@ -5,31 +5,33 @@
       "DemoTypeValueTypeA": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
           "NullableContextAttribute",
-          "TvtFactoryAttribute.ImplementsAttribute",
-          "UnmappedAttribute"
+          "TvtFactoryAttribute.ImplementsAttribute"
         ],
         "ImplementedInterfaces": [
           "IEquatable<TypeCacheTests.InconclusiveFactory.DemoTypeValueTypeA>",
           "IEquatable<TypeValueType>",
           "IEquatable<ValueType<Type>>",
-          "ITypeValueType"
+          "ITypeValueType",
+          "IValueType"
         ]
       },
       "DemoTypeValueTypeB": {
         "Kind": "Class",
         "Attributes": [
+          "DisableAutoProfileAttribute",
           "NullableAttribute",
           "NullableContextAttribute",
-          "TvtFactoryAttribute.ImplementsAttribute",
-          "UnmappedAttribute"
+          "TvtFactoryAttribute.ImplementsAttribute"
         ],
         "ImplementedInterfaces": [
           "IEquatable<TypeCacheTests.InconclusiveFactory.DemoTypeValueTypeB>",
           "IEquatable<TypeValueType>",
           "IEquatable<ValueType<Type>>",
-          "ITypeValueType"
+          "ITypeValueType",
+          "IValueType"
         ]
       },
       "IDemoTypeA": {

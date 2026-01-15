@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JLib.AspNetCore\JLib.AspNetCore.csproj" />
+    <ProjectReference Include="..\JLib.DependencyInjection\JLib.DependencyInjection.csproj" />
+    <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
+  </ItemGroup>
+</Project>
+

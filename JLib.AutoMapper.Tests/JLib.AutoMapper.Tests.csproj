@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JLib.AutoMapper\JLib.AutoMapper.csproj" />
+  </ItemGroup>
+
+</Project>
+

@@ -1,0 +1,19 @@
+﻿{
+  "TargetSite": null,
+  "Message": "{\r\n  \u0022Message\u0022: \u0022test\u0022,\r\n  \u0022Exception\u0022: \u0022content\u0022\r\n}",
+  "Data": {},
+  "InnerException": {
+    "TargetSite": null,
+    "Message": "content",
+    "Data": {},
+    "InnerException": null,
+    "HelpLink": null,
+    "Source": null,
+    "HResult": -2146233088,
+    "StackTrace": null
+  },
+  "HelpLink": null,
+  "Source": null,
+  "HResult": -2146233088,
+  "StackTrace": null
+}

@@ -1,52 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using JLib.Helper;
 using JLib.ValueTypes;
 
 namespace JLib.DataGeneration;
 
-public struct IdSnapshotInformation : IComparable<IdSnapshotInformation>
-{
-    public IdSnapshotInformation(DataPackageValues.IdIdentifier idIdentifier, object? value)
-    {
-        this.IdGroupName = idIdentifier.IdGroupName.Value;
-        this.IdName = idIdentifier.IdName.Value;
-        this.Value = ExtractNativeType(value);
-        this.IdType = value?.GetType().FullName();
-    }
-
-    public readonly int CompareTo(IdSnapshotInformation other) => Value?.ToString()?.CompareTo(other.Value?.ToString()) ?? -1;
-
-    public readonly override string ToString() => $"{IdGroupName}.{IdName} = {Value}";
-
-
-    [return: NotNullIfNotNull("value")]
-    private static object? ExtractNativeType(object? value)
-        => value switch
-        {
-            null => null,
-            IntValueType vt => vt.Value,
-            StringValueType vt => vt.Value,
-            GuidValueType vt => vt.Value,
-            _ => value
-        };
-
-    public string IdGroupName { get; set; }
-    public string IdName { get; set; }
-    public object? Value { get; set; }
-    public string? IdType { get; set; }
-
-}
-public record struct IdInformation(Type Type, DataPackageValues.IdIdentifier Identifier, object? Value) : IComparable<IdInformation>
-{
-    public readonly int CompareTo(IdInformation other) => Value?.ToString()?.CompareTo(other.Value?.ToString()) ?? -1;
-
-    public readonly override string ToString() => $"{Type.FullName()} {Identifier} = {Value}";
-
-
-    public readonly IdSnapshotInformation ToSnapshotInfo()
-        => new(Identifier, Value);
-}
 /// <summary>
 /// adds debug methods to resolve the name of an id managed by a <see cref="IIdRegistry"/>
 /// </summary>
@@ -93,7 +50,7 @@ public static class IdExtensions
         }
 
         string GetInfoString(DataPackageValues.IdIdentifier? identifier) =>
-            $"{value?.GetType().FullName()} {identifier} = {nativeValue}";
+            $"{value.GetType().FullName()} {identifier} = {nativeValue}";
     }
 
     /// <summary>
@@ -102,7 +59,7 @@ public static class IdExtensions
     public static IdInformation GetIdInfoObj(object? value, IIdRegistry? idRegistry = null)
     {
         if (value is null)
-            return new(typeof(object), new(new("unknown"), new("value is null")), null);
+            return new(typeof(object), new("unknown", "value is null"), null);
 
         if (idRegistry is null)
         {
@@ -115,9 +72,7 @@ public static class IdExtensions
         }
 
         var identifier = idRegistry.GetIdentifierOfId(value);
-        return identifier is null
-            ? new(value.GetType(), new(new("unknown"), new("this id is not registered")), value)
-            : new(value.GetType(), identifier, value);
+        return new(value.GetType(), identifier, value);
     }
 
     #region idInfo
@@ -278,14 +233,17 @@ public static class IdExtensions
     /// <inheritdoc cref="IdSnapshot(Guid,IIdRegistry)"/>
     /// </summary>
     public static IdSnapshotInformation IdSnapshot(this StringValueType? id, IIdRegistry idRegistry)
-        => GetIdInfoObj(id, idRegistry).ToSnapshotInfo()!;
+        => GetIdInfoObj(id, idRegistry).ToSnapshotInfo();
 
+    /// <summary>
+    /// <inheritdoc cref="GuidSnapshot(string?,IIdRegistry)"/>
+    /// </summary>
     public static IdSnapshotInformation GuidSnapshot(this string? id, IIdRegistry idRegistry)
         => id is null
             ? GetIdInfoObj(null, idRegistry).ToSnapshotInfo()
             : Guid.TryParse(id, out var guid)
                 ? guid.IdSnapshot(idRegistry)
-                : new(new(new("invalid"), new("value is not a guid")), id);
+                : new(new("invalid","value is not a guid"), id);
 
     #endregion
 

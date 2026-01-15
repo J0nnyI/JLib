@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using JLib.Helper;
+﻿using JLib.Helper;
 
 namespace JLib.Exceptions
 {
@@ -25,7 +21,7 @@ namespace JLib.Exceptions
         public JLibAggregateException(string userMessage, Exception[] innerExceptions) : base(userMessage, innerExceptions)
         {
             UserMessage = userMessage;
-            _message = new Lazy<string>(this.GetTreeInfo);
+            _message = new(() => this.GetHierarchyInfoJson());
         }
 
         /// <summary>

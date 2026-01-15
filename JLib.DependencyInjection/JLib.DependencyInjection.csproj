@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.*" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <ItemGroup>
@@ -12,3 +12,4 @@
   </ItemGroup>
 
 </Project>
+

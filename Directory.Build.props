@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -30,6 +30,7 @@
             JLib.Reflection.HotChocolate.Query
             JLib.ValueTypes
             JLib.ValueTypes.Mapping
+            JLib.ValueTypes.Implementations.FileSystem
             JLib
             JLib.AutoMapper
             JLib.Configuration
@@ -40,6 +41,7 @@
             JLib.HotChocolate
             JLib.Testing
             JLib.SystemTextJson
+            JLib.AspNetCore
         </PackageAssemblies>
 
     </PropertyGroup>
@@ -68,32 +70,63 @@
         </When>
 
         <!--Test Projects-->
-        <When  Condition="$(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('Testing'))">
+        <When  Condition="$(MSBuildProjectName.EndsWith('Tests')) 
+               or ($(MSBuildProjectName.EndsWith('Testing')) and !$(PackageAssemblies.Contains($(MSBuildProjectName))) ) 
+               or $(MSBuildProjectName.EndsWith('.Benchmarks'))">
+            <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('Testing'))">
+                <IsPackable>false</IsPackable>
+                <IsTestProject>true</IsTestProject>
+            </PropertyGroup>
             <ItemGroup>
                 <!--Setup-->
-                <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
-                <PackageReference Include="xunit" Version="2.*" />
-                <PackageReference Include="xunit.abstractions" Version="2.*" />
-                <PackageReference Include="xunit.assert" Version="2.*" />
-                <PackageReference Include="xunit.runner.visualstudio" Version="2.*">
+                <PackageReference Include="Microsoft.NET.Test.Sdk" />
+                <PackageReference Include="xunit" />
+                <PackageReference Include="xunit.abstractions" />
+                <PackageReference Include="xunit.assert" />
+                <PackageReference Include="xunit.runner.visualstudio">
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                     <PrivateAssets>all</PrivateAssets>
                 </PackageReference>
-                <PackageReference Include="coverlet.collector" Version="6.*">
+                <PackageReference Include="coverlet.collector">
                     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
                     <PrivateAssets>all</PrivateAssets>
                 </PackageReference>
                 <!--test methods-->
-                <PackageReference Include="Snapshooter.Xunit" Version="0.*" />
-                <PackageReference Include="FluentAssertions" Version="6.*" />
-                <PackageReference Include="Moq" Version="4.*" />
+                <PackageReference Include="Snapshooter.Xunit" />
+                <PackageReference Include="FluentAssertions" />
+                <PackageReference Include="Moq" />
                 <!--logging-->
-                <PackageReference Include="Microsoft.Extensions.Logging" Version="8.*" />
-                <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-                <PackageReference Include="Xunit.Extensions.Logging" Version="1.*" />
+                <PackageReference Include="Microsoft.Extensions.Logging" />
+                <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+                <PackageReference Include="Xunit.Extensions.Logging" />
                 <!--dependency injection-->
-                <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.*" />
+                <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
             </ItemGroup>
         </When>
     </Choose>
+
+    <Choose>
+        <When Condition="$(AssemblyName.EndsWith('.Benchmarks'))">
+            <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <DebugType>pdbonly</DebugType>
+                <DebugSymbols>true</DebugSymbols>
+                <Optimize>true</Optimize>
+                <GenerateProgramFile>false</GenerateProgramFile>
+            </PropertyGroup>
+            <ItemGroup >
+                <PackageReference Include="BenchmarkDotNet" />
+                <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+                <PackageReference Include="BenchmarkDotNet.TestAdapter" />
+                <PackageReference Include="Lib.Harmony" />
+            </ItemGroup>
+        </When>
+    </Choose>
+
+    <!--makes the internals of a project visible to its tests-->
+    <ItemGroup Condition="!$(AssemblyName.EndsWith('.Tests')) and !$(AssemblyName.EndsWith('.Benchmarks'))">
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
 </Project>

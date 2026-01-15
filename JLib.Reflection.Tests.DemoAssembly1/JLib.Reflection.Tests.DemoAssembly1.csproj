@@ -1,2 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\JLib.Reflection.Tests.DemoAssembly1A\JLib.Reflection.Tests.DemoAssembly1A.csproj" />
+      <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
+    </ItemGroup>
 </Project>

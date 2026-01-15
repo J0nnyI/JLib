@@ -2,6 +2,7 @@
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -31,7 +32,7 @@ public class AttributeServicesTest : IDisposable
     {
         var exceptions = new ExceptionBuilder("test");
         var typePackage = TypePackage.GetNested<T>();
-        _output.WriteLine(typePackage.ToString(true));
+        _output.WriteLine(typePackage.ToJson());
         services = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, _loggerFactory, typePackage)
             .AddServicesWithAttributes(typeCache, exceptions);

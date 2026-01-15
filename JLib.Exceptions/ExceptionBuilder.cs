@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
-using JLib.Helper;
+﻿using JLib.Helper;
 
 namespace JLib.Exceptions;
 
@@ -17,21 +15,23 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
     private readonly ExceptionBuilder? _parent;
     private bool _disposed;
 
-    private IEnumerable<Exception?> BuildExceptionList()
-    {
-        lock (_exceptionLock)
-            lock (_childrenLock)
-                return _exceptions.Concat(_children.Select(c => c.GetException()));
-    }
+    /// <summary>
+    /// adds the given <paramref name="message"/> as <see cref="Exception"/> to <see cref="AggregateException.InnerExceptions"/>
+    /// </summary>
+    /// <param name="message"></param>
+    public void Add(string message)
+        => Add(new Exception(message));
 
     /// <summary>
     /// adds the given <paramref name="exception"/> to <see cref="JLibAggregateException.InnerExceptions"/>
     /// </summary>
     public void Add(Exception exception)
     {
-        CheckDisposed();
         lock (_exceptionLock)
+        {
+            CheckDisposed();
             _exceptions.Add(exception);
+        }
     }
 
     /// <summary>
@@ -39,8 +39,19 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
     /// </summary>
     public void Add(IEnumerable<Exception> exceptions)
     {
-        foreach (var exception in exceptions)
-            Add(exception);
+        lock (_exceptionLock)
+        {
+            CheckDisposed();
+            _exceptions.AddRange(exceptions);
+        }
+    }
+
+    /// <summary>
+    /// adds all <paramref name="exceptions"/> to <see cref="JLibAggregateException.InnerExceptions"/>
+    /// </summary>
+    public void Add(IEnumerable<string> exceptions)
+    {
+        Add(exceptions.Select(msg => new Exception(msg)));
     }
 
     /// <summary>
@@ -50,21 +61,54 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
     {
         lock (_exceptionLock)
             lock (_childrenLock)
-                return _exceptions.Count > 0 || _children.Any(c => c.HasErrors());
+                return UnlockedHasErrors();
     }
 
+    private bool UnlockedHasErrors()
+        // improves performance by checking the count before executing any
+        => _exceptions.Count != 0 || (_children.Count != 0 && _children.Any(c => c.HasErrors()));
     /// <summary>
     /// builds the exception based on the current builder state.
     /// </summary>
     /// <returns>null, if the builder has no exceptions</returns>
     public Exception? GetException()
-        => JLibAggregateException.ReturnIfNotEmpty(_message, BuildExceptionList().WhereNotNull());
+    {
+
+        lock (_exceptionLock)
+            lock (_childrenLock)
+                // building the exception takes a lot more resources than checking if there are any exceptions.
+                // therefore, we only build the exception if it is actually needed
+                return UnlockedHasErrors()
+                    ? new JLibAggregateException(_message, _exceptions.Concat(
+                            _children.Select(c => c.GetException())
+                        ).WhereNotNull().ToArray())
+                    : null;
+    }
 
     /// <summary>
     /// <inheritdoc cref="ExceptionBuilder"/>
     /// </summary>
     /// <param name="message">written to <see cref="JLibAggregateException.UserMessage"/></param>
-    public ExceptionBuilder(string message) : this(message, null) { }
+    public ExceptionBuilder(string message) : this(message, null as ExceptionBuilder) { }
+
+    /// <summary>
+    /// creates an <see cref="ExceptionBuilder"/> and adds the given <paramref name="children"/>
+    /// </summary>
+    /// <param name="message">written to <see cref="JLibAggregateException.UserMessage"/></param>
+    /// <param name="children">will be added to <see cref="AggregateException.InnerExceptions"/></param>
+    public ExceptionBuilder(string message, params IExceptionProvider[] children) : this(message)
+    {
+        AddChildren(children);
+    }
+    /// <summary>
+    /// creates an <see cref="ExceptionBuilder"/> and adds the given <paramref name="children"/>
+    /// </summary>
+    /// <param name="message">written to <see cref="JLibAggregateException.UserMessage"/></param>
+    /// <param name="children">will be added to <see cref="AggregateException.InnerExceptions"/></param>
+    public ExceptionBuilder(string message, params Exception[] children) : this(message)
+    {
+        Add(children);
+    }
     private ExceptionBuilder(string message, ExceptionBuilder? parent)
     {
         _message = message;
@@ -93,12 +137,28 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
     public void CreateChild(string message, IEnumerable<Exception> childExceptions)
     {
         CheckDisposed();
-        var exceptions = childExceptions.ToArray();
+        var exceptions = childExceptions.ToReadOnlyCollection();
         if (exceptions.None())
             return;
         var child = CreateChild(message);
         child.Add(exceptions);
     }
+
+    /// <summary>
+    /// adds a nested <see cref="JLibAggregateException"/> with the given <paramref name="messages"/> as <see cref="JLibAggregateException.InnerExceptions"/> if the <paramref name="messages"/> are not empty
+    /// </summary>
+    /// <param name="message">written to <see cref="JLibAggregateException.UserMessage"/></param>
+    /// <param name="messages">written to <see cref="AggregateException.InnerExceptions"/></param>
+    public void CreateChild(string message, IEnumerable<string> messages)
+    {
+        CheckDisposed();
+        var exceptions = messages.ToReadOnlyCollection();
+        if (exceptions.None())
+            return;
+        var child = CreateChild(message);
+        child.Add(exceptions.Select(msg => new Exception(msg)));
+    }
+
 
     private void CheckDisposed()
     {
@@ -116,6 +176,16 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
         lock (_childrenLock)
             _children.Add(exceptionProvider);
     }
+    /// <summary>
+    /// adds the given <paramref name="exceptionProviders"/> as child<br/>
+    /// <see cref="IExceptionProvider.GetException"/> of the <paramref name="exceptionProviders"/> is called when <see cref="IExceptionProvider.GetException"/> is called, thereby enabling adding this child before the related process has been completed.
+    /// </summary>
+    public void AddChildren(IEnumerable<IExceptionProvider> exceptionProviders)
+    {
+        CheckDisposed();
+        lock (_childrenLock)
+            _children.AddRange(exceptionProviders);
+    }
 
     /// <summary>
     /// if this <see cref="ExceptionBuilder"/> is a child and has no content, it is removed from the parent<br/>
@@ -128,22 +198,22 @@ public sealed class ExceptionBuilder : IExceptionProvider, IDisposable
         _disposed = true;
         if (_parent is not null && HasErrors() is false)
             _parent._children.Remove(this);
-        else
-            this.ThrowIfNotEmpty();
+        if (_parent is null)
+            ThrowIfNotEmpty();
     }
     /// <summary>
     /// <inheritdoc cref="IExceptionProvider.ThrowIfNotEmpty"/>
     /// </summary>
     /// <param name="onThrow">Invoked before an Exception is thrown</param>
     // overload required to enable it being used without having to cast the instance to IExceptionProvider
-    public void ThrowIfNotEmpty(Action? onThrow = null)
+    public void ThrowIfNotEmpty(Action<Exception>? onThrow = null)
     {
         var exception = GetException();
 
         if (exception is null)
             return;
 
-        onThrow?.Invoke();
+        onThrow?.Invoke(exception);
         throw exception;
     }
 }

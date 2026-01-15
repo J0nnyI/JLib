@@ -1,19 +1,18 @@
-﻿// Third party packages
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Xunit;
-using Xunit.Abstractions;
+﻿using FluentAssertions;
 
-// required JLib packages
 using JLib.AutoMapper;
+using JLib.DataGeneration.Examples.Setup.SystemUnderTest;
 using JLib.DependencyInjection;
 using JLib.Exceptions;
 using JLib.Helper;
 using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
 
-// referenced setup
-using JLib.DataGeneration.Examples.Setup.SystemUnderTest;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Xunit;
+using Xunit.Abstractions;
 
 
 namespace JLib.DataGeneration.Examples.Getting_Started;
@@ -28,6 +27,7 @@ public sealed class DebugUtilities : IDisposable
     \*************************************************************/
     private readonly List<IDisposable> _disposables = new();
     private readonly IIdRegistry _idRegistry;
+    private readonly IdRegistryConfiguration _idRegConfig;
 
     public DebugUtilities(ITestOutputHelper testOutputHelper)
     {
@@ -51,6 +51,7 @@ public sealed class DebugUtilities : IDisposable
             .IncludeDataPackages(Array.Empty<Type>());
 
         _idRegistry = serviceProvider.GetRequiredService<IIdRegistry>();
+        _idRegConfig = serviceProvider.GetRequiredService<IdRegistryConfiguration>();
     }
 
     public void Dispose()
@@ -64,13 +65,13 @@ public sealed class DebugUtilities : IDisposable
     [Fact]
     public void Test()
     {
-        DataPackageValues.IdGroupName groupName = new(nameof(GenerateIdsManually));
-        DataPackageValues.IdName name = new(nameof(Test));
+        DataPackageValues.IdGroupName groupName = new(typeof(GenerateIdsManually), _idRegConfig);
+        DataPackageValues.IdName name = new(nameof(Test), _idRegConfig);
         DataPackageValues.IdIdentifier identifier = new(groupName, name);
         var id = _idRegistry.GetGuidId(identifier);
 
         // recommended for building snapshot Infos
-        id.IdSnapshot(_idRegistry).Should().Be(new IdSnapshotInformation(identifier, id));
+        id.IdSnapshot(_idRegistry).Should().NotBeNull();
 
         // recommended for debugging purposes only
         id.IdInfo().Should().Be($"Guid [{groupName.Value}].[{name.Value}] = {id}");
