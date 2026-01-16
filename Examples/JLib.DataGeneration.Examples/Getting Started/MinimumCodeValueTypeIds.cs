@@ -45,8 +45,11 @@ public sealed class MinimumCodeValueTypeIds : IDisposable
 
         var serviceCollection = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<MinimumCodeValueTypeIds>())
+                new TypePackageBuilder()
+                    .AddNestedTypes<MinimumCodeValueTypeIds>()
+                    .AddAssemblyOf<DataPackage>()
+                    .Build()
+            )
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddLogging(t=>t.AddXunit(testOutputHelper))

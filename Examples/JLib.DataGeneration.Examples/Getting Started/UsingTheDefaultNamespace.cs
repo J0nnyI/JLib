@@ -50,8 +50,10 @@ public sealed class UsingTheDefaultNamespace : IDisposable
 
         var serviceCollection = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<UsingTheDefaultNamespace>())
+                new TypePackageBuilder()
+                    .AddNestedTypes<UsingTheDefaultNamespace>()
+                    .AddAssemblyOf<DataPackage>()
+                    .Build())
             .AddLogging(t=>t.AddXunit(testOutputHelper))
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()

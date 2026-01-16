@@ -32,8 +32,10 @@ public class DataPackageTests : IDisposable
         var logger = LoggerFactory.Create(x => x.AddXunit(toh));
         using var exceptions = new ExceptionBuilder(nameof(DataPackageTests));
 
-        var typePackage = TypePackage.Get(null, new[] { "JLib" })
-            .ApplyFilter(x => x.Namespace != "JLib.DataGeneration.Tests", "no testing assemblies");
+        var typePackage = new TypePackageBuilder()
+                          .AddFromPath(null, new[] { "JLib" })
+                          .AddAssemblyFilter(n => n.Name?.EndsWith("Tests") is not true)
+                          .Build();
 
         var x = typePackage.ToJson();
 

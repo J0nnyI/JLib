@@ -68,8 +68,11 @@ public sealed class SnapshotInfoUtilities : IDisposable
         var serviceCollection = new ServiceCollection()
             .AddLogging(b=>b.AddXunit(testOutputHelper))
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<SnapshotInfoUtilities>())
+                new TypePackageBuilder(loggerFactory)
+                    .AddNestedTypes<SnapshotInfoUtilities>()
+                    .AddAssemblyOf<DataPackage>()
+                    .Build()
+            )
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))

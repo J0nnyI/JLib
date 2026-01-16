@@ -25,16 +25,24 @@ public static class ReflectionServiceCollectionExtensions
         ILoggerFactory loggerFactory,
         string? assemblySearchDirectory = null,
         SearchOption searchOption = SearchOption.TopDirectoryOnly,
-        params string[] includedPrefixes)
-        => services.AddTypeCache(out typeCache, exceptions, loggerFactory,
-            TypePackage.Get(assemblySearchDirectory, includedPrefixes, searchOption));
+        params string[] includedPrefixes
+    )
+        => services.AddTypeCache(
+            out typeCache,
+            exceptions,
+            loggerFactory,
+            new TypePackageBuilder(loggerFactory).AddFromPath(assemblySearchDirectory, includedPrefixes, searchOption).Build()
+        );
 
     public static IServiceCollection AddTypeCache(
         this IServiceCollection services,
         out ITypeCache typeCache,
-        ExceptionBuilder exceptionBuilder, ILoggerFactory loggerFactory, params ITypePackage[] typePackages)
+        ExceptionBuilder exceptionBuilder,
+        ILoggerFactory loggerFactory,
+        ITypePackage typePackage
+    )
     {
-        typeCache = new TypeCache(TypePackage.Get(typePackages), exceptionBuilder, loggerFactory);
+        typeCache = new TypeCache(typePackage, exceptionBuilder, loggerFactory);
         return services.AddSingleton(typeCache);
     }
 

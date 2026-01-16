@@ -47,6 +47,34 @@ Q & A
 /// <seealso cref="TypePackageBuilderExtensions"/>
 public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, TypePackageBuilderOptions? options = null)
 {
+    /// <summary>
+    /// ctor for cloning
+    /// </summary>
+    private TypePackageBuilder(
+        Dictionary<AssemblyFullName, AssemblyLoadInfo> includedAssemblyNames,
+        HashSet<Type> includedTypes,
+        HashSet<AssemblyFullName> assemblyBlacklist,
+        HashSet<Type> typeBlacklist,
+        List<Func<Type, bool>> typeFilters,
+        List<Func<AssemblyName, bool>> assemblyFilters,
+        ILoggerFactory? loggerFactory, TypePackageBuilderOptions? options ):this(loggerFactory, options)
+    {
+        
+        this._includedAssemblyNames = includedAssemblyNames; 
+        this._includedTypes = includedTypes; 
+        this._assemblyBlacklist = assemblyBlacklist; 
+        this._typeBlacklist = typeBlacklist; 
+        this._typeFilters = typeFilters; 
+        this._assemblyFilters = assemblyFilters; 
+    }
+    
+    /// <summary>
+    /// creates a copy of this <see cref="TypePackageBuilder"/> instance without re-evaluating its contents
+    /// </summary>
+    /// <returns></returns>
+    public TypePackageBuilder Clone()
+        => new(_includedAssemblyNames, _includedTypes, _assemblyBlacklist, _typeBlacklist, _typeFilters, _assemblyFilters, loggerFactory, options);
+
     private record AssemblyFullName(string? Value) : StringValueType(Value ?? "n/a");
 
     private sealed class AssemblyLoadInfo(AssemblyName assemblyName, AssemblyLoadMode mode)
@@ -199,6 +227,15 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         _includedTypes.AddRange(types.WhereNotNull());
         return this;
     }
+    /// <summary>
+    /// Adds the given <paramref name="types"/> to the <see cref="ITypePackage"/>
+    /// </summary>
+    /// <returns><see langword="this"/> instance</returns>
+    public TypePackageBuilder AddAssemblyOf<T>(AssemblyLoadMode loadMode = AssemblyLoadMode.Recursive)
+    {
+        Add(loadMode,typeof(T).Assembly);
+        return this;
+    }
 
     #endregion
     #region blacklist
@@ -269,7 +306,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
 
     #region type package classes
 
-    private sealed class TypePackageCollection(string name, IReadOnlyCollection<ITypePackage> containedTypePackages)
+    internal sealed class TypePackageCollection(string name, IReadOnlyCollection<ITypePackage> containedTypePackages)
         : ITypePackage
     {
 
@@ -277,10 +314,7 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         ImmutableHashSet<Type> ITypePackage.GetContent() => _content.Value;
         public IEnumerable<ITypePackage> Children => containedTypePackages;
         IEnumerable<Type> ITypePackage.Types => [];
-        public string DescriptionTemplate => name;
-        [Obsolete]
-        ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
-            => TypePackage.Get(packages.Prepend(this));
+        public string Name => name;
     }
 
     /// <summary>
@@ -294,11 +328,8 @@ public sealed class TypePackageBuilder(ILoggerFactory? loggerFactory = null, Typ
         public ImmutableHashSet<Type> GetContent() => content;
         IEnumerable<ITypePackage> ITypePackage.Children => [];
         IEnumerable<Type> ITypePackage.Types => content;
-        public string DescriptionTemplate { get; } = name;
+        public string Name { get; } = name;
 
-        [Obsolete]
-        ITypePackage ITypePackage.Combine(params ITypePackage[] packages)
-            => TypePackage.Get(packages.Prepend(this));
     }
     #endregion
 }

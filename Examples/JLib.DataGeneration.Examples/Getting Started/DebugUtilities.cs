@@ -35,9 +35,11 @@ public sealed class DebugUtilities : IDisposable
         var loggerFactory = new LoggerFactory().AddXunit(testOutputHelper);
 
         var serviceCollection = new ServiceCollection()
-            .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<DebugUtilities>())
+            .AddTypeCache(out var typeCache, exceptions, loggerFactory, 
+                new TypePackageBuilder()
+                    .Add(typeof(DataPackage).Assembly)
+                    .AddNestedTypes<DebugUtilities>()
+                    .Build())
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))

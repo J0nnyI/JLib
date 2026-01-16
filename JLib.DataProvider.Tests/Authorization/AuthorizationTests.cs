@@ -107,11 +107,13 @@ public abstract class AuthorizationTestsBase<TProfile> : AuthorizationTestsBaseT
             .AddLogging()
             .AddTypeCache(
                 out var typeCache, exceptions, loggerFactory,
-                JLibDataProviderTp.Instance,
-                JLibDataGenerationTp.Instance,
-                JLibCqrsTp.Instance,
-                TypePackage.GetNested<AuthorizationTestsBaseTypes>(),
-                TypePackage.GetNested(GetType())
+                new TypePackageBuilder(loggerFactory)
+                    .Add(typeof(IDataProviderR<>).Assembly)
+                    .Add(typeof(DataPackage).Assembly)
+                    .Add(typeof(IPersistenceAccessor).Assembly)
+                    .AddNestedTypes<AuthorizationTestsBaseTypes>()
+                    .AddNestedTypes(GetType())
+                    .Build()
                     )
             .AddSingleton<TestAuthorizationCondition>()
             .AddDataPackages(typeCache)

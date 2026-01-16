@@ -24,15 +24,18 @@ public interface ITestEntity : ICommandEntity
 public abstract class ReflectionTestBase
 {
     private readonly ITestOutputHelper _testOutput;
-    private readonly ITypePackage _typePackage;
+    private readonly TypePackageBuilder _typePackageBuilder;
     private readonly ExceptionBuilder _exceptions;
     private readonly ILoggerFactory _loggerFactory;
 
-    protected ReflectionTestBase(ITestOutputHelper testOutput, ITypePackage typePackage)
+    protected ReflectionTestBase(ITestOutputHelper testOutput, TypePackageBuilder typePackageBuilder)
     {
         _exceptions = new ExceptionBuilder(GetType().FullName());
         _testOutput = testOutput;
-        _typePackage = typePackage;
+        _typePackageBuilder = typePackageBuilder
+                              .Add(typeof(DataProviderType).Assembly)
+                              .Add(typeof(IDataProviderR<>).Assembly)
+                              .Add(typeof(IPersistenceAccessor).Assembly);
         _loggerFactory = new LoggerFactory()
             .AddXunit(testOutput);
     }
@@ -54,7 +57,7 @@ public abstract class ReflectionTestBase
 
         IServiceCollection services = new ServiceCollection()
             .AddTypeCache(
-                out var cache, _exceptions, _loggerFactory, TypePackage.Get(content), JLibDataProviderTp.Instance, JLibCqrsTp.Instance, _typePackage);
+                out var cache, _exceptions, _loggerFactory, _typePackageBuilder.Clone().Add(content).Build());
 
         // group by namespace, then by typeValueType and use json objects for the grouping
         object cacheValidator;

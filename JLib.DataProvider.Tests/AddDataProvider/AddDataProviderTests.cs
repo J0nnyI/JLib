@@ -606,7 +606,9 @@ public class AddDataProviderTests : ReflectionTestBase
 
 
 
-    public AddDataProviderTests(ITestOutputHelper testOutput) : base(testOutput, JLibDataProviderTestingTp.Instance)
+    public AddDataProviderTests(ITestOutputHelper testOutput) : base(testOutput, 
+        new TypePackageBuilder()
+            .AddAssemblyOf<ReflectionTestBase>())
     {
     }
 

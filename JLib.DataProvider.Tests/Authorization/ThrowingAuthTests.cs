@@ -28,8 +28,10 @@ public class ThrowingAuthTests
         new ServiceCollection()
             .AddTypeCache(
                 out var typeCache, exceptions, loggerFactory,
-                JLibDataProviderTp.Instance,
-                TypePackage.GetNested<ThrowingAuthTests>()
+                new TypePackageBuilder(loggerFactory)
+                    .AddAssemblyOf<IDataProviderR<IDataObject>>()
+                    .AddNestedTypes<ThrowingAuthTests>()
+                    .Build()
             );
         exceptions.GetException().Should().NotBeNull();
     }

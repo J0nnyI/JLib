@@ -23,7 +23,10 @@ public abstract class DataPackageTestBase : IDisposable
     {
         using var exceptions = new ExceptionBuilder(GetType().FullName());
         var logger = LoggerFactory.Create(x => x.AddXunit(toh));
-        var typePackage = TypePackage.Get(additionalTypes.Append(JLibDataGenerationTp.Instance));
+        var typePackage = new TypePackageBuilder(logger)
+            .AddAssemblyOf<DataPackage>()
+            .Build()
+            .MergeWith(null, additionalTypes);
         var services = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, logger, typePackage)
             .AddAutoMapper(x => x.AddProfiles(typeCache, logger))

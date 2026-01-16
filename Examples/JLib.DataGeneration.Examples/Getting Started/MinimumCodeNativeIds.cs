@@ -53,8 +53,11 @@ public sealed class MinimumCodeNativeIds : IDisposable
 
             serviceCollection = new ServiceCollection()
                 .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                    JLibDataGenerationTp.Instance,
-                    TypePackage.GetNested<MinimumCodeNativeIds>())
+                    new TypePackageBuilder()
+                        .AddNestedTypes<MinimumCodeNativeIds>()
+                        .AddAssemblyOf<DataPackage>()
+                        .Build()
+                    )
                 .AddSingleton<ShoppingServiceMock>()
                 .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
                 .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))

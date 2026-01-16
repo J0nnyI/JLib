@@ -1,6 +1,14 @@
-# Current
+# 0.13.0
+## Breaking Changes
+removed all typePackage usages and implementations. Use the TypePackageBuilder instead.
 
+# 0.12.0
+## Breaking Changes
+### Package References
+- Updated all references, including automapper, which causes an indirect breaking change.
 ## Features
+### DotNet
+- Added support for .NET 10
 ### JLib.Reflection
 #### Type Package
 - TypePackageBuilder added
@@ -18,4 +26,4 @@
 ### JLib.DataGeneration
 - AutoMapper References removed
 
-## Fixes
+

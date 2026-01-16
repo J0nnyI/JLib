@@ -215,10 +215,18 @@ public class TypePackageBuilderTests(ITestOutputHelper toh)
         );
 
     [Fact]
+    public void MultipleLevelNested()
+        => RunTest(
+            additionalSetup: b => b.AddNestedTypes<DemoTypes.NestingDemoClass2>(),
+            expectedTypes: DemoTypes.NestedTypes2.ToArray()
+        );
+
+    
+    [Fact]
     public void MultipleNested()
         => RunTest(
             additionalSetup: b => b.AddNestedTypes<DemoTypes.NestingDemoClass>().AddNestedTypes<DemoTypes.NestingDemoClass2>(),
-            expectedTypes: DemoTypes.NestedTypes2.Concat(DemoTypes.NestedTypes2).ToArray()
+            expectedTypes: DemoTypes.NestedTypes.Concat(DemoTypes.NestedTypes2).ToArray()
             );
 
     [Fact]

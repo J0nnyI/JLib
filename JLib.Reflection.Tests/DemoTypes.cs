@@ -11,7 +11,10 @@ public static class DemoTypes
     }
     public class NestingDemoClass2
     {
-        public class NestedDemoClass2A { }
+        public class NestedDemoClass2A
+        {
+            public class NestedDemoClass2A1{}
+        }
         public class NestedDemoClass2B { }
         public class NestedDemoClass2C { }
     }
@@ -24,6 +27,7 @@ public static class DemoTypes
     public static IReadOnlyCollection<Type> NestedTypes2 =>
     [
         typeof(NestingDemoClass2.NestedDemoClass2A),
+        typeof(NestingDemoClass2.NestedDemoClass2A.NestedDemoClass2A1),
         typeof(NestingDemoClass2.NestedDemoClass2B),
         typeof(NestingDemoClass2.NestedDemoClass2C)
     ];

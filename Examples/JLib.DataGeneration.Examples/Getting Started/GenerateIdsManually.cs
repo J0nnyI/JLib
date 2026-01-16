@@ -34,8 +34,11 @@ public sealed class GenerateIdsManually : IDisposable
 
         var serviceCollection = new ServiceCollection()
             .AddTypeCache(out var typeCache, exceptions, loggerFactory,
-                JLibDataGenerationTp.Instance,
-                TypePackage.GetNested<GenerateIdsManually>())
+                new TypePackageBuilder()
+                    .AddNestedTypes<GenerateIdsManually>()
+                    .Add(typeof(DataPackage).Assembly)
+                    .Build()
+            )
             .AddSingleton<ShoppingServiceMock>()
             .AddScopedAlias<IShoppingService, ShoppingServiceMock>()
             .AddAutoMapper(b => b.AddProfiles(typeCache, loggerFactory))

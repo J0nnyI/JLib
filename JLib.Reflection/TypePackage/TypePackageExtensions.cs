@@ -12,35 +12,6 @@ namespace JLib.Reflection;
 /// </summary>
 public static class TypePackageExtensions
 {
-    /// <summary>
-    /// applies the given <paramref name="filter"/> to the typePackage <paramref name="typePackage"/>
-    /// </summary>
-    public static ITypePackage ApplyFilter(this ITypePackage typePackage, Func<Type, bool> filter, string? filterDescription = null)
-#pragma warning disable CS0618 // Type or member is obsolete
-        => TypePackage.Get(
-#pragma warning restore CS0618 // Type or member is obsolete
-            typePackage.Types.Where(filter),
-            typePackage.Children.Select(tp => tp.ApplyFilter(filter, filterDescription)),
-            typePackage.DescriptionTemplate + " Filtered" + (filterDescription is null ? "" : $": {filterDescription}"));
-
-    /// <summary>
-    /// Creates a <see cref="ITypePackage"/> from the given <paramref name="typePackage"/> which contains only <see cref="TypeValueType"/>s and <see cref="ITypeValueType"/>s
-    /// </summary>
-    public static ITypePackage RemoveNonTypeValueTypes(this ITypePackage typePackage)
-        => typePackage.ApplyFilter(
-            type => type.IsDerivedFromAny<ITypeValueType>() || type.IsDerivedFromAny<TypeValueType>(),
-            nameof(RemoveNonTypeValueTypes)
-        );
-    /// <summary>
-    /// Creates a <see cref="ITypePackage"/> from the given <paramref name="typePackage"/> which contains only <see cref="ValueTypes.ValueType"/>s
-    /// </summary>
-    public static ITypePackage RemoveNonValueTypes(this ITypePackage typePackage)
-        => typePackage.ApplyFilter(
-            type => type.IsDerivedFromAny<ValueType<Ignored>>(),
-            nameof(RemoveNonValueTypes)
-        );
-
-
     private static readonly JsonSerializerOptions DefaultOptions =
         new(JsonSerializerDefaults.General)
         { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
@@ -57,7 +28,7 @@ public static class TypePackageExtensions
     {
         var res = new Dictionary<string, object?>()
         {
-            ["Description"] = typePackage.DescriptionTemplate
+            ["Description"] = typePackage.Name
                 .Replace("{Children}", typePackage.Children.Count().ToString())
                 .Replace("{Types}", typePackage.Types.Count().ToString()),
             ["Types"] = typePackage.Types.GroupBy(t => t.Namespace)
@@ -70,4 +41,16 @@ public static class TypePackageExtensions
         res.RemoveWhere(x => x.Value is null);
         return res;
     }
+    
+    
+    /// <returns>combination of the given <paramref name="packages"/> into a new <see cref="ITypePackage"/></returns>
+    public static ITypePackage Merge( string? name = null,params ITypePackage[] packages)
+        => new TypePackageBuilder.TypePackageCollection(name?? $"{packages.Length} type packages", packages);
+    
+    /// <returns>combination of the given <paramref name="children"/> with the given <paramref name="parent"/> into a new <see cref="ITypePackage"/></returns>
+    public static ITypePackage MergeWith(this ITypePackage parent, params ITypePackage[] children)
+    => parent.MergeWith(null, children);
+    /// <returns>combination of the given <paramref name="children"/> with the given <paramref name="parent"/> into a new <see cref="ITypePackage"/></returns>
+    public static ITypePackage MergeWith(this ITypePackage parent, string? name, params ITypePackage[] children)
+        => Merge(name, children.Append(parent).ToArray());
 }

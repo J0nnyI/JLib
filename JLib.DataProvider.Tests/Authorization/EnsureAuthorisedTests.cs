@@ -28,11 +28,11 @@ public class EnsureAuthorisedTests
         var exceptions = new ExceptionBuilder("test");
 
         var cache = new TypeCache(
-            TypePackage.Get(
-                JLibDataProviderTp.Instance,
-                JLibCqrsTp.Instance,
-                TypePackage.Get(typeof(TestDataObject), typeof(ValidAuthProfile))
-            ),
+            new TypePackageBuilder()
+                .AddAssemblyOf<IDataProviderR<IDataObject>>()
+                .AddAssemblyOf<IPersistenceAccessor>()
+                .Add(typeof(TestDataObject), typeof(ValidAuthProfile))
+                .Build(),
             exceptions, loggerFactory);
 
         exceptions.GetException()?.Message.Should().BeNull();
@@ -45,11 +45,11 @@ public class EnsureAuthorisedTests
         var exceptions = new ExceptionBuilder("test");
 
         var cache = new TypeCache(
-            TypePackage.Get(
-                JLibDataProviderTp.Instance,
-                JLibCqrsTp.Instance,
-                TypePackage.Get(typeof(TestDataObject), typeof(InvalidAuthProfile))
-                    ),
+            new TypePackageBuilder()
+                .AddAssemblyOf<IDataProviderR<IDataObject>>()
+                .AddAssemblyOf<IPersistenceAccessor>()
+                .Add(typeof(TestDataObject), typeof(InvalidAuthProfile))
+                .Build(),
             exceptions, loggerFactory);
 
         var sut = () => exceptions.ThrowIfNotEmpty();

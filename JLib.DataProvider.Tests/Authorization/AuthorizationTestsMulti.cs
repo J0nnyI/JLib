@@ -29,10 +29,12 @@ public class AuthorizationTestsMulti
             .AddLogging()
             .AddTypeCache(
                 out var typeCache, exceptions, loggerFactory,
-                JLibDataProviderTp.Instance,
-                JLibDataGenerationTp.Instance,
-                JLibCqrsTp.Instance,
-                TypePackage.GetNested<AuthorizationTestsMulti>()
+                new TypePackageBuilder(loggerFactory)
+                    .AddAssemblyOf<IDataProviderR<IDataObject>>()
+                    .AddAssemblyOf<DataPackage>()
+                    .AddAssemblyOf<IPersistenceAccessor>()
+                    .AddNestedTypes<AuthorizationTestsMulti>()
+                    .Build()
                 )
             .AddSingleton<TestAuthorizationCondition>()
             .AddDataPackages(typeCache)

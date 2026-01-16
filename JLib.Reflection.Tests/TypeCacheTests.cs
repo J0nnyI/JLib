@@ -95,7 +95,7 @@ public class TypeCacheTests : IDisposable
     public void Test(Type sut)
     {
         var testName = sut.Name;
-        var package = TypePackage.GetNested(sut);
+        var package = new TypePackageBuilder().AddNestedTypes(sut).Build();
         var exceptions = new ExceptionBuilder(testName);
         var cache = new TypeCache(package, exceptions, _loggerFactory);
         new Dictionary<string, object?>()
