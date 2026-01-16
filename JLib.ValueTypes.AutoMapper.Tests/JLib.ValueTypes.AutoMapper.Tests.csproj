@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JLib.ValueTypes.Mapping\JLib.ValueTypes.Mapping.csproj" />
+    <ProjectReference Include="..\JLib.ValueTypes.AutoMapper-\JLib.ValueTypes.AutoMapper-.csproj" />
     <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />
   </ItemGroup>
 

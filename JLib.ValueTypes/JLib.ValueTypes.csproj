@@ -5,4 +5,8 @@
     <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
 </Project>

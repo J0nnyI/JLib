@@ -1,6 +1,11 @@
 # 0.13.0
 ## Breaking Changes
-removed all typePackage usages and implementations. Use the TypePackageBuilder instead.
+### JLib.Reflection
+- removed all typePackage usages and implementations. Use the TypePackageBuilder instead.
+
+### JLib.ValueTypes.*
+- renamed JLib.ValueTypes.Mapping -> JLib.ValueTypes.AutoMapper
+- moved valueType json converters to JLib.ValueTypes package
 
 # 0.12.0
 ## Breaking Changes
