@@ -505,13 +505,13 @@ public interface IValueType;
 
 /// <summary>
 /// Base class for all value types<br/>
-/// JLib.ValueTypes.Mapping adds Automapper and native json support for System.Text.Json
+/// JLib.ValueTypes.AutoMapper- adds Automapper and native json support for System.Text.Json
 /// </summary>
 public abstract record ValueType<T> : IValueType
 {
     /// <summary>
     /// Base class for all value types<br/>
-    /// JLib.ValueTypes.Mapping adds Automapper and native json support for System.Text.Json
+    /// JLib.ValueTypes.AutoMapper- adds Automapper and native json support for System.Text.Json
     /// </summary>
     protected ValueType(T Value)
     {

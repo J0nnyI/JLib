@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <RootNamespace>JLib.ValueTypes.Mapping</RootNamespace>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
