@@ -3,9 +3,16 @@
 ### JLib.Reflection
 - removed all typePackage usages and implementations. Use the TypePackageBuilder instead.
 
+### JLib.Helper
+- changed ReflectionHelper attribute method declarations to cache the result.
+
 ### JLib.ValueTypes.*
 - renamed JLib.ValueTypes.Mapping -> JLib.ValueTypes.AutoMapper
 - moved valueType json converters to JLib.ValueTypes package
+
+## Features
+### JLib.Helper
+- AttributeCache added
 
 # 0.12.0
 ## Breaking Changes

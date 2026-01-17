@@ -55,6 +55,17 @@ public static class EnumerableExtensions
         => col.Except(values.AsEnumerable());
 
     /// <summary>
+    /// removes all elements from the <paramref name="dictionary"/> which match the <paramref name="filter"/>
+    /// </summary>
+    public static void RemoveWhere<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> dictionary,
+        Func<KeyValuePair<TKey, TValue>, bool> filter)
+        where TKey : notnull
+    {
+        foreach (var kvp in dictionary.Where(filter).ToArray())
+            dictionary.TryRemove(kvp.Key, out _);
+    }
+
+    /// <summary>
     /// removes all elements from the <paramref name="collection"/> which match the <paramref name="filter"/>
     /// </summary>
     public static void RemoveWhere<T>(this ICollection<T> collection, Func<T, bool> filter)

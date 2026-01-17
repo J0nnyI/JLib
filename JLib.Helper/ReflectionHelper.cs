@@ -40,6 +40,11 @@ public enum AccessModifier
 /// </summary>
 public static class ReflectionHelper
 {
+    /// <summary>
+    /// default attribute cache use when evaluating attributes
+    /// </summary>
+    public static ICustomTypeAttributeCache AttributeCache { get; } = new CustomTypeAttributeCache();
+    
     /// <returns>the <see cref="AccessModifier"/> of the given <paramref name="methodInfo"/></returns>
     /// <exception cref="ArgumentException"></exception>
     public static AccessModifier GetAccessModifier(this MethodInfo methodInfo)
@@ -100,11 +105,14 @@ public static class ReflectionHelper
         // Init-only properties are marked with the IsExternalInit type.
         return setMethodReturnParameterModifiers?.Contains(typeof(IsExternalInit)) ?? false;
     }
+
     /// <summary>
     /// Checks, whether the given <paramref name="type"/> is decorated with the given <paramref name="attributeType"/>
     /// </summary>
-    public static bool HasCustomAttribute(this MemberInfo type, Type attributeType, bool inherit = true)
-        => type.GetCustomAttribute(attributeType, inherit) is not null;
+    public static bool HasCustomAttribute(this MemberInfo type, Type attributeType, bool inherit=true, bool useCache=true, ICustomTypeAttributeCache? cache=null)
+        => useCache
+            ? (cache ?? AttributeCache).IsDefined(type, attributeType, inherit)
+            : Attribute.IsDefined(type, attributeType, inherit);
 
     /// <summary>
     /// converts the member into a code-like representation.<br/>
@@ -203,23 +211,29 @@ public static class ReflectionHelper
     /// <summary>
     /// Checks, whether the given <paramref name="type"/> is decorated with the given <typeparamref name="T"/>
     /// </summary>
-    public static bool HasCustomAttribute<T>(this MemberInfo type, bool inherit = true)
-        where T : Attribute =>
-        type.HasCustomAttribute(typeof(T), inherit);
+    public static bool HasCustomAttribute<T>(this MemberInfo type, bool inherit=true, bool useCache=true, ICustomTypeAttributeCache? cache=null)
+        where T : Attribute 
+        => type.HasCustomAttribute(typeof(T), inherit, useCache, cache);
 
     /// <summary>
     /// <inheritdoc cref="Attribute.GetCustomAttributes(MemberInfo, Type, bool)"/>
     /// </summary>
-    /// <typeparam name="T">the AttributeType to search for</typeparam>
-    public static T[] GetCustomAttributes<T>(this MemberInfo type, bool inherit = true)
-        where T : Attribute
-        => Attribute.GetCustomAttributes(type, typeof(T), inherit).Cast<T>().ToArray();
+    /// <typeparam name="TAttribute">the AttributeType to search for</typeparam>
+    public static IReadOnlyCollection<TAttribute> GetCustomAttributes<TAttribute>(this MemberInfo type, bool inherit = true, bool useCache = true, ICustomTypeAttributeCache? cache = null)
+        where TAttribute : Attribute
+        => useCache
+            ? (cache ?? AttributeCache)
+                .GetCustomAttributes<TAttribute>(type, inherit)
+            : Attribute.GetCustomAttributes(type, typeof(TAttribute), inherit).Cast<TAttribute>().ToArray();
 
     /// <summary>
     /// <inheritdoc cref="Attribute.GetCustomAttributes(MemberInfo, Type, bool)"/>
     /// </summary>
-    public static Attribute[] GetCustomAttributes(this MemberInfo type, Type attributeType, bool inherit = true)
-        => Attribute.GetCustomAttributes(type, attributeType, inherit).ToArray();
+    public static IReadOnlyCollection<Attribute> GetCustomAttributes(this MemberInfo type, Type attributeType, bool inherit = true, bool useCache = true, ICustomTypeAttributeCache? cache = null)
+        => useCache
+            ? (cache ?? AttributeCache)
+            .GetCustomAttributes(type, attributeType, inherit)
+            : Attribute.GetCustomAttributes(type, attributeType, inherit);
 
     /// <summary>
     /// <inheritdoc cref="Type.GetGenericTypeDefinition"/>
