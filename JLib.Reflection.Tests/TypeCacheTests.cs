@@ -139,7 +139,7 @@ public class TypeCacheTests : IDisposable
         typeof(TypeCacheTests)
             .GetNestedTypes()
             .Should()
-            .OnlyContain(t => !t.HasCustomAttribute<FocusTestAttribute>(true), "Some tests have the Focus attribute set");
+            .OnlyContain(t => !t.HasCustomAttribute<FocusTestAttribute>(true,true, null), "Some tests have the Focus attribute set");
     }
 
     public void Dispose() => _disposables.DisposeAll();
