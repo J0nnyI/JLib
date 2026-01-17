@@ -7,6 +7,9 @@
 ### JLib.Helper
 - changed ReflectionHelper attribute method declarations to cache the result.
 
+### JLib.Helper
+- changed ReflectionHelper attribute method declarations to cache the result.
+
 ### JLib.ValueTypes.*
 - renamed JLib.ValueTypes.Mapping -> JLib.ValueTypes.AutoMapper
 - moved valueType json converters to JLib.ValueTypes package
