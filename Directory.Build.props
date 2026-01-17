@@ -29,7 +29,7 @@
             JLib.Reflection.DependencyInjection
             JLib.Reflection.HotChocolate.Query
             JLib.ValueTypes
-            JLib.ValueTypes.AutoMapper-
+            JLib.ValueTypes.AutoMapper
             JLib.ValueTypes.Implementations.FileSystem
             JLib
             JLib.AutoMapper
