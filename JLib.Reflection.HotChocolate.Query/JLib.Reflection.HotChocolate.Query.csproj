@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Adds a HotChocolate GraphQL ObjectType that exposes the application's cached reflection state, letting you query the JLib type cache, registered services, and data providers over a GraphQL endpoint.</Description>
+    <PackageTags>JLib;reflection;HotChocolate;GraphQL;type-cache;dependency-injection;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />
     <ProjectReference Include="..\JLib.HotChocolate\JLib.HotChocolate.csproj" />

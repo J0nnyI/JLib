@@ -1,4 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Provides a simple, thread-safe in-memory implementation of the JLib DataProvider abstractions, intended primarily for testing. Data is not persisted between instances, so providers are registered as singletons. Register them via the ServiceCollection.AddInMemoryDataProvider extension method for dependency injection.</Description>
+    <PackageTags>JLib;data-provider;in-memory;testing;dependency-injection;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>

@@ -2,6 +2,8 @@
 
   <PropertyGroup>
       <IsPackable>true</IsPackable>
+      <Description>Reflection-based configuration section access for Microsoft.Extensions.Configuration. Discovers classes marked with ConfigSectionNameAttribute via the JLib type cache and registers them in the dependency injection container or retrieves them directly, with environment-aware section selection.</Description>
+      <PackageTags>JLib;configuration;options;dependency-injection;reflection;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

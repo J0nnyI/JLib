@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <description>Metapackage for all JLIb packages</description>
+        <Description>Metapackage that bundles all JLib packages, including reflection, dependency injection, value types, CQRS, data providers, configuration, and integrations for AutoMapper, EF Core, and HotChocolate. Reference this single package to pull in the complete JLib library.</Description>
+        <PackageTags>JLib;metapackage;reflection;dependency-injection;value-types;cqrs;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

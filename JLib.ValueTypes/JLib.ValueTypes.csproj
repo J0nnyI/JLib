@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Core building blocks for strongly-typed value types in .NET, providing base classes (such as StringValueType) and an attribute-based validation framework to wrap and validate primitive values. Other JLib packages build on this foundation; JSON converters are provided separately (System.Text.Json in JLib.SystemTextJson).</Description>
+    <PackageTags>JLib;value-types;validation;ddd;domain-driven-design;strongly-typed;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\JLib.Exceptions\JLib.Exceptions.csproj" />
     <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />

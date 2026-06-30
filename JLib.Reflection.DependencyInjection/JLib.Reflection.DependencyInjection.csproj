@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Extension methods to register the JLib.Reflection type cache (ITypeCache) with Microsoft.Extensions.DependencyInjection. Provides AddTypeCache overloads that build a type package, initialize the cache, and register it as a singleton on the IServiceCollection.</Description>
+    <PackageTags>JLib;reflection;dependency-injection;type-cache;ioc;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />
   </ItemGroup>

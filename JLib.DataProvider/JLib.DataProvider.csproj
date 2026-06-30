@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <Description>Provides data access abstractions for JLib, including generic read and read-write data provider and repository interfaces keyed by Guid ids, an in-memory implementation, and a data object authorization model. Uses the JLib reflection type cache to automatically register data providers and repositories with the dependency injection container.</Description>
+        <PackageTags>JLib;data-provider;repository;data-access;dependency-injection;reflection;dotnet</PackageTags>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\JLib.DependencyInjection\JLib.DependencyInjection.csproj" />
         <ProjectReference Include="..\JLib.Exceptions\JLib.Exceptions.csproj" />

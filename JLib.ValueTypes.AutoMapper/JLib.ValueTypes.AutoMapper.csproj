@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <RootNamespace>JLib.ValueTypes.Mapping</RootNamespace>
+    <Description>Provides an AutoMapper Profile (ValueTypeProfile) that automatically generates two-way mappings between JLib ValueType types and their underlying native types. Value types are discovered through the JLib reflection type cache, so no per-type mapping configuration is required.</Description>
+    <PackageTags>JLib;AutoMapper;value-types;mapping;reflection;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

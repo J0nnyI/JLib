@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Helpers for building ASP.NET Core web applications, including IServiceCollection extension methods to register request scoped services that are instanced only once per HTTP request even across manually created scopes.</Description>
+    <PackageTags>JLib;aspnetcore;dependency-injection;request-scoped;httpcontext;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />

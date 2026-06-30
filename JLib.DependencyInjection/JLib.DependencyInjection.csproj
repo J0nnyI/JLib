@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Dependency injection helpers for Microsoft.Extensions.DependencyInjection. Provides attribute-based service registration driven by the JLib reflection type cache (ServiceAttribute and ServiceImplementationOverrideAttribute), alias and generic service registration, and IServiceProvider extensions for lazy and multi-service resolution.</Description>
+    <PackageTags>JLib;dependency-injection;ioc;service-collection;reflection;attributes;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />

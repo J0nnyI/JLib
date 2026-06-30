@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
+        <Description>HotChocolate GraphQL integration for JLib. Provides type cache driven discovery of GraphQL type extensions and query data object types, resolver context helpers for batched data loading of JLib data objects via EF Core, and a logging diagnostics event listener.</Description>
+        <PackageTags>JLib;HotChocolate;GraphQL;dataloader;EntityFrameworkCore;reflection;dotnet</PackageTags>
     </PropertyGroup>
 
   <ItemGroup>

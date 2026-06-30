@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>System.Text.Json integration for JLib. Automatically discovers JsonConverter implementations from the JLib reflection TypeCache and registers them with JsonSerializerOptions, with support for ordering converters via an attribute and dependency-injection-based configuration.</Description>
+        <PackageTags>JLib;System.Text.Json;json;serialization;JsonConverter;reflection;dependency-injection;dotnet</PackageTags>
+    </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Options" />
     </ItemGroup>

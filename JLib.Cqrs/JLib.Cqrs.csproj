@@ -2,6 +2,8 @@
 
   <PropertyGroup>
       <IsPackable>true</IsPackable>
+      <Description>Provides interfaces, reflection-discovered types and helpers for building CQRS architectures with JLib. Includes marker interfaces for command entities and typed-id data objects, a persistence accessor abstraction and queryable extensions, built on JLib.Reflection and JLib.DataProvider.</Description>
+      <PackageTags>JLib;cqrs;reflection;data-provider;value-types;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

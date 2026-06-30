@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <Description>Provides read data providers for the JLib DataProvider abstraction that project one data object onto another using AutoMapper. Maps are generated automatically for each mapped data object type so a mapped provider can be injected directly without manual mapping.</Description>
+        <PackageTags>JLib;data-provider;automapper;mapping;dependency-injection;dotnet</PackageTags>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\JLib.AutoMapper\JLib.AutoMapper.csproj" />
         <ProjectReference Include="..\JLib.DataProvider\JLib.DataProvider.csproj" />

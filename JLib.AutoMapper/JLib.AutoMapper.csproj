@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <IsPackable>true</IsPackable>
+        <Description>Integrates AutoMapper with the JLib reflection type cache to automatically discover and register all AutoMapper Profile types, injecting ITypeCache and ILoggerFactory into their constructors. Also provides helper profiles for mapping objects to string dictionaries and nullable struct conversion, plus mapping extension methods.</Description>
+        <PackageTags>JLib;AutoMapper;mapping;object-mapping;reflection;type-cache;dependency-injection;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

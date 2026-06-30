@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <description>Contains Validated implementations of File System path segments like file names, directories, and file extensions.</description>
+        <Description>Provides validated JLib ValueType implementations for file system path segments such as file names, file extensions, directory names, drive letters, and absolute or relative file and directory paths. Built on JLib.ValueTypes to enforce path validity through strongly typed values.</Description>
+        <PackageTags>JLib;ValueTypes;filesystem;path;validation;dotnet</PackageTags>
     </PropertyGroup>
     <ItemGroup>
     <ProjectReference Include="..\JLib.ValueTypes\JLib.ValueTypes.csproj" />

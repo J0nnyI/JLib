@@ -1,34 +1,66 @@
-﻿# Jlib.Reflection
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
-      NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and
-      "OPTIONAL" in this document are to be interpreted as described in
-      [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
+# JLib.Reflection.DependencyInjection
+
+Extension methods to register the [JLib.Reflection](../JLib.Reflection/JLib.Reflection%20Documentation.md) type cache (`ITypeCache`) with `Microsoft.Extensions.DependencyInjection`. Provides `AddTypeCache` overloads that build a type package, initialize the cache, and register it as a singleton on the `IServiceCollection`.
+
+## Installation
+```sh
+dotnet add package JLib.Reflection.DependencyInjection
+```
+
 ## Features
-- compile time Typesafety: a function may opnly accept EntityTypes instead of all types
-- improved Readabillity through communication of content: you do not get a Type but an EntityType or and DtoType
-- reduced Validation: you do not have to check if the type is valid each time you want to use it
-- navigation properties: a TypeValueType might contain References to other TypevalueTypes, such as EntityType.MappedDataTransferObject
-- utility methods: you are able to create methods to simplify the usage, for example to automatically add type arguments to the type
-- start-time validation: on startup, each valuetype can be validated and the solution won't run if an type is invalid, for example missing a required interface
-- reflection-caching: All reflections are executed once and use from that point the calculated result.
-- simplified type discovery: you can use the TvtFactoryAttributes to automatically discover all your types
-- DRY-er code: you define your reflections at one central location per TypeValueType, which prevents you from having to write the same code multiple times
-- simplified reflection: you no longer have to think about what defines an entity when trying to build something like a AutoMapper.Profile using reflection, since it has already been done.
-### Components
-- TypeValueType
-    - Combines the [DDD ValueObjects / Value Types](https://blog.jannikwempe.com/domain-driven-design-entities-value-objects) with the System.Type
-    - see: Jlib.Reflection.TypeValueType
-    - MUST NOT be instantiated manually but by using the TypeCache
-    - MUST be decorated using FactoryAttributes
-    - Types MUST only be assignable to a single TypeValueType according to the TypeValueTypes FactoryAttributes
-- FactoryAttributes
-    - provides a simplified way to define which types are, for example, Entities simply by adding attributes.
-    - see: JLib.Reflection.TvtFactoryAttributes
-    - MUST implement JLib.Reflection.TvtFactoryAttributes.ITypeValueTypeFilterAttribute
-    - MUST only be used on classes derived from TypeValueType
-- TypeCache
-    - Created when the application starts. Handles the Initialization and delivery of TypeValueTypes
-    - see: TypeCache, JLib.ServiceCollectionHelper.AddTypeCache
-    - SHOULD: be used as singleton
-- TypePackages
-    - 
+- Registers the `ITypeCache` as a singleton on an `IServiceCollection`.
+- Builds and initializes the type cache during registration and returns the ready-to-use instance via an `out` parameter, so it can be used while configuring further services.
+- Multiple overloads: register from an already built `ITypePackage`, or discover assemblies from a directory using included prefixes and a `SearchOption`.
+- Collects initialization errors into a supplied `ExceptionBuilder` and uses an `ILoggerFactory` for diagnostics.
+
+## Usage
+
+All overloads live on `ReflectionServiceCollectionExtensions` and are invoked as fluent extension methods on `IServiceCollection`. They expose the initialized `ITypeCache` through an `out` parameter.
+
+### Register from an explicit type package
+The most common scenario: build an `ITypePackage` with `TypePackageBuilder`, then register the cache. The returned `typeCache` can immediately be passed to other configuration steps (for example `AddServicesWithAttributes`).
+
+```cs
+using JLib.Exceptions;
+using JLib.Reflection;
+using JLib.Reflection.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+var exceptions = new ExceptionBuilder("startup");
+var loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+
+var typePackage = new TypePackageBuilder(loggerFactory)
+    .AddNestedTypes<MyTypeRoot>()
+    .Build();
+
+var services = new ServiceCollection()
+    .AddTypeCache(out var typeCache, exceptions, loggerFactory, typePackage);
+
+// typeCache is initialized and registered as a singleton; use it right away
+exceptions.ThrowIfNotEmpty();
+```
+
+### Discover assemblies from a directory
+This overload builds the type package for you by scanning a directory for assemblies matching the given prefixes.
+
+```cs
+var services = new ServiceCollection()
+    .AddTypeCache(
+        out var typeCache,
+        exceptions,
+        loggerFactory,
+        assemblySearchDirectory: AppContext.BaseDirectory,
+        searchOption: SearchOption.TopDirectoryOnly,
+        includedPrefixes: "MyCompany.MyApp");
+```
+
+A convenience overload defaults the search directory to the current directory and uses `SearchOption.TopDirectoryOnly`:
+
+```cs
+var services = new ServiceCollection()
+    .AddTypeCache(out var typeCache, exceptions, loggerFactory, "MyCompany.MyApp");
+```
+
+## Related Packages
+- [JLib.Reflection](../JLib.Reflection/JLib.Reflection%20Documentation.md) - provides `ITypeCache`, `TypeCache`, `ITypePackage` and `TypePackageBuilder` that this package registers.

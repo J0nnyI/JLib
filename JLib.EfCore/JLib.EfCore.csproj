@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <IsPackable>True</IsPackable>
+        <Description>Provides Entity Framework Core ValueConverters for JLib ValueTypes, allowing strongly typed ValueTypes (backed by class or struct values) to be used directly as properties on EF Core entities.</Description>
+        <PackageTags>JLib;efcore;entity-framework-core;value-converter;value-types;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <PropertyGroup>
+        <Description>Manage test data using composable data packages with deterministic, persistent IDs. Provides the DataPackage base type, an ID registry that stores generated int and Guid values next to the project, and a stacktrace-based ID generator for IDs created at runtime. Integrates with JLib TypeCache and AutoMapper for strongly typed value-type IDs.</Description>
+        <PackageTags>JLib;testing;test-data;data-generation;dependency-injection;automapper;dotnet</PackageTags>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="AutoMapper" />
     </ItemGroup>

@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>Provides the IIdGenerator abstraction for generating Guids and GuidValueType identifiers at runtime, registrable via AddIdGenerator on the dependency injection container. The default implementation can be replaced by the JLib.DataGeneration package during testing to produce trackable, deterministic IDs.</Description>
+    <PackageTags>JLib;data-generation;guid;id-generator;dependency-injection;testing;dotnet</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />

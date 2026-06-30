@@ -2,6 +2,8 @@
 
   <PropertyGroup>
       <IsPackable>true</IsPackable>
+      <Description>Foundational helper and extension methods for .NET, covering reflection and Type inspection, enumerables, dictionaries, hash sets, strings, chars, expressions, nullable handling, object casting, exceptions, and disposables. Used as the shared utility base across the JLib libraries.</Description>
+      <PackageTags>JLib;helpers;extension-methods;reflection;enumerable;dotnet;utilities</PackageTags>
   </PropertyGroup>
 
 </Project>

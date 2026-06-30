@@ -2,6 +2,8 @@
 
   <PropertyGroup>
       <IsPackable>true</IsPackable>
+      <Description>Provides a standardized way to create, collect, and aggregate exceptions. The ExceptionBuilder and IExceptionProvider abstractions let you accumulate multiple errors across nested scopes and throw them as a single JLibAggregateException with a readable, hierarchical message.</Description>
+      <PackageTags>JLib;exceptions;exception-handling;aggregate-exception;error-handling;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
