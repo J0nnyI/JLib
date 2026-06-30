@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\JLib.DataGeneration.Abstractions\JLib.DataGeneration.Abstractions.csproj" />
         <ProjectReference Include="..\JLib.DependencyInjection\JLib.DependencyInjection.csproj" />
         <ProjectReference Include="..\JLib.Reflection\JLib.Reflection.csproj" />

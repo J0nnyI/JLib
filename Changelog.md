@@ -14,6 +14,12 @@
 - renamed JLib.ValueTypes.Mapping -> JLib.ValueTypes.AutoMapper
 - moved valueType json converters to JLib.ValueTypes package
 
+### JLib.DataGeneration / JLib.DataGeneration.Abstractions
+- removed the AutoMapper dependency. `TestingIdGenerator` no longer takes an `IMapper` constructor parameter and creates typed value-type ids via `ValueType.Create` instead of AutoMapper. Consumers no longer need to call `.AddAutoMapper(...)` for id generation.
+
+### JLib.DependencyInjection
+- removed the transitive `JLib.AutoMapper` project reference (it was unused by the package itself). Projects that obtained AutoMapper transitively via `JLib.DependencyInjection` must now reference `JLib.AutoMapper` and/or the `AutoMapper` package explicitly.
+
 ## Features
 ### JLib.Helper
 - AttributeCache added

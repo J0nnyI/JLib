@@ -28,16 +28,10 @@ public interface IIdGenerator
 }
 
 /// <summary>
-/// Runtime implementation of the <see cref="IIdGenerator"/> interface.<br/>
-/// Requires <see cref="IMapper"/>
+/// Runtime implementation of the <see cref="IIdGenerator"/> interface.
 /// </summary>
 public sealed class IdGenerator : IIdGenerator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="IdGenerator"/> class.
-    /// </summary>
-    /// <param name="mapper">The <see cref="IMapper"/> instance used for mapping.</param>
-
     /// <summary>
     /// Creates a new <see cref="Guid"/>.
     /// </summary>
