@@ -6,6 +6,7 @@ using FluentAssertions;
 
 using JLib.DependencyInjection;
 using JLib.Helper;
+using JLib.ValueTypes;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -53,9 +54,9 @@ public abstract class TestingIdGeneratorTests : IDisposable
 
     protected TestingIdGeneratorTests(ITestOutputHelper toh)
     {
+        // No .AddAutoMapper(...) here: TestingIdGenerator must resolve and create typed ids without AutoMapper.
         var provider = new ServiceCollection()
             .AddLogging(x=>x.AddXunit(toh))
-            .AddAutoMapper(cfg => { })
             .AddTestingIdGenerator()
             .AddIdRegistry(new() { NamespaceAliases = [new("JLib.DataGeneration.Tests")] })
             .AddSingleton(typeof(Nested<>))
@@ -247,6 +248,72 @@ public abstract class TestingIdGeneratorTests : IDisposable
 
             info.Value
                 .Should().Be(id);
+        }
+    }
+
+    public record TestGuidId(Guid Value) : GuidValueType(Value);
+
+    public record TestStringId(string Value) : StringValueType(Value);
+
+    public record TestIntId(int Value) : IntValueType(Value);
+
+    /// <summary>
+    /// Covers the typed value-type id overloads (<see cref="TestingIdGenerator.CreateGuid{TId}()"/>,
+    /// <see cref="TestingIdGenerator.CreateStringId{TId}"/>, <see cref="TestingIdGenerator.CreateIntId{TId}"/>).
+    /// These previously routed through AutoMapper and had no coverage; they now use <c>ValueType.Create</c>.
+    /// </summary>
+    public class TypedValueTypeIdTests : TestingIdGeneratorTests
+    {
+        public TypedValueTypeIdTests(ITestOutputHelper toh) : base(toh) { }
+
+        [Fact]
+        public void CreateGuid_Typed_WrapsRegisteredGuid()
+        {
+            var id = _idGenerator.CreateGuid<TestGuidId>();
+            id.Should().NotBeNull();
+            id.Value.Should().NotBe(Guid.Empty);
+            // reverse lookup proves the wrapped value is the registry-generated id (same path the raw overload uses)
+            id.Value.IdInfo(_idRegistry).Should().Contain("Guid").And.Contain(id.Value.ToString());
+        }
+
+        [Fact]
+        public void CreateGuid_Typed_IsDistinctPerCall()
+        {
+            var a = _idGenerator.CreateGuid<TestGuidId>();
+            var b = _idGenerator.CreateGuid<TestGuidId>();
+            a.Should().NotBe(b);
+        }
+
+        [Fact]
+        public void CreateIntId_Typed_WrapsRegisteredInt()
+        {
+            var id = _idGenerator.CreateIntId<TestIntId>();
+            id.Should().NotBeNull();
+            id.Value.IdInfo(_idRegistry).Should().Contain("Int32").And.Contain(id.Value.ToString());
+        }
+
+        [Fact]
+        public void CreateIntId_Typed_IsDistinctPerCall()
+        {
+            var a = _idGenerator.CreateIntId<TestIntId>();
+            var b = _idGenerator.CreateIntId<TestIntId>();
+            a.Should().NotBe(b);
+        }
+
+        [Fact]
+        public void CreateStringId_Typed_WrapsNonEmptyValue()
+        {
+            var id = _idGenerator.CreateStringId<TestStringId>();
+            id.Should().NotBeNull();
+            id.Value.Should().NotBeNullOrEmpty();
+        }
+
+        [Fact]
+        public void CreateStringId_Typed_IsDistinctPerCall()
+        {
+            var a = _idGenerator.CreateStringId<TestStringId>();
+            var b = _idGenerator.CreateStringId<TestStringId>();
+            a.Should().NotBe(b);
         }
     }
 

@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using AutoMapper;
 using JLib.DataGeneration.Abstractions;
 using JLib.DependencyInjection;
 using JLib.Exceptions;

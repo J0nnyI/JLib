@@ -1,12 +1,12 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using AutoMapper;
 
 using JLib.DataGeneration.Abstractions;
 using JLib.Helper;
 using JLib.ValueTypes;
 
 using static JLib.DataGeneration.DataPackageValues;
+using ValueType = JLib.ValueTypes.ValueType;
 
 namespace JLib.DataGeneration;
 /// <summary>
@@ -31,7 +31,6 @@ public sealed class TestingIdGenerator : IIdGenerator
     }
 
     private readonly IIdRegistry _idRegistry;
-    private readonly IMapper _mapper;
     private readonly IdRegistryConfiguration _idRegistryConfiguration;
 
     private ConcurrentDictionary<string, Counter> _callCounter = new();
@@ -45,11 +44,10 @@ public sealed class TestingIdGenerator : IIdGenerator
     /// Initializes a new instance of the <see cref="TestingIdGenerator"/> class.
     /// </summary>
     /// <param name="idRegistry">The ID registry.</param>
-    /// <param name="mapper">The mapper.</param>
-    public TestingIdGenerator(IIdRegistry idRegistry, IMapper mapper, IdRegistryConfiguration idRegistryConfiguration)
+    /// <param name="idRegistryConfiguration">The ID registry configuration.</param>
+    public TestingIdGenerator(IIdRegistry idRegistry, IdRegistryConfiguration idRegistryConfiguration)
     {
         _idRegistry = idRegistry;
-        _mapper = mapper;
         _idRegistryConfiguration = idRegistryConfiguration;
     }
 
@@ -76,7 +74,7 @@ public sealed class TestingIdGenerator : IIdGenerator
     /// <typeparam name="TId">The value type of the GUID.</typeparam>
     /// <returns>The generated GUID of the specified value type.</returns>
     public TId CreateGuid<TId>() where TId : GuidValueType
-        => _mapper.Map<TId>(_idRegistry.GetGuidId(GetIdentifier(0)));
+        => ValueType.Create<TId, Guid>(_idRegistry.GetGuidId(GetIdentifier(0)));
 
 
 
@@ -128,7 +126,7 @@ public sealed class TestingIdGenerator : IIdGenerator
     /// <returns>The generated string ID of the specified value type.</returns>
     public TId CreateStringId<TId>(int stackTraceFrameIndex = 0)
         where TId : StringValueType
-        => _mapper.Map<TId>(_idRegistry.GetStringId(GetIdentifier(stackTraceFrameIndex)));
+        => ValueType.Create<TId, string>(_idRegistry.GetStringId(GetIdentifier(stackTraceFrameIndex)));
 
 
     /// <summary>
@@ -147,7 +145,7 @@ public sealed class TestingIdGenerator : IIdGenerator
     /// <returns>The generated integer ID of the specified value type.</returns>
     public TId CreateIntId<TId>(int stackTraceFrameIndex = 0)
         where TId : IntValueType
-        => _mapper.Map<TId>(_idRegistry.GetIntId(GetIdentifier(stackTraceFrameIndex)));
+        => ValueType.Create<TId, int>(_idRegistry.GetIntId(GetIdentifier(stackTraceFrameIndex)));
 
 
     /// <summary>
@@ -157,7 +155,7 @@ public sealed class TestingIdGenerator : IIdGenerator
     /// <param name="stackTraceFrameIndex">The index of the stack trace frame where index 0 is the caller of this method.</param>
     /// <returns>The generated GUID of the specified value type.</returns>
     public TId CreateGuid<TId>(int stackTraceFrameIndex) where TId : GuidValueType
-        => _mapper.Map<TId>(_idRegistry.GetGuidId(GetIdentifier(stackTraceFrameIndex)));
+        => ValueType.Create<TId, Guid>(_idRegistry.GetGuidId(GetIdentifier(stackTraceFrameIndex)));
 
     /// <summary>
     /// Creates a new GUID.
