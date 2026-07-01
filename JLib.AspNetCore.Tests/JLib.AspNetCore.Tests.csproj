@@ -5,11 +5,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JLib.AspNetCore\JLib.AspNetCore.csproj" />
+    <ProjectReference Include="..\JLib.Configuration\JLib.Configuration.csproj" />
     <ProjectReference Include="..\JLib.DependencyInjection\JLib.DependencyInjection.csproj" />
     <ProjectReference Include="..\JLib.Helper\JLib.Helper.csproj" />
+    <ProjectReference Include="..\JLib.Reflection.DependencyInjection\JLib.Reflection.DependencyInjection.csproj" />
   </ItemGroup>
 </Project>
 
