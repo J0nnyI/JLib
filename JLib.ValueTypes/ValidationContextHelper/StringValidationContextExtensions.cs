@@ -341,7 +341,7 @@ public static class StringValidationContextExtensions
     {
         context.NotBeNull();
         if (context.Value?.Length < length)
-            context.AddError($"the context.Value must be at least {length} characters long but has a length of {context.Value.Length}");
+            context.AddError($"the value must be at least {length} characters long but has a length of {context.Value.Length}");
         return context;
     }
 
@@ -355,7 +355,7 @@ public static class StringValidationContextExtensions
     {
         context.NotBeNull();
         if (context.Value?.Length > length)
-            context.AddError($"the context.Value must be at most {length} characters long but has a length of {context.Value.Length}");
+            context.AddError($"the value must be at most {length} characters long but has a length of {context.Value.Length}");
         return context;
     }
 
@@ -368,7 +368,7 @@ public static class StringValidationContextExtensions
     public static IValidationContext<string?> BeOfLength(this IValidationContext<string?> context, int length)
     {
         if (context.Value?.Length != length)
-            context.AddError($"the context.Value must be exactly {length} characters long but has a length of {context.Value?.Length}");
+            context.AddError($"the value must be exactly {length} characters long but has a length of {context.Value?.Length}");
         return context;
     }
 
@@ -381,7 +381,7 @@ public static class StringValidationContextExtensions
     public static IValidationContext<string?> EndWith(this IValidationContext<string?> context, string value)
     {
         if (context.Value?.EndsWith(value) != true)
-            context.AddError($"the context.Value must end with '{value}'");
+            context.AddError($"the value must end with '{value}'");
         return context;
     }
     /// <summary>
@@ -393,7 +393,7 @@ public static class StringValidationContextExtensions
     public static IValidationContext<string?> EndWith(this IValidationContext<string?> context, char value)
     {
         if (context.Value?.EndsWith(value) != true)
-            context.AddError($"the context.Value must end with '{value}'");
+            context.AddError($"the value must end with '{value}'");
         return context;
     }
     /// <summary>
@@ -405,7 +405,7 @@ public static class StringValidationContextExtensions
     public static IValidationContext<string?> NotEndWith(this IValidationContext<string?> context, string value)
     {
         if (context.Value?.EndsWith(value) != false)
-            context.AddError($"the context.Value must not end with '{value}'");
+            context.AddError($"the value must not end with '{value}'");
         return context;
     }
     /// <summary>
@@ -417,7 +417,7 @@ public static class StringValidationContextExtensions
     public static IValidationContext<string?> NotEndWith(this IValidationContext<string?> context, char value)
     {
         if (context.Value?.EndsWith(value) != false)
-            context.AddError($"the context.Value must not end with '{value}'");
+            context.AddError($"the value must not end with '{value}'");
         return context;
     }
 }

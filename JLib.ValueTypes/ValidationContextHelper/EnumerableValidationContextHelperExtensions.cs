@@ -1,3 +1,4 @@
+
 ﻿namespace JLib.ValueTypes;
 
 /// <summary>
@@ -12,6 +13,7 @@ public static class CollectionValidationContextHelperExtensions
     /// <param name="source">The <see cref="IValidationContext{TValue}"/> that is to be validated</param>
     /// <param name="count">The expected number of elements</param>
     /// <returns><paramref name="source"/></returns>
+  
     public static IValidationContext<IReadOnlyCollection<T>> HaveCount<T>(this IValidationContext<IReadOnlyCollection<T>> source, int count)
     {
         if(source.Value.Count != count)

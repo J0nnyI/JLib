@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+      <ProjectReference Include="..\JLib.ValueTypes.Implementations.Cryptography\JLib.ValueTypes.Implementations.Cryptography.csproj" />
+    </ItemGroup>
+</Project>
